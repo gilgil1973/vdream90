@@ -189,6 +189,7 @@ void VLogList::load(VXml xml)
 void VLogList::save(VXml xml)
 {
   VLog::save(xml);
+
   xml.clearChild();
   foreach(VLog* childLog, items)
   {

@@ -120,6 +120,7 @@ int  VUdpClient::doWrite(char* buf, int size)
 void VUdpClient::load(VXml xml)
 {
   VNetClient::load(xml);
+
   host = xml.getStr("host", host);
   port = xml.getInt("port", port);
   localHost = xml.getStr("localHost", localHost);
@@ -129,6 +130,7 @@ void VUdpClient::load(VXml xml)
 void VUdpClient::save(VXml xml)
 {
   VNetClient::save(xml);
+
   xml.setStr("host", host);
   xml.setInt("port", port);
   if (localHost != "") xml.setStr("localHost", localHost);
@@ -139,6 +141,7 @@ void VUdpClient::save(VXml xml)
 void VUdpClient::addOptionWidget(QLayout* layout)
 {
   VNetClient::addOptionWidget(layout);
+
   VOptionable::addLineEdit(layout, "leHost",      "Host",       host);
   VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
   VOptionable::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
@@ -148,6 +151,7 @@ void VUdpClient::addOptionWidget(QLayout* layout)
 void VUdpClient::saveOptionDlg(QDialog* dialog)
 {
   VNetClient::saveOptionDlg(dialog);
+
   host      = dialog->findChild<QLineEdit*>("leHost")->text();
   port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();
   localHost = dialog->findChild<QLineEdit*>("leLocalHost")->text();

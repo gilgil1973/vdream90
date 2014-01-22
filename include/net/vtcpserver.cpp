@@ -282,6 +282,7 @@ void VTcpServer::run()
 void VTcpServer::load(VXml xml)
 {
   VNetServer::load(xml);
+
   port = xml.getInt("port", port);
   localHost = xml.getStr("localHost", localHost);
 }
@@ -289,6 +290,7 @@ void VTcpServer::load(VXml xml)
 void VTcpServer::save(VXml xml)
 {
   VNetServer::save(xml);
+
   xml.setInt("port", port);
   if (localHost != "") xml.setStr("localHost", localHost);
 }
@@ -297,6 +299,7 @@ void VTcpServer::save(VXml xml)
 void VTcpServer::addOptionWidget(QLayout* layout)
 {
   VNetServer::addOptionWidget(layout);
+
   VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
   VOptionable::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
 }
@@ -304,6 +307,7 @@ void VTcpServer::addOptionWidget(QLayout* layout)
 void VTcpServer::saveOptionDlg(QDialog* dialog)
 {
   VNetServer::saveOptionDlg(dialog);
+
   port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();
   localHost = dialog->findChild<QLineEdit*>("leLocalHost")->text();
 }

@@ -263,6 +263,7 @@ void VThread::run()
 void VThread::load(VXml xml)
 {
   VObject::load(xml);
+
   freeOnTerminate = xml.getBool("freeOnTerminate", freeOnTerminate);
   threadPriority  = (QThread::Priority) xml.getInt("threadPriority", (int)threadPriority);
 }
@@ -270,6 +271,7 @@ void VThread::load(VXml xml)
 void VThread::save(VXml xml)
 {
   VObject::save(xml);
+
   xml.setBool("freeOnTerminate", freeOnTerminate);
   xml.setInt("threadPriority", (int)threadPriority);
 }

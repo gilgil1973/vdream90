@@ -129,6 +129,7 @@ bool VFile::createFolder(QString folder)
 void VFile::load(VXml xml)
 {
   VRwObject::load(xml);
+
   fileName = xml.getStr("fileName", fileName);
   mode = (QIODevice::OpenMode)xml.getInt("mode", (int)mode);
 }
@@ -136,6 +137,7 @@ void VFile::load(VXml xml)
 void VFile::save(VXml xml)
 {
   VRwObject::save(xml);
+
   xml.setStr("fileName", fileName);
   xml.setInt("mode", (int)mode);
 }

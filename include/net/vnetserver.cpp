@@ -15,12 +15,14 @@ VNetServer::~VNetServer()
 void VNetServer::load(VXml &xml)
 {
   VNet::load(xml);
+
   onceWriteSize = xml.getInt("onceWriteSize", onceWriteSize);
 }
 
 void VNetServer::save(VXml &xml)
 {
   VNet::save(xml);
+
   if (onceWriteSize != 0) xml.setInt("onceWriteSize", onceWriteSize);
 }
 
