@@ -151,13 +151,13 @@ void VUdpServer::save(VXml xml)
 void VUdpServer::addOptionWidget(QLayout* layout)
 {
   VNetServer::addOptionWidget(layout);
-  VShowOption::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
-  VShowOption::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
+  VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
+  VOptionable::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
 }
 
-void VUdpServer::saveOption(QDialog* dialog)
+void VUdpServer::saveOptionDlg(QDialog* dialog)
 {
-  VNetServer::saveOption(dialog);
+  VNetServer::saveOptionDlg(dialog);
   port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();
   localHost = dialog->findChild<QLineEdit*>("leLocalHost")->text();
 }

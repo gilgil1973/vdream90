@@ -27,10 +27,10 @@ void VNetServer::save(VXml &xml)
 #ifdef QT_GUI_LIB
 void VNetServer::addOptionWidget(QLayout* layout)
 {
-  VShowOption::addLineEdit(layout, "leOnceWriteSize", "Once Write Size", QString::number(onceWriteSize));
+  VOptionable::addLineEdit(layout, "leOnceWriteSize", "Once Write Size", QString::number(onceWriteSize));
 }
 
-void VNetServer::saveOption(QDialog* dialog)
+void VNetServer::saveOptionDlg(QDialog* dialog)
 {
   onceWriteSize = dialog->findChild<QLineEdit*>("leOnceWriteSize")->text().toInt();
 }

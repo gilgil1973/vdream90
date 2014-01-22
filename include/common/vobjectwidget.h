@@ -23,23 +23,30 @@
 #include <QPushButton>
 
 // ----------------------------------------------------------------------------
-// IVShowOption
+// IVOptionlable
 // ----------------------------------------------------------------------------
-class IVShowOption
+class IVOptionlable
 {
 public:
-  virtual void addOptionWidget(QLayout* layout) = 0;
-  virtual bool showOption(QDialog* dialog)      = 0;
-  virtual void saveOption(QDialog* dialog)      = 0;
+  virtual QDialog* createOptionDlg() = 0;
+  virtual void     addOptionWidget(QLayout* layout) = 0;
+  virtual bool     showOptionDlg(QDialog* dialog) = 0;
+  virtual void     saveOptionDlg(QDialog* dialog) = 0;
 };
 
 // ----------------------------------------------------------------------------
-// VShowOption
+// VOptionable
 // ----------------------------------------------------------------------------
-class VShowOption : public IVShowOption
+class VOptionable : public IVOptionlable
 {
 public:
-  virtual bool showOption(QDialog* dialog);
+  virtual QDialog* createOptionDlg();
+  virtual void     addOptionWidget(QLayout* layout);
+  virtual bool     showOptionDlg(QDialog* dialog);
+  virtual void     saveOptionDlg(QDialog* dialog);
+
+public:
+  void       addOkCancelButtons(QDialog* dialog);
 
 public:
   QLineEdit* addLineEdit(QLayout* layout, QString objectName, QString text, QString value);

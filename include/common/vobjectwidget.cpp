@@ -3,9 +3,35 @@
 #ifdef QT_GUI_LIB
 
 // ----------------------------------------------------------------------------
-// VShowOption
+// VOptionable
 // ----------------------------------------------------------------------------
-bool VShowOption::showOption(QDialog* dialog)
+QDialog* VOptionable::createOptionDlg()
+{
+  QDialog* dialog = new QDialog(NULL);
+  new QGridLayout(dialog);
+  return dialog;
+}
+
+void VOptionable::addOptionWidget(QLayout* layout)
+{
+  Q_UNUSED(layout)
+  LOG_FATAL("virtual function call");
+}
+
+bool VOptionable::showOptionDlg(QDialog* dialog)
+{
+  addOkCancelButtons(dialog);
+  int res = dialog->exec();
+  return res == QDialog::Accepted;
+}
+
+void VOptionable::saveOptionDlg(QDialog* dialog)
+{
+  Q_UNUSED(dialog)
+  LOG_FATAL("virtual function call");
+}
+
+void VOptionable::addOkCancelButtons(QDialog* dialog)
 {
   QPushButton* pbOK     = new QPushButton(dialog);
   QPushButton* pbCancel = new QPushButton(dialog);
@@ -15,16 +41,13 @@ bool VShowOption::showOption(QDialog* dialog)
   QObject::connect(pbOK, SIGNAL(clicked()), dialog, SLOT(accept()));
   QObject::connect(pbCancel, SIGNAL(clicked()), dialog, SLOT(close()));
 
-  QGridLayout* layout = new QGridLayout(dialog);
-  layout->addWidget(pbOK,     0, 0);
-  layout->addWidget(pbCancel, 0, 1);
-  dialog->layout()->addItem(layout);
-
-  int res = dialog->exec();
-  return res == QDialog::Accepted;
+  QGridLayout* buttonsLayout = new QGridLayout;
+  buttonsLayout->addWidget(pbOK,     0, 0);
+  buttonsLayout->addWidget(pbCancel, 0, 1);
+  dialog->layout()->addItem(buttonsLayout);
 }
 
-QLineEdit* VShowOption::addLineEdit(QLayout* layout, QString objectName, QString text, QString value)
+QLineEdit* VOptionable::addLineEdit(QLayout* layout, QString objectName, QString text, QString value)
 {
   if (layout->findChild<QObject*>(objectName) != NULL)
   {
@@ -39,7 +62,7 @@ QLineEdit* VShowOption::addLineEdit(QLayout* layout, QString objectName, QString
   lineEdit->setObjectName(objectName);
   lineEdit->setText(value);
 
-  QGridLayout* myLayout = new QGridLayout(layout->parentWidget());
+  QGridLayout* myLayout = new QGridLayout;
   myLayout->setHorizontalSpacing(8);
   myLayout->addWidget(label,    0, 0);
   myLayout->addWidget(lineEdit, 0, 1);
@@ -48,7 +71,7 @@ QLineEdit* VShowOption::addLineEdit(QLayout* layout, QString objectName, QString
   return lineEdit;
 }
 
-QCheckBox* VShowOption::addCheckBox(QLayout* layout, QString objectName, QString text, bool value)
+QCheckBox* VOptionable::addCheckBox(QLayout* layout, QString objectName, QString text, bool value)
 {
   if (layout->findChild<QObject*>(objectName) != NULL)
   {
@@ -67,7 +90,7 @@ QCheckBox* VShowOption::addCheckBox(QLayout* layout, QString objectName, QString
   return checkBox;
 }
 
-QComboBox* VShowOption::addComboBox(QLayout *layout, QString objectName, QString text, QStringList strList, int index)
+QComboBox* VOptionable::addComboBox(QLayout *layout, QString objectName, QString text, QStringList strList, int index)
 {
   if (layout->findChild<QObject*>(objectName) != NULL)
   {
@@ -86,7 +109,7 @@ QComboBox* VShowOption::addComboBox(QLayout *layout, QString objectName, QString
   }
   comboBox->setCurrentIndex(index);
 
-  QGridLayout* myLayout = new QGridLayout(layout->parentWidget());
+  QGridLayout* myLayout = new QGridLayout;
   myLayout->setHorizontalSpacing(8);
   myLayout->addWidget(label,    0, 0);
   myLayout->addWidget(comboBox, 0, 1);

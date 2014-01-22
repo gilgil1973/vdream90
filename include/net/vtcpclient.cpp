@@ -145,15 +145,15 @@ void VTcpClient::save(VXml xml)
 void VTcpClient::addOptionWidget(QLayout* layout)
 {
   VNetClient::addOptionWidget(layout);
-  VShowOption::addLineEdit(layout, "leHost",      "Host",       host);
-  VShowOption::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
-  VShowOption::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
-  VShowOption::addLineEdit(layout, "leLocalPort", "Local Port", QString::number(localPort));
+  VOptionable::addLineEdit(layout, "leHost",      "Host",       host);
+  VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
+  VOptionable::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
+  VOptionable::addLineEdit(layout, "leLocalPort", "Local Port", QString::number(localPort));
 }
 
-void VTcpClient::saveOption(QDialog* dialog)
+void VTcpClient::saveOptionDlg(QDialog* dialog)
 {
-  VNetClient::saveOption(dialog);
+  VNetClient::saveOptionDlg(dialog);
   host      = dialog->findChild<QLineEdit*>("leHost")->text();
   port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();
   localHost = dialog->findChild<QLineEdit*>("leLocalHost")->text();
