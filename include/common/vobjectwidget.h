@@ -74,7 +74,8 @@ public:
 };
 
 #else // QT_GUI_LIB
-class VShowOption {};
+class IVOptionlable {};
+class VOptionable : public IVOptionlable {};
 #endif // QT_GUI_LIB
 
 #endif // __V_OBJECT_WIDGET_H__
