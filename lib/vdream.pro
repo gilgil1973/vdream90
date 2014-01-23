@@ -29,6 +29,7 @@ HEADERS += \
     ../include/common/vmemoryleak.h \
     ../include/common/vmetaclass.h \
     ../include/common/vobject.h \
+    ../include/common/vobjectwidget.h \
     ../include/common/vperformance.h \
     ../include/common/vrwobject.h \
     ../include/common/vsecurelib.h \
