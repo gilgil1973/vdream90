@@ -1,5 +1,5 @@
-VDream Component version 9.0
-============================
+VDream Component Suite version 9.0
+==================================
 
 
 Introduction
