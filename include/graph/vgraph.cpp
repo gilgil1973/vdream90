@@ -76,9 +76,9 @@ QList<VObject*> VGraphObjectList::findChildren(QString categoryName)
 void VGraphObjectList::load(VXml xml)
 {
   clear();
-  xml_foreach (childXML, xml.childs())
+  xml_foreach (childXml, xml.childs())
   {
-    QString className = childXML.getStr("_class");
+    QString className = childXml.getStr("_class");
     if (className == "")
     {
       LOG_ERROR("_class is null");
@@ -90,7 +90,7 @@ void VGraphObjectList::load(VXml xml)
       LOG_ERROR("can not create instance for %s", qPrintable(className));
     }
     object->owner = this->m_graph;
-    object->load(childXML);
+    object->load(childXml);
     this->push_back(object);
   }
 }
@@ -102,8 +102,8 @@ void VGraphObjectList::save(VXml xml)
   for (int i = 0; i < _count; i++)
   {
     VObject* object = this->at(i);
-    VXml childXML = xml.addChild("object");
-    object->save(childXML);
+    VXml childXml = xml.addChild("object");
+    object->save(childXml);
   }
 }
 
@@ -238,10 +238,10 @@ bool VGraphConnectList::delConnect(VGraphConnect connect)
 void VGraphConnectList::load(VXml xml)
 {
   clear();
-  xml_foreach (childXML, xml.childs())
+  xml_foreach (childXml, xml.childs())
   {
     VGraphConnect connect;
-    connect.load(childXML);
+    connect.load(childXml);
     addConnect(connect);
   }
 }

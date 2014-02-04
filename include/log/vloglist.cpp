@@ -172,16 +172,16 @@ void VLogList::load(VXml xml)
   VLog::load(xml);
 
   clear();
-  xml_foreach(childXML, xml.childs())
+  xml_foreach(childXml, xml.childs())
   {
-    QString className = childXML.getStr("_class", "");
+    QString className = childXml.getStr("_class", "");
     VLog* childLog = VLogFactory::createByClassName(className);
     if (childLog == NULL)
     {
       LOG_ERROR("childLog is NULL(%s)", qPrintable(className));
       return;
     }
-    childLog->load(childXML);
+    childLog->load(childXml);
     items.push_back(childLog);
   }
 }
@@ -194,7 +194,7 @@ void VLogList::save(VXml xml)
   foreach(VLog* childLog, items)
   {
     QString className = CLASS_NAME(*childLog);
-    VXml childXML = xml.addChild("log");
-    childLog->save(childXML);
+    VXml childXml = xml.addChild("log");
+    childLog->save(childXml);
   }
 }
