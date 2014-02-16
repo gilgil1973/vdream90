@@ -320,7 +320,7 @@ QStringList VGraph::methodList(VObject* object, QMetaMethod::MethodType methodTy
   for (int i = 0; i < _count; i++)
   {
     QMetaMethod _method = object->metaObject()->method(i);
-    if (_method.methodType() == methodType)
+    if (_method.access() == QMetaMethod::Public && _method.methodType() == methodType)
     {
       QString methodName = _method.methodSignature();
       res.push_back(methodName);
