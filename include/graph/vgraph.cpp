@@ -56,7 +56,7 @@ VObject* VGraphObjectList::findByName(QString name)
 QList<VObject*> VGraphObjectList::findChildren(QString categoryName)
 {
   VMetaClassMap& map  = VMetaClassMap::instance();
-  VMetaClassList list = map[(char*)qPrintable(categoryName)];
+  VMetaClassList& list = map[(char*)qPrintable(categoryName)];
 
   QList<VObject*> res;
   int _count = this->count();
