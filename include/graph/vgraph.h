@@ -37,6 +37,7 @@ public:
   bool addObject(VObject* object);
   bool delObject(VObject* object);
   VObject* findByName(QString name);
+  VObject* findByClassName(QString className);
   QList<VObject*> findChildren(QString categoryName);
 
 public:

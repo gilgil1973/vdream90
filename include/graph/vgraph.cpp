@@ -53,6 +53,18 @@ VObject* VGraphObjectList::findByName(QString name)
   return NULL;
 }
 
+VObject* VGraphObjectList::findByClassName(QString className)
+{
+  int _count = this->count();
+  for (int i = 0; i < _count; i++)
+  {
+    VObject* res = this->at(i);
+    if (res->className() == className) return res;
+  }
+  LOG_ERROR("can not find object for ('%s')", qPrintable(className));
+  return NULL;
+}
+
 QList<VObject*> VGraphObjectList::findChildren(QString categoryName)
 {
   VMetaClassMap& map  = VMetaClassMap::instance();
