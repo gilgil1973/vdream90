@@ -13,9 +13,6 @@
 
 #include <VObject>
 #include <VFactory>
-// #include <VGraphNode> // gilgil temp 2012.07.25
-// #include <VGraphLink> // gilgil temp 2012.07.25
-// #include <VGraphStream> // gilgil temp 2012.07.25
 
 // ----------------------------------------------------------------------------
 // VGraphObjectList
@@ -36,10 +33,16 @@ public:
 public:
   bool addObject(VObject* object);
   bool delObject(VObject* object);
+
+public:
   VObject* findByName(QString name);
   VObject* findByClassName(QString className);
+
   QList<VObject*> findObjectsByClassName(QString className);
   QList<VObject*> findObjectsByCategoryName(QString categoryName);
+
+  QStringList findNamesByClassName(QString className);
+  QStringList findNamesByCategoryName(QString categoryName);
 
 public:
   virtual void load(VXml xml);

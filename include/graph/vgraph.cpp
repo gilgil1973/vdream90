@@ -97,6 +97,21 @@ QList<VObject*> VGraphObjectList::findObjectsByCategoryName(QString categoryName
   return res;
 }
 
+QStringList VGraphObjectList::findNamesByClassName(QString className)
+{
+  QList<VObject*> objectList = findObjectsByClassName(className);
+  QStringList res;
+  foreach(VObject* object, objectList) res.push_back(object->name);
+  return res;
+}
+
+QStringList VGraphObjectList::findNamesByCategoryName(QString categoryName)
+{
+  QList<VObject*> objectList = findObjectsByCategoryName(categoryName);
+  QStringList res;
+  foreach(VObject* object, objectList) res.push_back(object->name);
+  return res;
+}
 void VGraphObjectList::load(VXml xml)
 {
   clear();
