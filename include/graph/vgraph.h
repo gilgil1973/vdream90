@@ -38,7 +38,8 @@ public:
   bool delObject(VObject* object);
   VObject* findByName(QString name);
   VObject* findByClassName(QString className);
-  QList<VObject*> findChildren(QString categoryName);
+  QList<VObject*> findObjectsByClassName(QString className);
+  QList<VObject*> findObjectsByCategoryName(QString categoryName);
 
 public:
   virtual void load(VXml xml);
