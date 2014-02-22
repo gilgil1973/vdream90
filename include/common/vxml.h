@@ -72,6 +72,8 @@ public:
   //
   int        getInt    (const QString name,  int        def = 0);
   void       setInt    (const QString name,  int        val);
+  int        getInt64  (const QString name,  qint64     def = 0);
+  void       setInt64  (const QString name,  qint64     val);
   QChar      getChr    (const QString name,  QChar      def = '\0');
   void       setChr    (const QString name,  QChar      val);
   bool       getBool   (const QString name,  bool       def = false);

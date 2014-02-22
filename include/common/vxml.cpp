@@ -92,7 +92,7 @@ VXml VXml::findChilds(QString tagNames, QString delimiter)
   return res;
 }
 
-int VXml::getInt(const QString name,  int def)
+int VXml::getInt(const QString name, int def)
 {
   if (!this->attributes().contains(name)) return def;
   QString s = this->attribute(name, s);
@@ -101,6 +101,19 @@ int VXml::getInt(const QString name,  int def)
 }
 
 void VXml::setInt(const QString name, int val)
+{
+  this->setAttribute(name, val);
+}
+
+int VXml::getInt64(const QString name, qint64 def)
+{
+  if (!this->attributes().contains(name)) return def;
+  QString s = this->attribute(name, s);
+  if (s == "") return def;
+  return this->attribute(name, s).toLongLong();
+}
+
+void VXml::setInt64(const QString name, qint64 val)
 {
   this->setAttribute(name, val);
 }
