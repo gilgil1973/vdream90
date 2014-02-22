@@ -51,7 +51,7 @@ public:
 public:
   QLineEdit* addLineEdit(QLayout* layout, QString objectName, QString text, QString value);
   QCheckBox* addCheckBox(QLayout* layout, QString objectName, QString text, bool value);
-  QComboBox* addComboBox(QLayout* layout, QString objectName, QString text, QStringList strList, int index = -1);
+  QComboBox* addComboBox(QLayout* layout, QString objectName, QString text, QStringList strList, int index = -1, QString value = "");
 };
 
 // ----------------------------------------------------------------------------

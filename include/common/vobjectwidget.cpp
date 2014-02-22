@@ -90,7 +90,7 @@ QCheckBox* VOptionable::addCheckBox(QLayout* layout, QString objectName, QString
   return checkBox;
 }
 
-QComboBox* VOptionable::addComboBox(QLayout *layout, QString objectName, QString text, QStringList strList, int index)
+QComboBox* VOptionable::addComboBox(QLayout *layout, QString objectName, QString text, QStringList strList, int index, QString value)
 {
   if (layout->findChild<QObject*>(objectName) != NULL)
   {
@@ -108,6 +108,7 @@ QComboBox* VOptionable::addComboBox(QLayout *layout, QString objectName, QString
     comboBox->addItem(text);
   }
   comboBox->setCurrentIndex(index);
+  comboBox->setCurrentText(value);
 
   QGridLayout* myLayout = new QGridLayout;
   myLayout->setHorizontalSpacing(8);
