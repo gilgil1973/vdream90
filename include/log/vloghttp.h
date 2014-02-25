@@ -17,7 +17,7 @@
 // ----------------------------------------------------------------------------
 // VLogHttp
 // ----------------------------------------------------------------------------
-class VLogHttpTCPServer;
+class VLogHttpTcpServer;
 class VLogHttp : public VLog
 {
 public:
@@ -41,7 +41,7 @@ public:
   virtual VLog* createByURI(const QString& uri);
 
 protected:
-  VLogHttpTCPServer* m_tcpServer;
+  VLogHttpTcpServer* m_tcpServer;
 
 public:
   virtual void load(VXml xml);
@@ -49,15 +49,15 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// VLogHttpTCPServer
+// VLogHttpTcpServer
 // ----------------------------------------------------------------------------
-class VLogHttpTCPServer : public VTcpServer
+class VLogHttpTcpServer : public VTcpServer
 {
   Q_OBJECT
 
 public:
-  VLogHttpTCPServer(void* owner = NULL);
-  virtual ~VLogHttpTCPServer();
+  VLogHttpTcpServer(void* owner = NULL);
+  virtual ~VLogHttpTcpServer();
 
 protected slots:
   void run(VTcpSession* tcpSession);

@@ -12,7 +12,7 @@ VLogHttp::VLogHttp(const int port)
 {
   showDateTime = VShowDateTime::Time;
   this->port = port;
-  m_tcpServer = new VLogHttpTCPServer;
+  m_tcpServer = new VLogHttpTcpServer;
 
   open();
 }
@@ -72,9 +72,9 @@ void VLogHttp::save(VXml xml)
 
 
 // ----------------------------------------------------------------------------
-// VLogHttpTCPServer
+// VLogHttpTcpServer
 // ----------------------------------------------------------------------------
-VLogHttpTCPServer::VLogHttpTCPServer(void* owner) : VTcpServer(owner)
+VLogHttpTcpServer::VLogHttpTcpServer(void* owner) : VTcpServer(owner)
 {
   if (!QObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*)), Qt::DirectConnection))
   //if (!QObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*))))
@@ -84,12 +84,12 @@ VLogHttpTCPServer::VLogHttpTCPServer(void* owner) : VTcpServer(owner)
   // setLog(NULL); // gilgil temp 2012.11.01
 }
 
-VLogHttpTCPServer::~VLogHttpTCPServer()
+VLogHttpTcpServer::~VLogHttpTcpServer()
 {
   close();
 }
 
-void VLogHttpTCPServer::run(VTcpSession* tcpSession)
+void VLogHttpTcpServer::run(VTcpSession* tcpSession)
 {
   static QString httpResponse = \
 "HTTP/1.1 200 OK\r\n"\

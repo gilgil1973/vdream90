@@ -15,8 +15,7 @@ TEMPLATE  = app
 DESTDIR   = ../../bin
 
 SOURCES += \
-    main.cpp \
-    ../../include/net/vudpsession.cpp
+    main.cpp
 
 HEADERS += \
     main.h

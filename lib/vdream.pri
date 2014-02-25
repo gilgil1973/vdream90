@@ -26,6 +26,14 @@ CONFIG(release, debug|release) {
 }
 
 #-------------------------------------------------
+# openssl
+# gilgil temp 2014.02.25
+#-------------------------------------------------
+OPENSSL_PATH  = C:/OpenSSL-Win64
+INCLUDEPATH  += $${OPENSSL_PATH}/include
+LIBS         += -L$${OPENSSL_PATH}/lib -llibeay32 -lssleay32
+
+#-------------------------------------------------
 # vdream
 #-------------------------------------------------
 VDREAM_PATH            =   $$PWD/..

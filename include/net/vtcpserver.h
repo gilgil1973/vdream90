@@ -90,4 +90,3 @@ public: // for VOptionable
 };
 
 #endif // __V_TCP_SERVER_H__
-

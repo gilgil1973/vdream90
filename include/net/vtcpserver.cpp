@@ -28,9 +28,9 @@ void VTcpSessionThread::run()
   if (freeOnTerminate)
   {
     VTcpSessionThreadList& threadList = tcpServer->threadList;
-   threadList.lock();
-   threadList.removeAt(threadList.indexOf(this));
-   threadList.unlock();
+    threadList.lock();
+    threadList.removeAt(threadList.indexOf(this));
+    threadList.unlock();
   }
 }
 
@@ -42,7 +42,7 @@ VTcpServer::VTcpServer(void* owner) : VNetServer(owner)
   acceptSession = new VTcpSession(this);
   port          =  0;
   localHost     = "";
- }
+}
 
 VTcpServer::~VTcpServer()
 {
@@ -159,8 +159,8 @@ bool VTcpServer::doClose()
   {
     VTcpSessionThread* thread = *it;
     // ----- by gilgil 2012.12.07 -----
-    // When TCPServer is active, session thread is deleted automatically,
-    // while, when TCPServer is closing state, session thread is deleted manually.
+    // When TcpServer is active, session thread is deleted automatically,
+    // while, when TcpServer is closing state, session thread is deleted manually.
     thread->freeOnTerminate = false; // gilgil temp 2012.12.07
     // --------------------------------
     VTcpSession* tcpSession = thread->tcpSession;
@@ -242,6 +242,7 @@ VTcpSession* VTcpServer::accept()
   }
 
   newTCPSession         = new VTcpSession;
+  newTCPSession->owner  = this;
   newTCPSession->handle = newHandle;
   newTCPSession->addr   = sockAddr;
   return newTCPSession;

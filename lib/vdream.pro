@@ -64,10 +64,10 @@ HEADERS += \
     ../include/net/vnetfactory.h \
     ../include/net/vnetserver.h \
     ../include/net/vnetsession.h \
-    ../include/net/vsslsession.h \
-    ../include/net/vsslserver.h \
-    ../include/net/vsslcommon.h \
     ../include/net/vsslclient.h \
+    ../include/net/vsslcommon.h \
+    ../include/net/vsslserver.h \
+    ../include/net/vsslsession.h \
     ../include/net/vtcpclient.h \
     ../include/net/vtcpserver.h \
     ../include/net/vtcpsession.h \
@@ -119,10 +119,10 @@ SOURCES += \
     ../include/net/vnetclient.cpp \
     ../include/net/vnetfactory.cpp \
     ../include/net/vnetserver.cpp \
-    ../include/net/vsslsession.cpp \
-    ../include/net/vsslserver.cpp \
-    ../include/net/vsslcommon.cpp \
     ../include/net/vsslclient.cpp \
+    ../include/net/vsslcommon.cpp \
+    ../include/net/vsslserver.cpp \
+    ../include/net/vsslsession.cpp \
     ../include/net/vtcpclient.cpp \
     ../include/net/vtcpserver.cpp \
     ../include/net/vtcpsession.cpp \

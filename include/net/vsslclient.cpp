@@ -1,0 +1,125 @@
+#include <VSslClient>
+
+// ----------------------------------------------------------------------------
+// VSslClient
+// ----------------------------------------------------------------------------
+VSslClient::VSslClient(void* owner) : VTcpClient(owner)
+{
+  VSslCommon::initialize();
+  sslSession = new VSslSession(this);
+  sslSession->tcpSession = tcpSession;
+  methodType = VSslMethodType::mtSSLV23;
+  meth       = NULL;
+  ctx        = NULL;
+}
+
+VSslClient::~VSslClient()
+{
+  close();
+  SAFE_DELETE(sslSession);
+}
+
+bool VSslClient::doOpen()
+{
+  if (!VTcpClient::doOpen()) return false;
+
+  //
+  // set client method
+  //
+  LOG_DEBUG("method=%s", qPrintable(methodType.str()));
+  switch (methodType)
+  {
+    case VSslMethodType::mtSSLV2  : meth = (SSL_METHOD*)SSLv2_client_method();  break;
+    case VSslMethodType::mtSSLV3  : meth = (SSL_METHOD*)SSLv3_client_method();  break;
+    case VSslMethodType::mtSSLV23 : meth = (SSL_METHOD*)SSLv23_client_method(); break;
+    case VSslMethodType::mtTLSV1  : meth = (SSL_METHOD*)TLSv1_client_method();  break;
+    case VSslMethodType::mtDTLSV1 : meth = (SSL_METHOD*)DTLSv1_client_method(); break;
+    case VSslMethodType::mtNone   :
+    default       :
+      SET_ERROR(VSslError, qformat("client method error(%s)", qPrintable(methodType.str())), VERR_SSL_METHOD);
+      return false;
+  }
+  ctx = SSL_CTX_new(meth);
+
+  //
+  // set sock and con
+  //
+  sslSession->sock = tcpSession->handle;
+  sslSession->ctx = ctx;
+  if (!sslSession->open())
+  {
+    error = sslSession->error;
+    doClose();
+    return false;
+  }
+  SSL_set_connect_state(sslSession->con);
+  int res = SSL_connect(sslSession->con);
+  if (res <= 0)
+  {
+    SET_ERROR(VSslError, qformat("SSL_connect return %d", res), SSL_get_error(sslSession->con, res));
+    return false;
+  }
+
+  return true;
+}
+
+bool VSslClient::doClose()
+{
+  sslSession->close();
+
+  //
+  // meth and ctx
+  //
+  if (meth != NULL)
+  {
+    meth = NULL;
+  }
+  if (ctx != NULL)
+  {
+    SSL_CTX_free(ctx);
+    ctx = NULL;
+  }
+
+  VTcpClient::doClose();
+  return true;
+}
+
+int VSslClient::doRead(char* buf, int size)
+{
+  return sslSession->read(buf, size);
+}
+
+int VSslClient::doWrite(char* buf, int size)
+{
+  return sslSession->write(buf, size);
+}
+
+void VSslClient::load(VXml xml)
+{
+  VTcpClient::load(xml);
+
+  methodType = xml.getStr("methodType", methodType.str());
+}
+
+void VSslClient::save(VXml xml)
+{
+  VTcpClient::save(xml);
+
+  xml.setStr("methodType", methodType.str());
+}
+
+#ifdef QT_GUI_LIB
+void VSslClient::addOptionWidget(QLayout* layout)
+{
+  VTcpClient::addOptionWidget(layout);
+
+  // gilgil temp 2014.02.25
+}
+
+void VSslClient::saveOptionDlg(QDialog* dialog)
+{
+  VTcpClient::saveOptionDlg(dialog);
+
+  // gilgil temp 2014.02.25
+}
+#endif // QT_GUI_LIB
