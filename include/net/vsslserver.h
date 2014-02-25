@@ -16,9 +16,34 @@
 #include <VSslSession>
 
 // ----------------------------------------------------------------------------
-// VSslSessionList
+// VSslServerSession
 // ----------------------------------------------------------------------------
-class VSslSessionList : public QList<VSslSession*>, public VLockable
+class VSslServer;
+class VSslServerSession : public VSslSession
+{
+public:
+  VSslServerSession(void* owner = NULL);
+  virtual ~VSslServerSession();
+
+protected:
+  virtual bool doOpen();
+  virtual bool doClose();
+
+protected:
+  X509*     s_cert;
+  EVP_PKEY* s_key;
+
+  bool setup(QString fileName);
+  bool loadKey(QString fileName);
+  bool loadCrt(QString fileName);
+  bool setCrtKeyStuff();
+  static int ssl_servername_cb(SSL *s, int *ad, void *arg);
+};
+
+// ----------------------------------------------------------------------------
+// VSslServerSessionList
+// ----------------------------------------------------------------------------
+class VSslServerSessionList : public QList<VSslServerSession*>, public VLockable
 {
 };
 
@@ -28,6 +53,8 @@ class VSslSessionList : public QList<VSslSession*>, public VLockable
 class VSslServer : public VTcpServer
 {
   Q_OBJECT
+
+  friend class VSslServerSession;
 
 public:
   VSslServer(void* owner = NULL);
@@ -40,23 +67,17 @@ protected:
   virtual int  doWrite(char* buf, int size);
 
 public:
-  /// ssl client thread list
-  VSslSessionList sslSessionList;
+  /// ssl client session list
+  VSslServerSessionList sslSessionList;
 
 public:
   VSslMethodType methodType;
-  QString        fileName;
+  QString        caPath;
+  QString        defaultKeyCrtFileName;
 
 protected:
-  X509*           s_cert;
-  EVP_PKEY*       s_key;
-  bool            loadKey();
-  bool            loadCert();
-  bool            setCertKeyStuff();
-
-protected:
-  SSL_METHOD*     meth;
-  SSL_CTX*        ctx;
+  SSL_METHOD*     m_meth;
+  SSL_CTX*        m_ctx;
 
 protected slots:
   void myRun(VTcpSession* tcpSession);

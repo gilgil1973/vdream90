@@ -34,8 +34,8 @@ public:
   BIO* sbio;
 
 public:
-  SOCKET   sock;           // reference, used in open // gilgil temp 2014.02.25
-  SSL_CTX* ctx;            // reference, used in open
+  SOCKET       handle;     // reference, used in open // gilgil temp 2014.02.25
+  SSL_CTX*     ctx;        // reference, used in open
   VTcpSession* tcpSession; // reference
 
 public:

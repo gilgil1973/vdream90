@@ -7,7 +7,7 @@ VSslSession::VSslSession(void* owner) : VNetSession(owner)
 {
   con        = NULL;
   sbio       = NULL;
-  sock       = INVALID_SOCKET;
+  handle     = INVALID_SOCKET;
   ctx        = NULL;
   tcpSession = NULL;
 }
@@ -62,7 +62,7 @@ bool VSslSession::doOpen()
   // --------------------------------------------------------------------------
   // check sock(must be set in other place_
   // --------------------------------------------------------------------------
-  if (sock == INVALID_SOCKET)
+  if (handle == INVALID_SOCKET)
   {
     SET_ERROR(VSslError, "INVALID_SOCKET", VERR_HANDLE_IS_ZERO);
     return false;
@@ -86,7 +86,7 @@ bool VSslSession::doOpen()
   // --------------------------------------------------------------------------
   // set sbio
   // --------------------------------------------------------------------------
-  sbio = BIO_new_socket((int)sock, BIO_NOCLOSE);
+  sbio = BIO_new_socket((int)handle, BIO_NOCLOSE);
   SSL_set_bio(con, sbio, sbio);
 
   // --------------------------------------------------------------------------
@@ -129,9 +129,9 @@ bool VSslSession::doClose()
     sbio = NULL; // do not delete? // gilgil temp 2011.10.30
   }
 #ifdef WIN32
-  shutdown(sock, SD_BOTH);
+  shutdown(handle, SD_BOTH);
 #endif // WIN32
-  sock = INVALID_SOCKET;
+  handle = INVALID_SOCKET;
   return true;
 }
 

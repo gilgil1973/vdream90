@@ -36,8 +36,8 @@ public:
   VSslMethodType methodType;
 
 protected:
-  SSL_METHOD*   meth;
-  SSL_CTX*      ctx;
+  SSL_METHOD*   m_meth;
+  SSL_CTX*      m_ctx;
 
 public:
   virtual void load(VXml xml);

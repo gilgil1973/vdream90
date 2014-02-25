@@ -36,7 +36,10 @@ void serverTest()
 {
   MyServer server(NULL);
   server.port = 443;
-  server.fileName = "D:/temp/qt/ssl_test/bin/www.mysite.com_key_cert.pem";
+  server.caPath = "D:/ssl_certificate/";
+  server.defaultKeyCrtFileName = "127.0.0.1.pem";
+
+  //server.fileName = "D:/temp/qt/ssl_test/bin/www.mysite.com_key_cert.pem";
   server.open();
 
 

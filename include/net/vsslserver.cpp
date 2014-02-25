@@ -2,125 +2,57 @@
 #include <VFile>
 #include <VDebugNew>
 
-// ----- gilgil temp 2014.02.25 -----
-/*
 // ----------------------------------------------------------------------------
-// VSslSessionThread
+// VSslServerSession
 // ----------------------------------------------------------------------------
-VSslSessionThread::VSslSessionThread(VSslServer* owner, VSslSession* sslSession)
+VSslServerSession::VSslServerSession(void* owner) : VSslSession(owner)
 {
-  LOG_DEBUG("%p", this); // gilgil temp 2014.02.25
-  this->freeOnTerminate = true;
-  this->sslServer       = owner;
-  this->sslSession      = sslSession;
+  s_cert         = NULL;
+  s_key          = NULL;
 }
 
-VSslSessionThread::~VSslSessionThread()
-{
-  LOG_DEBUG("%p", this); // gilgil temp 2014.02.25
-  SAFE_DELETE(sslSession);
-}
-
-void VSslSessionThread::run()
-{
-  emit sslServer->runned(sslSession);
-
-  if (freeOnTerminate)
-  {
-    VSslSessionThreadList& threadList = sslServer->threadList;
-    threadList.lock();
-    threadList.removeAt(threadList.indexOf(this));
-    threadList.unlock();
-  }
-}
-*/
-// ----------------------------------
-
-// ----------------------------------------------------------------------------
-// VSslServer
-// ----------------------------------------------------------------------------
-VSslServer::VSslServer(void* owner) : VTcpServer(owner)
-{
-  VSslCommon::initialize();
-  methodType = VSslMethodType::mtSSLV23;
-  fileName   = "";
-  s_cert     = NULL;
-  s_key      = NULL;
-  meth       = NULL;
-  ctx        = NULL;
-
-  QObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(myRun(VTcpSession*)), Qt::DirectConnection);
-}
-
-VSslServer::~VSslServer()
+VSslServerSession::~VSslServerSession()
 {
   close();
 }
 
-bool VSslServer::doOpen()
+bool VSslServerSession::doOpen()
 {
-  if (!VTcpServer::doOpen()) return false;
-
-  //
-  // Set server method
-  //
-  LOG_DEBUG("method=%s", qPrintable(methodType.str()));
-  switch (methodType)
+  LOG_DEBUG("bef SSL_CTX_set_tlsext_servername_callback");
+  bool callbackOk = true;
+  if (!SSL_CTX_set_tlsext_servername_callback(ctx, ssl_servername_cb))
   {
-    case VSslMethodType::mtSSLV2  : meth = (SSL_METHOD*)SSLv2_server_method();  break;
-    case VSslMethodType::mtSSLV3  : meth = (SSL_METHOD*)SSLv3_server_method();  break;
-    case VSslMethodType::mtSSLV23 : meth = (SSL_METHOD*)SSLv23_server_method(); break;
-    case VSslMethodType::mtTLSV1  : meth = (SSL_METHOD*)TLSv1_server_method();  break;
-    case VSslMethodType::mtDTLSV1 : meth = (SSL_METHOD*)DTLSv1_server_method(); break;
-    case VSslMethodType::mtNone   :
-    default       :
-      SET_ERROR(VSslError, qformat("client method error(%s)", qPrintable(methodType.str())), VERR_SSL_METHOD);
-      return false;
+    LOG_ERROR("SSL_CTX_set_tlsext_servername_callback return false");
+    callbackOk = false;
   }
-  ctx = SSL_CTX_new(meth);
-
-  //
-  // Fie check
-  //
-  if (fileName == "")
+  if (!SSL_CTX_set_tlsext_servername_arg(ctx, this))
   {
-    SET_ERROR(VSslError, "file name must be specified", VERR_FILENAME_NOT_SPECIFIED);
-    return false;
-  }
-  if (!QFile::exists(fileName))
-  {
-    SET_ERROR(VFileError, qformat("file(%s) not exist", qPrintable(fileName)), VERR_FILE_NOT_EXIST);
-    return false;
+    LOG_ERROR("SSL_CTX_set_tlsext_servername_arg return false");
+    callbackOk = false;
   }
 
-  //
-  // Load Key
-  //
-  if (!loadKey()) return false;
+  if (!callbackOk)
+  {
+    VSslServer* server = (VSslServer*)owner;
 
-  //
-  // Load Cert
-  //
-  if (!loadCert()) return false;
+    //
+    // Fie check
+    //
+    QString fileName = server->caPath + server->defaultKeyCrtFileName;
+    if (QFile::exists(fileName))
+    {
+      // if (!setup(fileName)) return false; // gilgil temp 2014.02.26
+    } else
+    {
+      LOG_WARN("file(%s) not exist", qPrintable(fileName));
+    }
+  }
 
-  //
-  // Set Cert Key Stuff
-  //
-  if (!setCertKeyStuff()) return false;
-
-  return true;
+  return VSslSession::doOpen();
 }
 
-bool VSslServer::doClose()
+bool VSslServerSession::doClose()
 {
-  sslSessionList.lock();
-  for (int i = 0; i < sslSessionList.count(); i++)
-  {
-    VSslSession* session = sslSessionList.at(i);
-    session->close();
-  }
-  sslSessionList.unlock();
-
   //
   // Free Cert
   //
@@ -139,47 +71,19 @@ bool VSslServer::doClose()
     s_key = NULL;
   }
 
-  //
-  // meth and ctx
-  //
-  if (meth != NULL)
-  {
-    meth = NULL;
-  }
-  if (ctx != NULL)
-  {
-    SSL_CTX_free(ctx);
-    ctx = NULL;
-  }
+  return VSslSession::doClose();
+}
 
-  VTcpServer::doClose();
-
+bool VSslServerSession::setup(QString fileName)
+{
+  LOG_DEBUG("fileName=%s", qPrintable(fileName));
+  if (!loadKey(fileName)) return false;
+  if (!loadCrt(fileName)) return false;
+  if (!setCrtKeyStuff()) return false;
   return true;
 }
 
-int VSslServer::doRead(char* buf, int size)
-{
-  Q_UNUSED(buf)
-  Q_UNUSED(size)
-  SET_ERROR(VError, "not readable", VERR_NOT_READABLE);
-  return VERR_FAIL;
-}
-
-int VSslServer::doWrite(char* buf, int size)
-{
-  VLock lock(m_writeCS);
-
-  sslSessionList.lock();
-  for (int i = 0; i < sslSessionList.count(); i++)
-  {
-    VSslSession* session = sslSessionList.at(i);
-    session->write(buf, size);
-  }
-  sslSessionList.unlock();
-  return size;
-}
-
-bool VSslServer::loadKey()
+bool VSslServerSession::loadKey(QString fileName)
 {
   BIO* key = NULL;
   bool ok  = false;
@@ -217,7 +121,7 @@ bool VSslServer::loadKey()
   return ok;
 }
 
-bool VSslServer::loadCert()
+bool VSslServerSession::loadCrt(QString fileName)
 {
   BIO* cert = NULL;
   bool ok   = false;
@@ -252,7 +156,7 @@ bool VSslServer::loadCert()
   return ok;
 }
 
-bool VSslServer::setCertKeyStuff()
+bool VSslServerSession::setCrtKeyStuff()
 {
   int res;
 
@@ -261,12 +165,12 @@ bool VSslServer::setCertKeyStuff()
     LOG_ERROR("s_cert is NULL");
     return false;
   }
+
   if (s_key == NULL)
   {
     LOG_ERROR("s_key is NULL");
     return false;
   }
-
   res = SSL_CTX_use_certificate(ctx, s_cert);
   if (res <= 0)
   {
@@ -291,13 +195,143 @@ bool VSslServer::setCertKeyStuff()
   return true;
 }
 
+int VSslServerSession::ssl_servername_cb(SSL *s, int *ad, void *arg)
+{
+  Q_UNUSED(ad)
+
+  const char* serverName = SSL_get_servername(s, TLSEXT_NAMETYPE_host_name);
+  if (serverName != NULL)
+  {
+    LOG_DEBUG("serverName=%s", serverName);
+    VSslServerSession* session = (VSslServerSession*)arg;
+    VSslServer*        server  = (VSslServer*)(session->owner);
+    QString fileName           = server->caPath + serverName + ".pem";
+    if (!QFile::exists(fileName))
+    {
+      QString command = qformat("%s_make_site %s %s.pem",
+        qPrintable(server->caPath),
+        qPrintable(serverName),
+        qPrintable(serverName));
+      LOG_DEBUG("command=%s", qPrintable(command));
+      QProcess process;
+      process.start(command);
+      if (!process.waitForFinished())
+      {
+        LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
+      }
+    }
+    session->setup(fileName);
+  }
+
+  return SSL_TLSEXT_ERR_NOACK;
+}
+
+// ----------------------------------------------------------------------------
+// VSslServer
+// ----------------------------------------------------------------------------
+VSslServer::VSslServer(void* owner) : VTcpServer(owner)
+{
+  VSslCommon::initialize();
+  methodType            = VSslMethodType::mtTLSV1;
+  caPath                = "./"; // gilgil temp
+  defaultKeyCrtFileName = "default.pem";
+  m_meth                = NULL;
+  m_ctx                 = NULL;
+
+  bool res = QObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(myRun(VTcpSession*)), Qt::DirectConnection);
+  if (!res)
+  {
+    LOG_FATAL("QObject::connect return false");
+  }
+}
+
+VSslServer::~VSslServer()
+{
+  close();
+}
+
+bool VSslServer::doOpen()
+{
+  if (!VTcpServer::doOpen()) return false;
+
+  //
+  // Set server method
+  //
+  LOG_DEBUG("method=%s", qPrintable(methodType.str()));
+  switch (methodType)
+  {
+    case VSslMethodType::mtSSLV2  : m_meth = (SSL_METHOD*)SSLv2_server_method();  break;
+    case VSslMethodType::mtSSLV3  : m_meth = (SSL_METHOD*)SSLv3_server_method();  break;
+    case VSslMethodType::mtSSLV23 : m_meth = (SSL_METHOD*)SSLv23_server_method(); break;
+    case VSslMethodType::mtTLSV1  : m_meth = (SSL_METHOD*)TLSv1_server_method();  break;
+    case VSslMethodType::mtDTLSV1 : m_meth = (SSL_METHOD*)DTLSv1_server_method(); break;
+    case VSslMethodType::mtNone   :
+    default       :
+      SET_ERROR(VSslError, qformat("client method error(%s)", qPrintable(methodType.str())), VERR_SSL_METHOD);
+      return false;
+  }
+  m_ctx = SSL_CTX_new(m_meth);
+
+  return true;
+}
+
+bool VSslServer::doClose()
+{
+  sslSessionList.lock();
+  for (int i = 0; i < sslSessionList.count(); i++)
+  {
+    VSslSession* session = sslSessionList.at(i);
+    session->close();
+  }
+  sslSessionList.unlock();
+
+  //
+  // m_meth and m_ctx
+  //
+  if (m_meth != NULL)
+  {
+    m_meth = NULL;
+  }
+  if (m_ctx != NULL)
+  {
+    SSL_CTX_free(m_ctx);
+    m_ctx = NULL;
+  }
+
+  VTcpServer::doClose();
+
+  return true;
+}
+
+int VSslServer::doRead(char* buf, int size)
+{
+  Q_UNUSED(buf)
+  Q_UNUSED(size)
+  SET_ERROR(VError, "not readable", VERR_NOT_READABLE);
+  return VERR_FAIL;
+}
+
+int VSslServer::doWrite(char* buf, int size)
+{
+  VLock lock(m_writeCS);
+
+  sslSessionList.lock();
+  for (int i = 0; i < sslSessionList.count(); i++)
+  {
+    VSslSession* session = sslSessionList.at(i);
+    session->write(buf, size);
+  }
+  sslSessionList.unlock();
+  return size;
+}
+
 void VSslServer::myRun(VTcpSession* tcpSession)
 {
-  VSslSession *session = new VSslSession;
-  session->owner = this;
-  session->tcpSession = tcpSession;
-  session->sock = tcpSession->handle;
-  session->ctx  = ctx;
+  VSslServerSession *session = new VSslServerSession;
+  session->owner       = this;
+  session->tcpSession  = tcpSession;
+  session->handle      = tcpSession->handle;
+  session->ctx         = m_ctx;
   if (!session->open()) goto _end;
 
   SSL_set_accept_state(session->con);
@@ -338,8 +372,9 @@ void VSslServer::load(VXml xml)
 {
   VTcpServer::load(xml);
 
-  methodType = xml.getStr("methodType", methodType.str());
-  fileName   = xml.getStr("fileName", fileName);
+  methodType            = xml.getStr("methodType", methodType.str());
+  caPath                = xml.getStr("caPath", caPath);
+  defaultKeyCrtFileName = xml.getStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
 }
 
 void VSslServer::save(VXml xml)
@@ -347,7 +382,8 @@ void VSslServer::save(VXml xml)
   VTcpServer::save(xml);
 
   xml.setStr("methodType", methodType.str());
-  xml.setStr("fileName", fileName);
+  xml.setStr("caPath", caPath);
+  xml.setStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
 }
 
 #ifdef QT_GUI_LIB
@@ -355,13 +391,18 @@ void VSslServer::addOptionWidget(QLayout* layout)
 {
   VTcpServer::addOptionWidget(layout);
 
-  // gilgil temp 2014.02.25
+  QStringList methodTypes; methodTypes << "mtNone" << "mtSSLV2" << "mtSSLV3" << "mtSSLV23" << "mtTLSV1" << "mtDTLSV1";
+  VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
+  VOptionable::addLineEdit(layout, "leCaPath", "CA Path", caPath);
+  VOptionable::addLineEdit(layout, "leDefaultKeyCrtFileName", "Default KeyCrtFileName", defaultKeyCrtFileName);
 }
 
 void VSslServer::saveOptionDlg(QDialog* dialog)
 {
   VTcpServer::saveOptionDlg(dialog);
 
-  // gilgil temp 2014.02.25
+  methodType            = (VSslMethodType)(dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex());
+  caPath                = dialog->findChild<QLineEdit*>("leCaPath")->text();
+  defaultKeyCrtFileName = dialog->findChild<QLineEdit*>("leDefaultKeyCrtFileName")->text();
 }
 #endif // QT_GUI_LIB

@@ -8,9 +8,9 @@ VSslClient::VSslClient(void* owner) : VTcpClient(owner)
   VSslCommon::initialize();
   sslSession = new VSslSession(this);
   sslSession->tcpSession = tcpSession;
-  methodType = VSslMethodType::mtSSLV23;
-  meth       = NULL;
-  ctx        = NULL;
+  methodType = VSslMethodType::mtTLSV1;
+  m_meth     = NULL;
+  m_ctx      = NULL;
 }
 
 VSslClient::~VSslClient()
@@ -29,23 +29,23 @@ bool VSslClient::doOpen()
   LOG_DEBUG("method=%s", qPrintable(methodType.str()));
   switch (methodType)
   {
-    case VSslMethodType::mtSSLV2  : meth = (SSL_METHOD*)SSLv2_client_method();  break;
-    case VSslMethodType::mtSSLV3  : meth = (SSL_METHOD*)SSLv3_client_method();  break;
-    case VSslMethodType::mtSSLV23 : meth = (SSL_METHOD*)SSLv23_client_method(); break;
-    case VSslMethodType::mtTLSV1  : meth = (SSL_METHOD*)TLSv1_client_method();  break;
-    case VSslMethodType::mtDTLSV1 : meth = (SSL_METHOD*)DTLSv1_client_method(); break;
+    case VSslMethodType::mtSSLV2  : m_meth = (SSL_METHOD*)SSLv2_client_method();  break;
+    case VSslMethodType::mtSSLV3  : m_meth = (SSL_METHOD*)SSLv3_client_method();  break;
+    case VSslMethodType::mtSSLV23 : m_meth = (SSL_METHOD*)SSLv23_client_method(); break;
+    case VSslMethodType::mtTLSV1  : m_meth = (SSL_METHOD*)TLSv1_client_method();  break;
+    case VSslMethodType::mtDTLSV1 : m_meth = (SSL_METHOD*)DTLSv1_client_method(); break;
     case VSslMethodType::mtNone   :
     default       :
       SET_ERROR(VSslError, qformat("client method error(%s)", qPrintable(methodType.str())), VERR_SSL_METHOD);
       return false;
   }
-  ctx = SSL_CTX_new(meth);
+  m_ctx = SSL_CTX_new(m_meth);
 
   //
   // set sock and con
   //
-  sslSession->sock = tcpSession->handle;
-  sslSession->ctx = ctx;
+  sslSession->handle = tcpSession->handle;
+  sslSession->ctx    = m_ctx;
   if (!sslSession->open())
   {
     error = sslSession->error;
@@ -68,16 +68,16 @@ bool VSslClient::doClose()
   sslSession->close();
 
   //
-  // meth and ctx
+  // m_meth and m_ctx
   //
-  if (meth != NULL)
+  if (m_meth != NULL)
   {
-    meth = NULL;
+    m_meth = NULL;
   }
-  if (ctx != NULL)
+  if (m_ctx != NULL)
   {
-    SSL_CTX_free(ctx);
-    ctx = NULL;
+    SSL_CTX_free(m_ctx);
+    m_ctx = NULL;
   }
 
   VTcpClient::doClose();

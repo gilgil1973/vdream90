@@ -61,6 +61,7 @@ public:
   operator _VSslMethodType() const            { return value;        } // cast operator
 
 public:
+  VSslMethodType(const int i)                 { value = (_VSslMethodType)i; }
   VSslMethodType(const QString s);
   QString str() const;
 };
