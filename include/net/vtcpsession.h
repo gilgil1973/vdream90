@@ -18,6 +18,8 @@
 // ----------------------------------------------------------------------------
 class VTcpSession : public VNetSession, protected VStateLockable
 {
+  friend class VTcpClient;
+
 public:
   VTcpSession(void* owner = NULL);
   virtual ~VTcpSession();
