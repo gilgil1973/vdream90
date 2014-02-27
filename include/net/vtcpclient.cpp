@@ -88,7 +88,8 @@ bool VTcpClient::doOpen()
   res = ::connect(tcpSession->handle, (SOCKADDR*)&tcpSession->addr, sizeof(tcpSession->addr));
   if (res == SOCKET_ERROR)
   {
-    SET_ERROR(VSocketError, qformat("error in connect(%s:%d)", qPrintable(host), port), WSAGetLastError());
+    int lastError = WSAGetLastError();
+    SET_ERROR(VSocketError, qformat("error in connect(%s:%d)(%d)", qPrintable(host), port, lastError), lastError);
     return false;
   }
 
