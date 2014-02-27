@@ -1,5 +1,6 @@
 #include "dialog.h"
 #include "ui_dialog.h"
+#include <VDebugNew>
 
 // ----------------------------------------------------------------------------
 // ClientThread
@@ -15,28 +16,35 @@ ClientThread::~ClientThread()
   close();
 }
 
+void ClientThread::fireEvent(QEvent* event)
+{
+  QApplication::postEvent(dialog, event);
+}
+
 void ClientThread::run()
 {
   LOG_ASSERT(netClient != NULL);
-  QApplication::postEvent(dialog, new StateEvent(VState::Opened));
+  fireEvent(new StateEvent(VState::Opening));
   bool res = netClient->open();
   if (!res)
   {
-    QApplication::postEvent(dialog, new CloseEvent);
+    fireEvent(new MsgEvent(netClient->error.msg));
+    fireEvent(new CloseEvent);
     return;
   }
 
-  QString msg = "connected";
-  QApplication::postEvent(dialog, new MsgEvent(msg));
-
+  fireEvent(new MsgEvent("******** connected ********"));
+  fireEvent(new StateEvent(VState::Opened));
   while (true)
   {
     QByteArray ba;
     int readLen = netClient->read(ba);
     if (readLen == VERR_FAIL) break;
     QString msg = ba;
+    fireEvent(new MsgEvent(msg));
   }
-
+  fireEvent(new MsgEvent("******** disconnected ********"));
+  fireEvent(new CloseEvent);
 }
 
 // ----------------------------------------------------------------------------
@@ -56,6 +64,8 @@ Dialog::Dialog(QWidget *parent) :
   setWindowFlags(windowFlags() | Qt::WindowMinMaxButtonsHint);
   setLayout(ui->mainLayout);
   ui->mainLayout->setSpacing(0);
+  ui->pteRecv->setWordWrapMode(QTextOption::NoWrap);
+  ui->pteSend->setWordWrapMode(QTextOption::NoWrap);
 
   loadFromDefaultDoc("MainWindow");
   setControl();
@@ -63,7 +73,7 @@ Dialog::Dialog(QWidget *parent) :
 
 Dialog::~Dialog()
 {
-  ui->pbClose->click();
+  on_pbClose_clicked();
   this->saveToDefaultDoc("MainWindow");
   delete ui;
 }
@@ -84,7 +94,7 @@ void Dialog::setControl(VState state)
   }
 
   ui->pbOpen->setEnabled(state == VState::Closed);
-  ui->pbClose->setEnabled(state == VState::Opened);
+  ui->pbClose->setEnabled(state != VState::Closed);
   ui->tabOption->setEnabled(state == VState::Closed);
   ui->pbSend->setEnabled(state == VState::Opened);
 }
@@ -101,7 +111,14 @@ bool Dialog::event(QEvent* event)
   MsgEvent* msgEvent = dynamic_cast<MsgEvent*>(event);
   if (msgEvent != NULL)
   {
-    ui->txtRecv->append(msgEvent->msg);
+    ui->pteRecv->insertPlainText(msgEvent->msg + "\n");
+    return true;
+  }
+
+  CloseEvent* closeEvent = dynamic_cast<CloseEvent*>(event);
+  if (closeEvent != NULL)
+  {
+    ui->pbClose->click();
     return true;
   }
 
@@ -126,7 +143,7 @@ void Dialog::load(VXml xml)
   ui->leUdpPort->setText(xml.getStr("udpPort", ui->leUdpPort->text()));
   ui->leSslHost->setText(xml.getStr("sslHost", ui->leSslHost->text()));
   ui->leSslPort->setText(xml.getStr("sslPort", ui->leSslPort->text()));
-  ui->txtSend->setText(xml.getStr("sendText", ui->txtSend->toPlainText()));
+  ui->pteSend->insertPlainText(xml.getStr("sendText", ui->pteSend->toPlainText()));
 
   QList<int> sizes;
   for (int i = 0; i < ui->splitter->count(); i++)
@@ -155,7 +172,7 @@ void Dialog::save(VXml xml)
   xml.setStr("udpPort", ui->leUdpPort->text());
   xml.setStr("sslHost", ui->leSslHost->text());
   xml.setStr("sslPort", ui->leSslPort->text());
-  xml.setStr("sendText", ui->txtSend->toPlainText());
+  xml.setStr("sendText", ui->pteSend->toPlainText());
 
   for (int i = 0; i < ui->splitter->count(); i++)
     xml.gotoChild("spilitter").setInt(qformat("height%d", i), ui->splitter->sizes().at(i));
@@ -170,12 +187,24 @@ void Dialog::on_pbOpen_clicked()
   int currentIndex = ui->tabOption->currentIndex();
   switch (currentIndex)
   {
-    case 0: netClient = &tcpClient;
-    case 1: netClient = &udpClient;
-    case 2: netClient = &sslClient;
+    case 0:
+      tcpClient.host = ui->leTcpHost->text();
+      tcpClient.port = ui->leTcpPort->text().toInt();
+      netClient = &tcpClient;
+      break;
+    case 1:
+      netClient = &udpClient;
+      udpClient.host = ui->leUdpHost->text();
+      udpClient.port = ui->leUdpPort->text().toInt();
+      break;
+    case 2:
+      netClient = &sslClient;
+      sslClient.host = ui->leSslHost->text();
+      sslClient.port = ui->leSslPort->text().toInt();
+      break;
   }
 
-  LOG_ASSERT(clientThread == NULL);
+  SAFE_DELETE(clientThread);
   clientThread = new ClientThread(this, netClient);
   clientThread->open();
 }
@@ -185,42 +214,34 @@ void Dialog::on_pbClose_clicked()
   LOG_ASSERT(netClient != NULL);
   netClient->close();
 
-  LOG_ASSERT(clientThread != NULL);
-  clientThread->close();
-  delete clientThread;
+  SAFE_DELETE(clientThread);
 
   setControl();
 }
 
 void Dialog::on_pbClear_clicked()
 {
-  ui->txtRecv->clear();
+  ui->pteRecv->clear();
 }
 
 void Dialog::on_tbTcpAdvance_clicked()
 {
   tcpClient.optionDoAll();
-  QDialog* dialog = tcpClient.optionCreateDlg();
-  tcpClient.optionAddWidget(dialog->layout());
-  if (tcpClient.optionShowDlg(dialog))
-    tcpClient.optionSaveDlg(dialog);;
-  delete dialog;
 }
 
 void Dialog::on_tbUdpAdvence_clicked()
 {
-  QDialog* dialog = udpClient.optionCreateDlg();
-  udpClient.optionAddWidget(dialog->layout());
-  if (udpClient.optionShowDlg(dialog))
-    udpClient.optionSaveDlg(dialog);;
-  delete dialog;
+  udpClient.optionDoAll();
 }
 
 void Dialog::on_tbSslAdvanced_clicked()
 {
-  QDialog* dialog = sslClient.optionCreateDlg();
-  sslClient.optionAddWidget(dialog->layout());
-  if (sslClient.optionShowDlg(dialog))
-    sslClient.optionSaveDlg(dialog);;
-  delete dialog;
+  sslClient.optionDoAll();
+}
+
+void Dialog::on_pbSend_clicked()
+{
+  if (netClient == NULL) return;
+  QByteArray ba = qPrintable(ui->pteSend->toPlainText());
+  netClient->write(ba);
 }

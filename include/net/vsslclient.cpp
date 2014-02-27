@@ -98,14 +98,14 @@ void VSslClient::load(VXml xml)
 {
   VTcpClient::load(xml);
 
-  methodType = xml.getStr("methodType", methodType.str());
+  methodType = xml.getInt("methodType", (int)methodType);
 }
 
 void VSslClient::save(VXml xml)
 {
   VTcpClient::save(xml);
 
-  xml.setStr("methodType", methodType.str());
+  xml.setInt("methodType", (int)methodType);
 }
 
 #ifdef QT_GUI_LIB
@@ -113,13 +113,14 @@ void VSslClient::optionAddWidget(QLayout* layout)
 {
   VTcpClient::optionAddWidget(layout);
 
-  // gilgil temp 2014.02.25
+  QStringList methodTypes; methodTypes << "mtNone" << "mtSSLV2" << "mtSSLV3" << "mtSSLV23" << "mtTLSV1" << "mtDTLSV1";
+  VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
 }
 
 void VSslClient::optionSaveDlg(QDialog* dialog)
 {
   VTcpClient::optionSaveDlg(dialog);
 
-  // gilgil temp 2014.02.25
+  methodType = dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex();
 }
 #endif // QT_GUI_LIB

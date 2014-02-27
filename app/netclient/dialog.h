@@ -55,6 +55,9 @@ public:
   virtual ~ClientThread();
 
 protected:
+  void fireEvent(QEvent* event);
+
+protected:
   virtual void run();
 };
 
@@ -103,6 +106,8 @@ private slots:
   void on_tbUdpAdvence_clicked();
 
   void on_tbSslAdvanced_clicked();
+
+  void on_pbSend_clicked();
 
 private:
   Ui::Dialog *ui;
