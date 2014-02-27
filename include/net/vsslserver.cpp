@@ -76,7 +76,9 @@ bool VSslServerSession::doClose()
 
 bool VSslServerSession::setup(QString fileName)
 {
+  LOG_DEBUG("------------------------------------------");
   LOG_DEBUG("fileName=%s", qPrintable(fileName));
+  LOG_DEBUG("------------------------------------------");
   if (!loadKey(fileName)) return false;
   if (!loadCrt(fileName)) return false;
   if (!setCrtKeyStuff()) return false;
@@ -171,26 +173,34 @@ bool VSslServerSession::setCrtKeyStuff()
     LOG_ERROR("s_key is NULL");
     return false;
   }
-  res = SSL_CTX_use_certificate(ctx, s_cert);
+
+  // res = SSL_CTX_use_certificate(ctx, s_cert); // gilgil temp 2014.02.27
+  res = SSL_use_certificate(con, s_cert); // gilgil temp 2014.02.27
   if (res <= 0)
   {
     SET_ERROR(VSslError, qformat("SSL_CTX_use_certificate return %d", res), VERR_IN_SSL_CTX_USE_CERTIFICATE);
     return false;
   }
 
-  res = SSL_CTX_use_PrivateKey(ctx, s_key);
+  // res = SSL_CTX_use_PrivateKey(ctx, s_key); // gilgil temp 2014.02.27
+  res = SSL_use_PrivateKey(con, s_key); // gilgil temp 2014.02.27
   if (res <= 0)
   {
     SET_ERROR(VSslError, qformat("SSL_CTX_use_PrivateKey return %d", res), VERR_SSL_CTX_USER_PRIVATEKEY);
     return false;
   }
 
-  res = SSL_CTX_check_private_key(ctx);
+  // res = SSL_CTX_check_private_key(ctx); // gilgil temp 2014.02.27
+  res = SSL_check_private_key(con); // gilgil temp 2014.02.27
   if (!res)
   {
     SET_ERROR(VSslError, qformat("SSL_CTX_check_private_key return %d", res), VERR_SSL_CTX_CHECK_PRIVATEKEY);
     return false;
   }
+
+  //LOG_DEBUG("bef SSL_set_SSL_CTX ctx=%p", ctx);
+  //ctx = SSL_set_SSL_CTX(con, ctx);
+  //LOG_DEBUG("aft SSL_set_SSL_CTX ctx=%p", ctx);
 
   return true;
 }
@@ -198,30 +208,57 @@ bool VSslServerSession::setCrtKeyStuff()
 int VSslServerSession::ssl_servername_cb(SSL *s, int *ad, void *arg)
 {
   Q_UNUSED(ad)
+  VSslServerSession* session = (VSslServerSession*)arg;
+  VSslServer*        server  = (VSslServer*)(session->owner);
 
   const char* serverName = SSL_get_servername(s, TLSEXT_NAMETYPE_host_name);
+
+  QString fileName;
   if (serverName != NULL)
   {
     LOG_DEBUG("serverName=%s", serverName);
-    VSslServerSession* session = (VSslServerSession*)arg;
-    VSslServer*        server  = (VSslServer*)(session->owner);
-    QString fileName           = server->caPath + serverName + ".pem";
-    if (!QFile::exists(fileName))
-    {
-      QString command = qformat("%s_make_site %s %s.pem",
-        qPrintable(server->caPath),
-        qPrintable(serverName),
-        qPrintable(serverName));
-      LOG_DEBUG("command=%s", qPrintable(command));
-      QProcess process;
-      process.start(command);
-      if (!process.waitForFinished())
-      {
-        LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
-      }
-    }
-    session->setup(fileName);
+    fileName = server->caPath + serverName + ".pem";
+  } else
+  {
+    LOG_WARN("serverName is null");
+    fileName = server->caPath + server->defaultKeyCrtFileName;
   }
+
+  VLock lock(server->certificateCs); // protect file create critical section
+  if (!QFile::exists(fileName))
+  {
+    QProcess process;
+
+    QString path = server->caPath;
+    LOG_DEBUG("path=%s", qPrintable(path));
+    process.setWorkingDirectory(path);
+
+    QString command = qformat("%s_ssl_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
+    LOG_DEBUG("command=%s", qPrintable(command));
+
+    process.start(command);
+    LOG_DEBUG("pid=%p", process.pid());
+
+    if(!process.waitForStarted())
+    {
+      LOG_FATAL("process.waitForStarted(%s) return false", qPrintable(command));
+    }
+    while(process.waitForReadyRead())
+    {
+        LOG_DEBUG("%s", process.readAll().data());
+    }
+    // ----- gilgil temp 23014.02.26 -----
+    /*
+    if (!process.waitForFinished())
+    {
+      LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
+    }
+    */
+    // sleep(3); // gilgil temp 2015.02.27
+    // -----------------------------------
+  }
+
+  session->setup(fileName);
 
   return SSL_TLSEXT_ERR_NOACK;
 }

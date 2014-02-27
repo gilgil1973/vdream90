@@ -7,6 +7,7 @@ MyServer::MyServer(void* owner) : VSslServer(owner)
 
 void MyServer::run___(VSslSession *sslSession)
 {
+  LOG_DEBUG("stt");
   while (true)
   {
     QByteArray ba;
@@ -14,7 +15,18 @@ void MyServer::run___(VSslSession *sslSession)
     if (readLen == VERR_FAIL) break;
     LOG_DEBUG("kkk %s", ba.data());
     sslSession->write(ba);
+    if (ba.startsWith("q")) break;
+    /*
+    if (count >= 2)
+    {
+      sslSession->write("HTTP/1.1 200 OK\r\n\r\n");
+      sslSession->write("oops");
+      sslSession->close();
+    }
+    */
+    //sslSession->close();
   }
+  LOG_DEBUG("end");
 }
 
 void clientTest()

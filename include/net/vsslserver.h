@@ -69,6 +69,7 @@ protected:
 public:
   /// ssl client session list
   VSslServerSessionList sslSessionList;
+  VCS certificateCs;
 
 public:
   VSslMethodType methodType;
