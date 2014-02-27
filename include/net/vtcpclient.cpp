@@ -22,6 +22,16 @@ VTcpClient::~VTcpClient()
   SAFE_DELETE(tcpSession);
 }
 
+bool VTcpClient::close()
+{
+  //
+  // Hang might be occurred when calling open in one thread and calling close in other thread.
+  // So call tcpSession->doClose forcibly preventing hang.
+  //
+  tcpSession->doClose();
+  return VNetClient::close();
+}
+
 bool VTcpClient::doOpen()
 {
   if (port == 0)

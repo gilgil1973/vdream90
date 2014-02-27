@@ -17,7 +17,7 @@ VTcpSession::~VTcpSession()
 
 bool VTcpSession::doOpen()
 {
-  VLock lock(m_openCloseCS);
+  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
 
   if (handle == INVALID_SOCKET)
   {
@@ -29,7 +29,7 @@ bool VTcpSession::doOpen()
 
 bool VTcpSession::doClose()
 {
-  VLock lock(m_openCloseCS);
+  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
 
   if (handle == INVALID_SOCKET) return true;
 

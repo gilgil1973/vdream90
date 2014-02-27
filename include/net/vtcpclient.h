@@ -23,6 +23,9 @@ public:
   VTcpClient(void* owner = NULL);
   virtual ~VTcpClient();
 
+public:
+  virtual bool close();
+
 protected:
   virtual bool doOpen();
   virtual bool doClose();

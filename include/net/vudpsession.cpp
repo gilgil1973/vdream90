@@ -17,7 +17,7 @@ VUdpSession::~VUdpSession()
 
 bool VUdpSession::doOpen()
 {
-  VLock lock(m_openCloseCS);
+  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
 
   if (handle == INVALID_SOCKET)
   {
@@ -29,7 +29,7 @@ bool VUdpSession::doOpen()
 
 bool VUdpSession::doClose()
 {
-  VLock lock(m_openCloseCS);
+  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
 
   if (handle == INVALID_SOCKET) return true;
 

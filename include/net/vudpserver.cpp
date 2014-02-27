@@ -47,7 +47,7 @@ VUdpServer::~VUdpServer()
 
 bool VUdpServer::doOpen()
 {
-  VLock lock(m_openCloseCS);
+  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
 
   if (port == 0)
   {
@@ -102,7 +102,7 @@ bool VUdpServer::doOpen()
 
 bool VUdpServer::doClose()
 {
-  VLock lock(m_openCloseCS);
+  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
   sockAddrList.lock();
   sockAddrList.clear();
   sockAddrList.unlock();
