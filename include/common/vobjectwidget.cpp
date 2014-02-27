@@ -1,5 +1,12 @@
 #include <VObjectWidget>
 
+//
+// for remove thw following warning
+// This object file does not define any previously undefined public symbols,
+// so it will not be used by any link operation that consumes this library
+//
+void foo() {}
+
 #ifdef QT_GUI_LIB
 
 // ----------------------------------------------------------------------------

@@ -38,7 +38,7 @@ bool VSslServerSession::doOpen()
     //
     // Fie check
     //
-    QString fileName = server->caPath + server->defaultKeyCrtFileName;
+    QString fileName = server->certificatePath + server->defaultKeyCrtFileName;
     if (QFile::exists(fileName))
     {
       // if (!setup(fileName)) return false; // gilgil temp 2014.02.26
@@ -217,11 +217,11 @@ int VSslServerSession::ssl_servername_cb(SSL *s, int *ad, void *arg)
   if (serverName != NULL)
   {
     LOG_DEBUG("serverName=%s", serverName);
-    fileName = server->caPath + serverName + ".pem";
+    fileName = server->certificatePath + serverName + ".pem";
   } else
   {
     LOG_WARN("serverName is null");
-    fileName = server->caPath + server->defaultKeyCrtFileName;
+    fileName = server->certificatePath + server->defaultKeyCrtFileName;
   }
 
   VLock lock(server->certificateCs); // protect file create critical section
@@ -229,7 +229,7 @@ int VSslServerSession::ssl_servername_cb(SSL *s, int *ad, void *arg)
   {
     QProcess process;
 
-    QString path = server->caPath;
+    QString path = server->certificatePath;
     LOG_DEBUG("path=%s", qPrintable(path));
     process.setWorkingDirectory(path);
 
@@ -270,7 +270,7 @@ VSslServer::VSslServer(void* owner) : VTcpServer(owner)
 {
   VSslCommon::initialize();
   methodType            = VSslMethodType::mtTLSV1;
-  caPath                = "./"; // gilgil temp
+  certificatePath       = "./certificate/"; // gilgil temp 2014.02.27
   defaultKeyCrtFileName = "default.pem";
   m_meth                = NULL;
   m_ctx                 = NULL;
@@ -410,7 +410,7 @@ void VSslServer::load(VXml xml)
   VTcpServer::load(xml);
 
   methodType            = xml.getStr("methodType", methodType.str());
-  caPath                = xml.getStr("caPath", caPath);
+  certificatePath       = xml.getStr("certificatePath", certificatePath);
   defaultKeyCrtFileName = xml.getStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
 }
 
@@ -419,7 +419,7 @@ void VSslServer::save(VXml xml)
   VTcpServer::save(xml);
 
   xml.setStr("methodType", methodType.str());
-  xml.setStr("caPath", caPath);
+  xml.setStr("certificatePath", certificatePath);
   xml.setStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
 }
 
@@ -430,7 +430,7 @@ void VSslServer::addOptionWidget(QLayout* layout)
 
   QStringList methodTypes; methodTypes << "mtNone" << "mtSSLV2" << "mtSSLV3" << "mtSSLV23" << "mtTLSV1" << "mtDTLSV1";
   VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
-  VOptionable::addLineEdit(layout, "leCaPath", "CA Path", caPath);
+  VOptionable::addLineEdit(layout, "leCertificatePath", "Certificate Path", certificatePath);
   VOptionable::addLineEdit(layout, "leDefaultKeyCrtFileName", "Default KeyCrtFileName", defaultKeyCrtFileName);
 }
 
@@ -439,7 +439,7 @@ void VSslServer::saveOptionDlg(QDialog* dialog)
   VTcpServer::saveOptionDlg(dialog);
 
   methodType            = (VSslMethodType)(dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex());
-  caPath                = dialog->findChild<QLineEdit*>("leCaPath")->text();
+  certificatePath       = dialog->findChild<QLineEdit*>("leCertificatePath")->text();
   defaultKeyCrtFileName = dialog->findChild<QLineEdit*>("leDefaultKeyCrtFileName")->text();
 }
 #endif // QT_GUI_LIB

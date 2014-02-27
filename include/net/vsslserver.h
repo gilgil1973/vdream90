@@ -69,16 +69,18 @@ protected:
 public:
   /// ssl client session list
   VSslServerSessionList sslSessionList;
-  VCS certificateCs;
 
 public:
   VSslMethodType methodType;
-  QString        caPath;
+  QString        certificatePath;
   QString        defaultKeyCrtFileName;
 
 protected:
   SSL_METHOD*     m_meth;
   SSL_CTX*        m_ctx;
+
+protected:
+    VCS           certificateCs;
 
 protected slots:
   void myRun(VTcpSession* tcpSession);
