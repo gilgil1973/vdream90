@@ -133,8 +133,8 @@ void VUdpClient::save(VXml xml)
 
   xml.setStr("host", host);
   xml.setInt("port", port);
-  if (localHost != "") xml.setStr("localHost", localHost);
-  if (localPort != 0)  xml.setInt("localPort", localPort);
+  xml.setStr("localHost", localHost);
+  xml.setInt("localPort", localPort);
 }
 
 #ifdef QT_GUI_LIB

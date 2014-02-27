@@ -146,7 +146,7 @@ void VUdpServer::save(VXml xml)
   VNetServer::save(xml);
 
   xml.setInt("port", port);
-  if (localHost != "") xml.setStr("localHost", localHost);
+  xml.setStr("localHost", localHost);
 }
 
 #ifdef QT_GUI_LIB
