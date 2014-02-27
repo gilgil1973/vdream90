@@ -4,13 +4,13 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT += core gui widgets
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+include(../../lib/vdream.pri)
 
-TARGET = netserver
+TARGET   = netserver
 TEMPLATE = app
-
+DESTDIR  = ../../bin
 
 SOURCES += main.cpp\
         dialog.cpp

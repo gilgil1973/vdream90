@@ -1,41 +1,58 @@
 #include <VObjectWidget>
+#include <VDebugNew>
 
 //
 // for remove thw following warning
 // This object file does not define any previously undefined public symbols,
 // so it will not be used by any link operation that consumes this library
 //
-void foo() {}
+static void foo() {}
 
 #ifdef QT_GUI_LIB
 
 // ----------------------------------------------------------------------------
 // VOptionable
 // ----------------------------------------------------------------------------
-QDialog* VOptionable::createOptionDlg()
+QDialog* VOptionable::optionCreateDlg()
 {
   QDialog* dialog = new QDialog(NULL);
+  VObject* object = dynamic_cast<VObject*>(this);
+  if (object != NULL)
+    dialog->setWindowTitle(object->name == "" ? "" : object->name + " Option");
   new QGridLayout(dialog);
   return dialog;
 }
 
-void VOptionable::addOptionWidget(QLayout* layout)
+void VOptionable::optionAddWidget(QLayout* layout)
 {
   Q_UNUSED(layout)
   LOG_FATAL("virtual function call");
 }
 
-bool VOptionable::showOptionDlg(QDialog* dialog)
+bool VOptionable::optionShowDlg(QDialog* dialog)
 {
   addOkCancelButtons(dialog);
   int res = dialog->exec();
   return res == QDialog::Accepted;
 }
 
-void VOptionable::saveOptionDlg(QDialog* dialog)
+void VOptionable::optionSaveDlg(QDialog* dialog)
 {
   Q_UNUSED(dialog)
   LOG_FATAL("virtual function call");
+}
+
+bool VOptionable::optionDoAll()
+{
+  QDialog* dialog = this->optionCreateDlg();
+  this->optionAddWidget(dialog->layout());
+  bool res = this->optionShowDlg(dialog);
+  if (res)
+  {
+    this->optionSaveDlg(dialog);
+  }
+  delete dialog;
+  return res;
 }
 
 void VOptionable::addOkCancelButtons(QDialog* dialog)

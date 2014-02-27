@@ -109,16 +109,16 @@ void VSslClient::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-void VSslClient::addOptionWidget(QLayout* layout)
+void VSslClient::optionAddWidget(QLayout* layout)
 {
-  VTcpClient::addOptionWidget(layout);
+  VTcpClient::optionAddWidget(layout);
 
   // gilgil temp 2014.02.25
 }
 
-void VSslClient::saveOptionDlg(QDialog* dialog)
+void VSslClient::optionSaveDlg(QDialog* dialog)
 {
-  VTcpClient::saveOptionDlg(dialog);
+  VTcpClient::optionSaveDlg(dialog);
 
   // gilgil temp 2014.02.25
 }

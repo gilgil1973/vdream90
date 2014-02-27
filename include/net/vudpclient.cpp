@@ -138,9 +138,9 @@ void VUdpClient::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-void VUdpClient::addOptionWidget(QLayout* layout)
+void VUdpClient::optionAddWidget(QLayout* layout)
 {
-  VNetClient::addOptionWidget(layout);
+  VNetClient::optionAddWidget(layout);
 
   VOptionable::addLineEdit(layout, "leHost",      "Host",       host);
   VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
@@ -148,9 +148,9 @@ void VUdpClient::addOptionWidget(QLayout* layout)
   VOptionable::addLineEdit(layout, "leLocalPort", "Local Port", QString::number(localPort));
 }
 
-void VUdpClient::saveOptionDlg(QDialog* dialog)
+void VUdpClient::optionSaveDlg(QDialog* dialog)
 {
-  VNetClient::saveOptionDlg(dialog);
+  VNetClient::optionSaveDlg(dialog);
 
   host      = dialog->findChild<QLineEdit*>("leHost")->text();
   port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();

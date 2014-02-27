@@ -424,9 +424,9 @@ void VSslServer::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-void VSslServer::addOptionWidget(QLayout* layout)
+void VSslServer::optionAddWidget(QLayout* layout)
 {
-  VTcpServer::addOptionWidget(layout);
+  VTcpServer::optionAddWidget(layout);
 
   QStringList methodTypes; methodTypes << "mtNone" << "mtSSLV2" << "mtSSLV3" << "mtSSLV23" << "mtTLSV1" << "mtDTLSV1";
   VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
@@ -434,9 +434,9 @@ void VSslServer::addOptionWidget(QLayout* layout)
   VOptionable::addLineEdit(layout, "leDefaultKeyCrtFileName", "Default KeyCrtFileName", defaultKeyCrtFileName);
 }
 
-void VSslServer::saveOptionDlg(QDialog* dialog)
+void VSslServer::optionSaveDlg(QDialog* dialog)
 {
-  VTcpServer::saveOptionDlg(dialog);
+  VTcpServer::optionSaveDlg(dialog);
 
   methodType            = (VSslMethodType)(dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex());
   certificatePath       = dialog->findChild<QLineEdit*>("leCertificatePath")->text();

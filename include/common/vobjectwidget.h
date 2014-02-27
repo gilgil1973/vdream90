@@ -28,10 +28,10 @@
 class IVOptionlable
 {
 public:
-  virtual QDialog* createOptionDlg() = 0;
-  virtual void     addOptionWidget(QLayout* layout) = 0;
-  virtual bool     showOptionDlg(QDialog* dialog) = 0;
-  virtual void     saveOptionDlg(QDialog* dialog) = 0;
+  virtual QDialog* optionCreateDlg() = 0;
+  virtual void     optionAddWidget(QLayout* layout) = 0;
+  virtual bool     optionShowDlg(QDialog* dialog) = 0;
+  virtual void     optionSaveDlg(QDialog* dialog) = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -40,10 +40,11 @@ public:
 class VOptionable : public IVOptionlable
 {
 public:
-  virtual QDialog* createOptionDlg();
-  virtual void     addOptionWidget(QLayout* layout);
-  virtual bool     showOptionDlg(QDialog* dialog);
-  virtual void     saveOptionDlg(QDialog* dialog);
+  virtual QDialog* optionCreateDlg();
+  virtual void     optionAddWidget(QLayout* layout);
+  virtual bool     optionShowDlg(QDialog* dialog);
+  virtual void     optionSaveDlg(QDialog* dialog);
+  bool             optionDoAll();
 
 public:
   void       addOkCancelButtons(QDialog* dialog);

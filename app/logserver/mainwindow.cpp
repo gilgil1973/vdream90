@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     LOG_ERROR("connect return false");
   }
 
-  this->loadFromDefaultDoc("coord/main");
+  this->loadFromDefaultDoc("MainWindow");
   myLog->loadFromDefaultDoc("myLog");
   if (myLog->autoOpen) on_actionOpen_triggered();
   setControl();
@@ -42,7 +42,7 @@ MainWindow::~MainWindow()
     myLog->close();
     setControl();
   }
-  this->saveToDefaultDoc("coord/main");
+  this->saveToDefaultDoc("MainWindow");
   myLog->saveToDefaultDoc("myLog");
   SAFE_DELETE(myLog);
 
@@ -93,14 +93,13 @@ void MainWindow::setControl()
 
 void MainWindow::load(VXml xml)
 {
-  {
-    QRect rect = geometry();
-    rect.setLeft  ((xml.getInt("left",   0)));
-    rect.setTop   ((xml.getInt("top",    0)));
-    rect.setWidth ((xml.getInt("width",  640)));
-    rect.setHeight((xml.getInt("height", 480)));
-    setGeometry(rect);
-  }
+  QRect rect = geometry();
+  rect.setLeft  ((xml.getInt("left",   0)));
+  rect.setTop   ((xml.getInt("top",    0)));
+  rect.setWidth ((xml.getInt("width",  640)));
+  rect.setHeight((xml.getInt("height", 480)));
+  setGeometry(rect);
+
 
   ui->actionShowLog->setChecked(xml.getBool("showLog", ui->actionShowLog->isChecked()));
   ui->actionAlwaysOnTop->setChecked(xml.getBool("alwaysOnTop", ui->actionAlwaysOnTop->isChecked()));

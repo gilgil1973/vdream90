@@ -297,17 +297,17 @@ void VTcpServer::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-void VTcpServer::addOptionWidget(QLayout* layout)
+void VTcpServer::optionAddWidget(QLayout* layout)
 {
-  VNetServer::addOptionWidget(layout);
+  VNetServer::optionAddWidget(layout);
 
   VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
   VOptionable::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
 }
 
-void VTcpServer::saveOptionDlg(QDialog* dialog)
+void VTcpServer::optionSaveDlg(QDialog* dialog)
 {
-  VNetServer::saveOptionDlg(dialog);
+  VNetServer::optionSaveDlg(dialog);
 
   port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();
   localHost = dialog->findChild<QLineEdit*>("leLocalHost")->text();

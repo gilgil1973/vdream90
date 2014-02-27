@@ -1,20 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Dialog</class>
- <widget class="QDialog" name="Dialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>836</width>
+    <height>530</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Dialog</string>
+  <property name="windowTitle">
+   <string>NetClient</string>
   </property>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>401</width>
+     <height>512</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="frameTop">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>39</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>39</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QPushButton" name="pbOpen">
+       <property name="geometry">
+        <rect>
+         <x>2</x>
+         <y>2</y>
+         <width>75</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&amp;Open</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pbClose">
+       <property name="geometry">
+        <rect>
+         <x>82</x>
+         <y>2</y>
+         <width>75</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>C&amp;lose</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pbClear">
+       <property name="geometry">
+        <rect>
+         <x>162</x>
+         <y>2</y>
+         <width>75</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&amp;Clear</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="chkShowHexa">
+       <property name="geometry">
+        <rect>
+         <x>242</x>
+         <y>2</y>
+         <width>91</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Show Hexa</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="chkSendHexa">
+       <property name="geometry">
+        <rect>
+         <x>242</x>
+         <y>16</y>
+         <width>91</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Send Hexa</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabOption">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>49</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>49</height>
+       </size>
+      </property>
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="tabTcp">
+       <attribute name="title">
+        <string>TCP</string>
+       </attribute>
+       <widget class="QLineEdit" name="leTcpHost">
+        <property name="geometry">
+         <rect>
+          <x>34</x>
+          <y>3</y>
+          <width>127</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblTcpHost">
+        <property name="geometry">
+         <rect>
+          <x>3</x>
+          <y>3</y>
+          <width>25</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Host</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblTcpPort">
+        <property name="geometry">
+         <rect>
+          <x>167</x>
+          <y>3</y>
+          <width>22</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Port</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="leTcpPort">
+        <property name="geometry">
+         <rect>
+          <x>195</x>
+          <y>3</y>
+          <width>127</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="tbTcpAdvance">
+        <property name="geometry">
+         <rect>
+          <x>326</x>
+          <y>4</y>
+          <width>27</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tabUdp">
+       <attribute name="title">
+        <string>UDP</string>
+       </attribute>
+       <widget class="QLineEdit" name="leUdpPort">
+        <property name="geometry">
+         <rect>
+          <x>195</x>
+          <y>3</y>
+          <width>127</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblUdpHost">
+        <property name="geometry">
+         <rect>
+          <x>3</x>
+          <y>3</y>
+          <width>25</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Host</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="leUdpHost">
+        <property name="geometry">
+         <rect>
+          <x>34</x>
+          <y>3</y>
+          <width>127</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="tbUdpAdvence">
+        <property name="geometry">
+         <rect>
+          <x>326</x>
+          <y>4</y>
+          <width>27</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblUdpPort">
+        <property name="geometry">
+         <rect>
+          <x>167</x>
+          <y>3</y>
+          <width>22</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Port</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>SSL</string>
+       </attribute>
+       <widget class="QLineEdit" name="leSslPort">
+        <property name="geometry">
+         <rect>
+          <x>195</x>
+          <y>3</y>
+          <width>127</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="leSslHost">
+        <property name="geometry">
+         <rect>
+          <x>34</x>
+          <y>3</y>
+          <width>127</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSslPort">
+        <property name="geometry">
+         <rect>
+          <x>167</x>
+          <y>3</y>
+          <width>22</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Port</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSslHost">
+        <property name="geometry">
+         <rect>
+          <x>3</x>
+          <y>3</y>
+          <width>25</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Host</string>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="tbSslAdvanced">
+        <property name="geometry">
+         <rect>
+          <x>326</x>
+          <y>4</y>
+          <width>27</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QTextEdit" name="txtRecv"/>
+      <widget class="QWidget" name="">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QTextEdit" name="txtSend"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbSend">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Send</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>pbOpen</tabstop>
+  <tabstop>pbClose</tabstop>
+  <tabstop>pbClear</tabstop>
+  <tabstop>chkShowHexa</tabstop>
+  <tabstop>chkSendHexa</tabstop>
+  <tabstop>leTcpHost</tabstop>
+  <tabstop>leTcpPort</tabstop>
+  <tabstop>tbTcpAdvance</tabstop>
+  <tabstop>leUdpHost</tabstop>
+  <tabstop>leUdpPort</tabstop>
+  <tabstop>tbUdpAdvence</tabstop>
+  <tabstop>leSslHost</tabstop>
+  <tabstop>leSslPort</tabstop>
+  <tabstop>tbSslAdvanced</tabstop>
+  <tabstop>txtRecv</tabstop>
+  <tabstop>txtSend</tabstop>
+  <tabstop>pbSend</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
