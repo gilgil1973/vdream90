@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 CONFIG += VDREAM_LIB_BUILD
-QT    -= gui
+#QT    -= gui
 #QT    += gui widgets
 
 include (vdream.pri)
