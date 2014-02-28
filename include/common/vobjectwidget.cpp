@@ -6,7 +6,7 @@
 // This object file does not define any previously undefined public symbols,
 // so it will not be used by any link operation that consumes this library
 //
-static void foo() {}
+void vobjectwidget_foo() {}
 
 #ifdef QT_GUI_LIB
 
@@ -18,7 +18,7 @@ QDialog* VOptionable::optionCreateDlg()
   QDialog* dialog = new QDialog(NULL);
   VObject* object = dynamic_cast<VObject*>(this);
   if (object != NULL)
-    dialog->setWindowTitle(object->name == "" ? "" : object->name + " Option");
+    dialog->setWindowTitle(object->name == "" ? "Option" : object->name + " Option");
   new QGridLayout(dialog);
   return dialog;
 }

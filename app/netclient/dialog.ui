@@ -28,7 +28,7 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>39</height>
+        <height>36</height>
        </size>
       </property>
       <property name="maximumSize">
@@ -46,10 +46,10 @@
       <widget class="QPushButton" name="pbOpen">
        <property name="geometry">
         <rect>
-         <x>2</x>
-         <y>2</y>
+         <x>3</x>
+         <y>3</y>
          <width>75</width>
-         <height>31</height>
+         <height>27</height>
         </rect>
        </property>
        <property name="text">
@@ -59,10 +59,10 @@
       <widget class="QPushButton" name="pbClose">
        <property name="geometry">
         <rect>
-         <x>82</x>
-         <y>2</y>
+         <x>80</x>
+         <y>3</y>
          <width>75</width>
-         <height>31</height>
+         <height>27</height>
         </rect>
        </property>
        <property name="text">
@@ -72,10 +72,10 @@
       <widget class="QPushButton" name="pbClear">
        <property name="geometry">
         <rect>
-         <x>162</x>
-         <y>2</y>
+         <x>157</x>
+         <y>3</y>
          <width>75</width>
-         <height>31</height>
+         <height>27</height>
         </rect>
        </property>
        <property name="text">
@@ -85,7 +85,7 @@
       <widget class="QCheckBox" name="chkShowHexa">
        <property name="geometry">
         <rect>
-         <x>242</x>
+         <x>239</x>
          <y>2</y>
          <width>91</width>
          <height>17</height>
@@ -98,7 +98,7 @@
       <widget class="QCheckBox" name="chkSendHexa">
        <property name="geometry">
         <rect>
-         <x>242</x>
+         <x>239</x>
          <y>16</y>
          <width>91</width>
          <height>17</height>

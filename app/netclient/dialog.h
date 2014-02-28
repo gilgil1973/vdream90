@@ -44,10 +44,11 @@ public:
 // ----------------------------------------------------------------------------
 // ClientThread
 // ----------------------------------------------------------------------------
+class Dialog;
 class ClientThread : public VThread
 {
 protected:
-  QDialog*    dialog;
+  Dialog*    dialog;
   VNetClient* netClient;
 
 public:
@@ -71,6 +72,8 @@ namespace Ui {
 class Dialog : public QDialog, public VXmlable
 {
   Q_OBJECT
+
+  friend class ClientThread;
 
 public:
   explicit Dialog(QWidget *parent = 0);

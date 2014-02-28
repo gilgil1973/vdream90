@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 ClientThread::ClientThread(void* owner, VNetClient* netClient) : VThread(owner)
 {
-  this->dialog = (QDialog*)owner;
+  this->dialog = (Dialog*)owner;
   this->netClient = netClient;
 }
 
@@ -40,7 +40,10 @@ void ClientThread::run()
     QByteArray ba;
     int readLen = netClient->read(ba);
     if (readLen == VERR_FAIL) break;
+    if (dialog->ui->chkShowHexa->checkState() == Qt::Checked)
+      ba = ba.toHex();
     QString msg = ba;
+
     fireEvent(new MsgEvent(msg));
   }
   fireEvent(new MsgEvent("******** disconnected ********"));
@@ -244,5 +247,6 @@ void Dialog::on_pbSend_clicked()
 {
   if (netClient == NULL) return;
   QByteArray ba = qPrintable(ui->pteSend->toPlainText());
+  if (ui->chkSendHexa->checkState() == Qt::Checked) ba = ba.fromHex(ba);
   netClient->write(ba);
 }
