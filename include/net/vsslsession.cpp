@@ -17,11 +17,15 @@ VSslSession::~VSslSession()
   close();
   if (con != NULL)
   {
-    SSL_clear(con);
     SSL_free(con);
     con = NULL;
   }
-  // sbio ? // gilgil temp 2011.10.30
+
+  if (sbio != NULL)
+  {
+    // BIO_free(sbio); // do not call BIO_free // by gilgil 2014.02.28
+    sbio = NULL;
+  }
 }
 
 void apps_ssl_info_callback(const SSL* s, int where, int ret)
@@ -80,12 +84,19 @@ bool VSslSession::doOpen()
   // --------------------------------------------------------------------------
   // set con
   // --------------------------------------------------------------------------
-  LOG_ASSERT(con == NULL);
+  if (con != NULL)
+  {
+    SSL_free(con);
+  }
   con = SSL_new(ctx);
 
   // --------------------------------------------------------------------------
   // set sbio
   // --------------------------------------------------------------------------
+  if (sbio != NULL)
+  {
+    // BIO_free(sbio); // do not call BIO_free // by gilgil 2014.02.28
+  }
   sbio = BIO_new_socket((int)handle, BIO_NOCLOSE);
   SSL_set_bio(con, sbio, sbio);
 
@@ -121,24 +132,28 @@ bool VSslSession::doClose()
   {
     SSL_shutdown(con);
     SSL_clear(con);
-    //SSL_free(con); // SSL_free(con) is called in destructor.
-    con = NULL;
   }
   if (sbio != NULL)
   {
-    sbio = NULL; // do not delete? // gilgil temp 2011.10.30
+    BIO_flush(sbio);
+    // BIO_shutdown_wr(sbio); // gilgil temp 2014.02.28
   }
+
+// ----- gilgil temp 2014.02.28 -----
+/*
 #ifdef WIN32
   shutdown(handle, SD_BOTH);
 #endif // WIN32
+*/
+// ----------------------------------
   handle = INVALID_SOCKET;
   return true;
 }
 
-
 int VSslSession::doRead(char* buf, int size)
 {
-  int res = SSL_read(con, buf, size);;
+  int res = SSL_read(con, buf, size);
+  // sleep(1); // gilgil temp 2014.02.28
   if (res < 0)
   {
     SET_ERROR(VSslError, qformat("SSL_read return %d", res), SSL_get_error(con, res));
@@ -152,7 +167,6 @@ int VSslSession::doRead(char* buf, int size)
   return res;
 }
 
-
 int VSslSession::doWrite(char* buf, int size)
 {
   int res = SSL_write(con, buf, size);
@@ -163,7 +177,6 @@ int VSslSession::doWrite(char* buf, int size)
   }
   return res;
 }
-
 
 Ip VSslSession::getLocalIP()
 {

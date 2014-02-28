@@ -121,6 +121,6 @@ void VSslClient::optionSaveDlg(QDialog* dialog)
 {
   VTcpClient::optionSaveDlg(dialog);
 
-  methodType = dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex();
+  methodType = (VSslMethodType)(dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex());
 }
 #endif // QT_GUI_LIB

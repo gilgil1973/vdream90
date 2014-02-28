@@ -112,6 +112,7 @@ bool Dialog::event(QEvent* event)
   if (msgEvent != NULL)
   {
     ui->pteRecv->insertPlainText(msgEvent->msg + "\n");
+    ui->pteRecv->ensureCursorVisible();
     return true;
   }
 
