@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 ClientThread::ClientThread(void* owner, VNetClient* netClient) : VThread(owner)
 {
-  this->dialog = (Dialog*)owner;
+  this->dialog    = (Dialog*)owner;
   this->netClient = netClient;
 }
 
@@ -25,6 +25,7 @@ void ClientThread::run()
 {
   LOG_ASSERT(netClient != NULL);
   fireEvent(new StateEvent(VState::Opening));
+
   bool res = netClient->open();
   if (!res)
   {
@@ -35,17 +36,20 @@ void ClientThread::run()
 
   fireEvent(new MsgEvent("******** connected ********"));
   fireEvent(new StateEvent(VState::Opened));
+
   while (true)
   {
     QByteArray ba;
+
     int readLen = netClient->read(ba);
     if (readLen == VERR_FAIL) break;
+
     if (dialog->ui->chkShowHexa->checkState() == Qt::Checked)
       ba = ba.toHex();
     QString msg = ba;
-
     fireEvent(new MsgEvent(msg));
   }
+
   fireEvent(new MsgEvent("******** disconnected ********"));
   fireEvent(new CloseEvent);
 }
@@ -77,7 +81,7 @@ void Dialog::showEvent(QShowEvent* showEvent)
 
 void Dialog::initializeControl()
 {
-  netClient = NULL;
+  netClient    = NULL;
   clientThread = NULL;
 
   move(0, 0); resize(640, 480);
@@ -220,7 +224,7 @@ void Dialog::save(VXml xml)
     VXml sizesXml = xml.gotoChild("sizes");
     QList<int> sizes = ui->splitter->sizes();
     QString strList;
-    sizes.clear(); foreach (int size, sizes) strList += QString::number(size) + ",";
+    strList.clear(); foreach (int size, sizes) strList += QString::number(size) + ",";
     strList = strList.left(strList.count() - 1);
     sizesXml.setStr("splitter", strList);
   }
@@ -241,29 +245,29 @@ void Dialog::on_pbOpen_clicked()
       netClient = &tcpClient;
       break;
     case 1:
-      netClient = &udpClient;
       udpClient.host = ui->leUdpHost->text();
       udpClient.port = ui->leUdpPort->text().toInt();
+      netClient = &udpClient;
       break;
     case 2:
-      netClient = &sslClient;
       sslClient.host = ui->leSslHost->text();
       sslClient.port = ui->leSslPort->text().toInt();
+      netClient = &sslClient;
       break;
   }
 
   SAFE_DELETE(clientThread);
   clientThread = new ClientThread(this, netClient);
   clientThread->open();
+
+  setControl();
 }
 
 void Dialog::on_pbClose_clicked()
 {
   LOG_ASSERT(netClient != NULL);
   netClient->close();
-
   SAFE_DELETE(clientThread);
-
   setControl();
 }
 

@@ -1,4 +1,5 @@
 #include <VSslServer>
+#include <VApp>
 #include <VFile>
 #include <VDebugNew>
 
@@ -230,8 +231,14 @@ int VSslServerSession::ssl_servername_cb(SSL *s, int *ad, void *arg)
     QProcess process;
 
     QString path = server->certificatePath;
-    LOG_DEBUG("path=%s", qPrintable(path));
+    LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.01
+    QFileInfo fi(path);
+    if (!fi.isAbsolute())
+    {
+      path = VApp::currentPath() + path;
+    }
     process.setWorkingDirectory(path);
+    LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
 
     QString command = qformat("%s_ssl_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
     LOG_DEBUG("command=%s", qPrintable(command));
@@ -409,7 +416,7 @@ void VSslServer::load(VXml xml)
 {
   VTcpServer::load(xml);
 
-  methodType            = xml.getStr("methodType", methodType.str());
+  methodType            = xml.getInt("methodType", (int)methodType);
   certificatePath       = xml.getStr("certificatePath", certificatePath);
   defaultKeyCrtFileName = xml.getStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
 }
@@ -418,7 +425,7 @@ void VSslServer::save(VXml xml)
 {
   VTcpServer::save(xml);
 
-  xml.setStr("methodType", methodType.str());
+  xml.setInt("methodType", (int)methodType);
   xml.setStr("certificatePath", certificatePath);
   xml.setStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
 }

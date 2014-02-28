@@ -48,7 +48,7 @@ class Dialog;
 class ClientThread : public VThread
 {
 protected:
-  Dialog*    dialog;
+  Dialog*     dialog;
   VNetClient* netClient;
 
 public:

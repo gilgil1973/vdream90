@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>393</width>
-    <height>512</height>
+    <width>473</width>
+    <height>511</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>NetClient</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>11</y>
-     <width>371</width>
+     <width>451</width>
      <height>488</height>
     </rect>
    </property>
@@ -333,7 +333,7 @@
         </font>
        </property>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QPlainTextEdit" name="pteSend">
