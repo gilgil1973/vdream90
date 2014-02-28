@@ -5,19 +5,38 @@
 #include <VApp>
 #include <VLog>
 #include <Shellapi.h> // for ShellExecuteA
+#include <VDebugNew>
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
-  setCentralWidget(ui->plainTextEdit);
+  initializeControl();
+}
 
-  move(0, 0);
-  resize(640, 480);
+MainWindow::~MainWindow()
+{
+  saveControl();
+  finalizeControl();
+  delete ui;
+}
 
+void MainWindow::showEvent(QShowEvent* showEvent)
+{
+  loadControl();
+  setControl();
+  if (myLog->autoOpen) on_actionOpen_triggered();
+  QMainWindow::showEvent(showEvent);
+}
+
+void MainWindow::initializeControl()
+{
   optionDlg = NULL;
   aboutDlg  = NULL;
+
+  move(0, 0); resize(640, 480);
+  setCentralWidget(ui->plainTextEdit);
 
   myLog = new MyLog;
   bool res = connect(&myLog->sync, SIGNAL(onMessage(QString)), this, SLOT(_onMessage(QString)));
@@ -25,28 +44,30 @@ MainWindow::MainWindow(QWidget *parent) :
   {
     LOG_ERROR("connect return false");
   }
-
-  this->loadFromDefaultDoc("MainWindow");
-  myLog->loadFromDefaultDoc("myLog");
-  if (myLog->autoOpen) on_actionOpen_triggered();
-  setControl();
 }
 
-MainWindow::~MainWindow()
+void MainWindow::finalizeControl()
 {
   SAFE_DELETE(optionDlg);
   SAFE_DELETE(aboutDlg);
-
   if (myLog != NULL)
   {
     myLog->close();
     setControl();
+    SAFE_DELETE(myLog);
   }
+}
+
+void MainWindow::loadControl()
+{
+  this->loadFromDefaultDoc("MainWindow");
+  myLog->loadFromDefaultDoc("myLog");
+}
+
+void MainWindow::saveControl()
+{
   this->saveToDefaultDoc("MainWindow");
   myLog->saveToDefaultDoc("myLog");
-  SAFE_DELETE(myLog);
-
-  delete ui;
 }
 
 void MainWindow::setControl()
@@ -93,13 +114,18 @@ void MainWindow::setControl()
 
 void MainWindow::load(VXml xml)
 {
-  QRect rect = geometry();
-  rect.setLeft  ((xml.getInt("left",   0)));
-  rect.setTop   ((xml.getInt("top",    0)));
-  rect.setWidth ((xml.getInt("width",  640)));
-  rect.setHeight((xml.getInt("height", 480)));
-  setGeometry(rect);
-
+  {
+    VXml coordXml = xml.findChild("coord");
+    if (!coordXml.isNull())
+    {
+      QRect rect = geometry();
+      rect.setLeft  ((coordXml.getInt("left",   0)));
+      rect.setTop   ((coordXml.getInt("top",    0)));
+      rect.setWidth ((coordXml.getInt("width",  640)));
+      rect.setHeight((coordXml.getInt("height", 480)));
+      setGeometry(rect);
+    }
+  }
 
   ui->actionShowLog->setChecked(xml.getBool("showLog", ui->actionShowLog->isChecked()));
   ui->actionAlwaysOnTop->setChecked(xml.getBool("alwaysOnTop", ui->actionAlwaysOnTop->isChecked()));
@@ -108,11 +134,14 @@ void MainWindow::load(VXml xml)
 
 void MainWindow::save(VXml xml)
 {
-  QRect rect = geometry();
-  xml.setInt("left",   rect.left());
-  xml.setInt("top",    rect.top());
-  xml.setInt("width",  rect.width());
-  xml.setInt("height", rect.height());
+  {
+    VXml coordXml = xml.gotoChild("coord");
+    QRect rect = geometry();
+    coordXml.setInt("left",   rect.left());
+    coordXml.setInt("top",    rect.top());
+    coordXml.setInt("width",  rect.width());
+    coordXml.setInt("height", rect.height());
+  }
 
   xml.setBool("showLog", ui->actionShowLog->isChecked());
   xml.setBool("alwaysOnTop", ui->actionAlwaysOnTop->isChecked());

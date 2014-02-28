@@ -19,9 +19,18 @@ public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
+protected:
+  void showEvent(QShowEvent* showEvent);
+
+public:
+  void initializeControl();
+  void finalizeControl();
+  void loadControl();
+  void saveControl();
+  void setControl();
+
 public:
   MyLog* myLog;
-  void setControl();
 
 public:
   OptionDlg* optionDlg;

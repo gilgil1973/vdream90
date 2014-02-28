@@ -79,6 +79,16 @@ public:
   explicit Dialog(QWidget *parent = 0);
   ~Dialog();
 
+protected:
+  void showEvent(QShowEvent* showEvent);
+
+public:
+  void initializeControl();
+  void finalizeControl();
+  void loadControl();
+  void saveControl();
+  void setControl(VState state = VState::None);
+
 public:
   VTcpClient  tcpClient;
   VUdpClient  udpClient;
@@ -86,9 +96,6 @@ public:
   VNetClient* netClient;
 
   ClientThread* clientThread;
-
-public:
-  void setControl(VState state = VState::None);
 
 public:
   virtual bool event(QEvent* event);

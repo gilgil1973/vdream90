@@ -221,7 +221,7 @@ bool VXmlable::saveToFile(const QString& fileName, const QString& path)
 bool VXmlable::loadFromDefaultDoc(const QString& path)
 {
   VXmlDoc& doc = VXmlDoc::instance();
-  VXml xml = doc.root().findChilds(path);
+  VXml xml = doc.root().gotoChilds(path);
   if (xml.isNull()) return false;
   this->load(xml);
   return true;

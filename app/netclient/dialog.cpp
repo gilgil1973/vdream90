@@ -57,28 +57,51 @@ Dialog::Dialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::Dialog)
 {
+  ui->setupUi(this);
+  initializeControl();
+}
+
+Dialog::~Dialog()
+{
+  saveControl();
+  finalizeControl();
+  delete ui;
+}
+
+void Dialog::showEvent(QShowEvent* showEvent)
+{
+  loadControl();
+  setControl();
+  QDialog::showEvent(showEvent);
+}
+
+void Dialog::initializeControl()
+{
   netClient = NULL;
   clientThread = NULL;
 
-  ui->setupUi(this);
+  move(0, 0); resize(640, 480);
 
-  move(0, 0);
-  resize(640, 480);
   setWindowFlags(windowFlags() | Qt::WindowMinMaxButtonsHint);
   setLayout(ui->mainLayout);
   ui->mainLayout->setSpacing(0);
   ui->pteRecv->setWordWrapMode(QTextOption::NoWrap);
   ui->pteSend->setWordWrapMode(QTextOption::NoWrap);
-
-  loadFromDefaultDoc("MainWindow");
-  setControl();
 }
 
-Dialog::~Dialog()
+void Dialog::finalizeControl()
 {
   on_pbClose_clicked();
+}
+
+void Dialog::loadControl()
+{
+  this->loadFromDefaultDoc("MainWindow");
+}
+
+void Dialog::saveControl()
+{
   this->saveToDefaultDoc("MainWindow");
-  delete ui;
 }
 
 void Dialog::setControl(VState state)
@@ -131,12 +154,18 @@ bool Dialog::event(QEvent* event)
 
 void Dialog::load(VXml xml)
 {
-  QRect rect = geometry();
-  rect.setLeft  ((xml.getInt("left",   0)));
-  rect.setTop   ((xml.getInt("top",    0)));
-  rect.setWidth ((xml.getInt("width",  640)));
-  rect.setHeight((xml.getInt("height", 480)));
-  setGeometry(rect);
+  {
+    VXml coordXml = xml.findChild("coord");
+    if (!coordXml.isNull())
+    {
+      QRect rect = geometry();
+      rect.setLeft  ((coordXml.getInt("left",   0)));
+      rect.setTop   ((coordXml.getInt("top",    0)));
+      rect.setWidth ((coordXml.getInt("width",  640)));
+      rect.setHeight((coordXml.getInt("height", 480)));
+      setGeometry(rect);
+    }
+  }
 
   ui->chkShowHexa->setCheckState((Qt::CheckState)xml.getInt("showHexa", (int)ui->chkShowHexa->checkState()));
   ui->chkSendHexa->setCheckState((Qt::CheckState)xml.getInt("sendHexa", (int)ui->chkSendHexa->checkState()));
@@ -149,10 +178,16 @@ void Dialog::load(VXml xml)
   ui->leSslPort->setText(xml.getStr("sslPort", ui->leSslPort->text()));
   ui->pteSend->insertPlainText(xml.getStr("sendText", ui->pteSend->toPlainText()));
 
-  QList<int> sizes;
-  for (int i = 0; i < ui->splitter->count(); i++)
-    sizes << xml.gotoChild("spilitter").getInt(qformat("height%d", i), 0);
-  ui->splitter->setSizes(sizes);
+  {
+    VXml sizesXml = xml.findChild("sizes");
+    QList<int> sizes;
+    if (!sizesXml.isNull())
+    {
+      QStringList strList = sizesXml.getStr("splitter").split(",");
+      foreach (QString s, strList) sizes << s.toInt();
+      ui->splitter->setSizes(sizes);
+    }
+  }
 
   tcpClient.load(xml.gotoChilds("netClient/tcpClient"));
   udpClient.load(xml.gotoChilds("netClient/udpClient"));
@@ -161,11 +196,14 @@ void Dialog::load(VXml xml)
 
 void Dialog::save(VXml xml)
 {
-  QRect rect = geometry();
-  xml.setInt("left",   rect.left());
-  xml.setInt("top",    rect.top());
-  xml.setInt("width",  rect.width());
-  xml.setInt("height", rect.height());
+  {
+    VXml coordXml = xml.gotoChild("coord");
+    QRect rect = geometry();
+    coordXml.setInt("left",   rect.left());
+    coordXml.setInt("top",    rect.top());
+    coordXml.setInt("width",  rect.width());
+    coordXml.setInt("height", rect.height());
+  }
 
   xml.setInt("showHexa", (int)ui->chkShowHexa->checkState());
   xml.setInt("sendHexa", (int)ui->chkSendHexa->checkState());
@@ -178,8 +216,14 @@ void Dialog::save(VXml xml)
   xml.setStr("sslPort", ui->leSslPort->text());
   xml.setStr("sendText", ui->pteSend->toPlainText());
 
-  for (int i = 0; i < ui->splitter->count(); i++)
-    xml.gotoChild("spilitter").setInt(qformat("height%d", i), ui->splitter->sizes().at(i));
+  {
+    VXml sizesXml = xml.gotoChild("sizes");
+    QList<int> sizes = ui->splitter->sizes();
+    QString strList;
+    sizes.clear(); foreach (int size, sizes) strList += QString::number(size) + ",";
+    strList = strList.left(strList.count() - 1);
+    sizesXml.setStr("splitter", strList);
+  }
 
   tcpClient.save(xml.gotoChilds("netClient/tcpClient"));
   udpClient.save(xml.gotoChilds("netClient/udpClient"));
@@ -230,17 +274,29 @@ void Dialog::on_pbClear_clicked()
 
 void Dialog::on_tbTcpAdvance_clicked()
 {
-  tcpClient.optionDoAll();
+  if (tcpClient.optionDoAll())
+  {
+    ui->leTcpHost->setText(tcpClient.host);
+    ui->leTcpPort->setText(QString::number(tcpClient.port));
+  }
 }
 
 void Dialog::on_tbUdpAdvence_clicked()
 {
-  udpClient.optionDoAll();
+  if (udpClient.optionDoAll())
+  {
+    ui->leUdpHost->setText(udpClient.host);
+    ui->leUdpPort->setText(QString::number(udpClient.port));
+  }
 }
 
 void Dialog::on_tbSslAdvanced_clicked()
 {
-  sslClient.optionDoAll();
+  if (sslClient.optionDoAll())
+  {
+    ui->leSslHost->setText(sslClient.host);
+    ui->leSslPort->setText(QString::number(sslClient.port));
+  }
 }
 
 void Dialog::on_pbSend_clicked()
