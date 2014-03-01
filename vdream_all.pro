@@ -5,9 +5,9 @@ SUBDIRS += \
   app/getline/getline.pro \
   app/logserver/logserver.pro \
   app/netc/netc.pro \
-  app/netc/netclient.pro \  
+  app/netclient/netclient.pro \  
   app/nets/nets.pro \
-  app/nets/netsserver.pro \  
+  app/netserver/netserver.pro \  
   app/unittest/unittest.pro \
   app/vdreamtest/vdreamtest.pro \
   app/vlog/vlog.pro
