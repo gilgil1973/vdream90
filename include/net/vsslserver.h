@@ -29,10 +29,6 @@ protected:
   virtual bool doOpen();
   virtual bool doClose();
 
-public:
-  EVP_PKEY* m_key;
-  X509*     m_crt;
-
 protected:
   bool setup(QString fileName);
   static int ssl_servername_cb(SSL *s, int *ad, void *arg);
@@ -83,8 +79,8 @@ protected:
 protected:
   static EVP_PKEY* loadKey(VError& error, QString fileName);
   static X509*     loadCrt(VError& error, QString fileName);
-  static bool      setKeyCrtStuff(VError& error, SSL_CTX* ctx, EVP_PKEY* key, X509* cert);
-  static bool      setKeyCrtStuff(VError& error, SSL*     con, EVP_PKEY* key, X509* cert);
+  static bool      setKeyCrtStuff(VError& error, SSL_CTX* ctx, EVP_PKEY* key, X509* crt);
+  static bool      setKeyCrtStuff(VError& error, SSL*     con, EVP_PKEY* key, X509* crt);
 
 protected:
     VCS           certificateCs;

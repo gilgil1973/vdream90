@@ -8,8 +8,6 @@
 // ----------------------------------------------------------------------------
 VSslServerSession::VSslServerSession(void* owner) : VSslSession(owner)
 {
-  m_key = NULL;
-  m_crt = NULL;
 }
 
 VSslServerSession::~VSslServerSession()
@@ -33,24 +31,6 @@ bool VSslServerSession::doOpen()
 
 bool VSslServerSession::doClose()
 {
-  //
-  // Free key
-  //
-  if (m_key != NULL)
-  {
-    EVP_PKEY_free(m_key);
-    m_key = NULL;
-  }
-
-  //
-  // Free crt
-  //
-  if (m_crt != NULL)
-  {
-    X509_free(m_crt);
-    m_crt = NULL;
-  }
-
   return VSslSession::doClose();
 }
 
@@ -60,14 +40,17 @@ bool VSslServerSession::setup(QString fileName)
   LOG_DEBUG("fileName=%s", qPrintable(fileName));
   LOG_DEBUG("------------------------------------------");
 
-  m_key = VSslServer::loadKey(error, fileName);
-  if (m_key == NULL) return false;
+  EVP_PKEY* key = VSslServer::loadKey(error, fileName);
+  if (key == NULL) return false;
 
-  m_crt = VSslServer::loadCrt(error, fileName);
-  if (m_crt == NULL) return false;
+  X509* crt = VSslServer::loadCrt(error, fileName);
+  if (crt == NULL) return false;
 
-  bool res = VSslServer::setKeyCrtStuff(error, con, m_key, m_crt);
+  bool res = VSslServer::setKeyCrtStuff(error, con, key, crt);
   if (!res) return false;
+
+  EVP_PKEY_free(key);
+  X509_free(crt);
 
   return true;
 }
@@ -269,7 +252,7 @@ EVP_PKEY* VSslServer::loadKey(VError& error, QString fileName)
   if (bio == NULL)
   {
     QString msg = "BIO_s_file return NULL";
-    LOG_ERROR("%s", msg);
+    LOG_ERROR("%s", qPrintable(msg));
     setError<VSslError>(error, msg, VERR_IN_BIO_S_FILE);
     return NULL;
   }
@@ -278,7 +261,7 @@ EVP_PKEY* VSslServer::loadKey(VError& error, QString fileName)
   if (res <= 0)
   {
     QString msg = qformat("BIO_read_filename(%s) return %d", qPrintable(fileName), res);
-    LOG_ERROR("%s", msg);
+    LOG_ERROR("%s", qPrintable(msg));
     setError<VSslError>(error, msg, VERR_IN_BIO_READ_FILENAME);
     BIO_free(bio);
     return NULL;
@@ -291,7 +274,7 @@ EVP_PKEY* VSslServer::loadKey(VError& error, QString fileName)
   if (key == NULL)
   {
     QString msg = "PEM_read_bio_PrivateKey return NULL";
-    LOG_ERROR("%s", msg);
+    LOG_ERROR("%s", qPrintable(msg));
     setError<VSslError>(error, msg, VERR_IN_PEM_READ_BIO_PRIVATEKEY);
     BIO_free(bio);
     return NULL;
@@ -307,7 +290,7 @@ X509* VSslServer::loadCrt(VError& error, QString fileName)
   if (bio == NULL)
   {
     QString msg = "BIO_s_file return NULL";
-    LOG_ERROR("%s", msg);
+    LOG_ERROR("%s", qPrintable(msg));
     setError<VSslError>(error, msg, VERR_IN_BIO_S_FILE);
     BIO_free(bio);
     return NULL;
@@ -317,32 +300,32 @@ X509* VSslServer::loadCrt(VError& error, QString fileName)
   if (res <= 0)
   {
     QString msg = qformat("BIO_read_filename(%s) %d", qPrintable(fileName), res);
-    LOG_ERROR("%s", msg);
+    LOG_ERROR("%s", qPrintable(msg));
     setError<VSslError>(error, msg, VERR_IN_BIO_READ_FILENAME);
     BIO_free(bio);
     return NULL;
   }
 
-  X509* cert = PEM_read_bio_X509_AUX(bio, NULL, NULL, NULL);
-  if (cert == NULL)
+  X509* crt = PEM_read_bio_X509_AUX(bio, NULL, NULL, NULL);
+  if (crt == NULL)
   {
     QString msg = "PEM_read_bio_X509_AUX return NULL";
-    LOG_ERROR("%s", msg);
+    LOG_ERROR("%s", qPrintable(msg));
     setError<VSslError>(error, msg, VERR_IN_PEM_READ_BIO_X509_AUX);
     BIO_free(bio);
     return NULL;
   }
 
   BIO_free(bio);
-  return cert;
+  return crt;
 }
 
-bool VSslServer::setKeyCrtStuff(VError& error, SSL_CTX* ctx, EVP_PKEY* key, X509* cert)
+bool VSslServer::setKeyCrtStuff(VError& error, SSL_CTX* ctx, EVP_PKEY* key, X509* crt)
 {
   LOG_ASSERT(key != NULL);
-  LOG_ASSERT(cert != NULL);
+  LOG_ASSERT(crt != NULL);
 
-  int res = SSL_CTX_use_certificate(ctx, cert);
+  int res = SSL_CTX_use_certificate(ctx, crt);
   if (res <= 0)
   {
     setError<VSslError>(error, qformat("SSL_CTX_use_certificate return %d", res), VERR_IN_SSL_CTX_USE_CERTIFICATE);
@@ -366,29 +349,29 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL_CTX* ctx, EVP_PKEY* key, X509
   return true;
 }
 
-bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cert)
+bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* crt)
 {
   LOG_ASSERT(key != NULL);
-  LOG_ASSERT(cert != NULL);
+  LOG_ASSERT(crt != NULL);
 
-  int res = SSL_use_certificate(con, cert);
+  int res = SSL_use_certificate(con, crt);
   if (res <= 0)
   {
-    setError<VSslError>(error, qformat("SSL_CTX_use_certificate return %d", res), VERR_IN_SSL_CTX_USE_CERTIFICATE);
+    setError<VSslError>(error, qformat("SSL_use_certificate return %d", res), VERR_IN_SSL_CTX_USE_CERTIFICATE);
     return false;
   }
 
   res = SSL_use_PrivateKey(con, key);
   if (res <= 0)
   {
-    setError<VSslError>(error, qformat("SSL_CTX_use_PrivateKey return %d", res), VERR_SSL_CTX_USER_PRIVATEKEY);
+    setError<VSslError>(error, qformat("SSL_use_PrivateKey return %d", res), VERR_SSL_CTX_USER_PRIVATEKEY);
     return false;
   }
 
   res = SSL_check_private_key(con);
   if (!res)
   {
-    setError<VSslError>(error, qformat("SSL_CTX_check_private_key return %d", res), VERR_SSL_CTX_CHECK_PRIVATEKEY);
+    setError<VSslError>(error, qformat("SSL_check_private_key return %d", res), VERR_SSL_CTX_CHECK_PRIVATEKEY);
     return false;
   }
 
