@@ -218,7 +218,7 @@ void Dialog::myRun(VNetSession* netSession)
   }
 
   fireEvent(new MsgEvent("******** disconnected ********")); // gilgil temp 2014.03.01
-  fireEvent(new CloseEvent);
+  // fireEvent(new CloseEvent); // gilgil temp 2014.03.01
 }
 
 bool Dialog::event(QEvent* event)

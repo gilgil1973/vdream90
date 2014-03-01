@@ -8,8 +8,8 @@
 // ----------------------------------------------------------------------------
 VSslServerSession::VSslServerSession(void* owner) : VSslSession(owner)
 {
-  s_cert         = NULL;
-  s_key          = NULL;
+  m_key = NULL;
+  m_crt = NULL;
 }
 
 VSslServerSession::~VSslServerSession()
@@ -19,57 +19,36 @@ VSslServerSession::~VSslServerSession()
 
 bool VSslServerSession::doOpen()
 {
-  LOG_DEBUG("bef SSL_CTX_set_tlsext_servername_callback");
-  bool callbackOk = true;
+  LOG_DEBUG("bef SSL_CTX_set_tlsext_servername_callback"); // gilgil temp 2014.03.01
   if (!SSL_CTX_set_tlsext_servername_callback(ctx, ssl_servername_cb))
   {
     LOG_ERROR("SSL_CTX_set_tlsext_servername_callback return false");
-    callbackOk = false;
   }
   if (!SSL_CTX_set_tlsext_servername_arg(ctx, this))
   {
     LOG_ERROR("SSL_CTX_set_tlsext_servername_arg return false");
-    callbackOk = false;
   }
-
-  if (!callbackOk)
-  {
-    VSslServer* server = (VSslServer*)owner;
-
-    //
-    // Fie check
-    //
-    QString fileName = server->certificatePath + server->defaultKeyCrtFileName;
-    if (QFile::exists(fileName))
-    {
-      // if (!setup(fileName)) return false; // gilgil temp 2014.02.26
-    } else
-    {
-      LOG_WARN("file(%s) not exist", qPrintable(fileName));
-    }
-  }
-
   return VSslSession::doOpen();
 }
 
 bool VSslServerSession::doClose()
 {
   //
-  // Free Cert
+  // Free key
   //
-  if (s_cert != NULL)
+  if (m_key != NULL)
   {
-    X509_free(s_cert);
-    s_cert = NULL;
+    EVP_PKEY_free(m_key);
+    m_key = NULL;
   }
 
   //
-  // Free Key
+  // Free crt
   //
-  if (s_key != NULL)
+  if (m_crt != NULL)
   {
-    EVP_PKEY_free(s_key);
-    s_key = NULL;
+    X509_free(m_crt);
+    m_crt = NULL;
   }
 
   return VSslSession::doClose();
@@ -80,128 +59,15 @@ bool VSslServerSession::setup(QString fileName)
   LOG_DEBUG("------------------------------------------");
   LOG_DEBUG("fileName=%s", qPrintable(fileName));
   LOG_DEBUG("------------------------------------------");
-  if (!loadKey(fileName)) return false;
-  if (!loadCrt(fileName)) return false;
-  if (!setCrtKeyStuff()) return false;
-  return true;
-}
 
-bool VSslServerSession::loadKey(QString fileName)
-{
-  BIO* key = NULL;
-  bool ok  = false;
+  m_key = VSslServer::loadKey(error, fileName);
+  if (m_key == NULL) return false;
 
-  while (true)
-  {
-    key = BIO_new(BIO_s_file());
-    if (key == NULL)
-    {
-      SET_ERROR(VSslError, "BIO_s_file return NULL", VERR_IN_BIO_S_FILE);
-      break;
-    }
+  m_crt = VSslServer::loadCrt(error, fileName);
+  if (m_crt == NULL) return false;
 
-    long res = BIO_read_filename(key, qPrintable(fileName));
-    if (res <= 0)
-    {
-      SET_ERROR(VSslError, qformat("BIO_read_filename(%s) return %d", qPrintable(fileName), res), VERR_IN_BIO_READ_FILENAME);
-      break;
-    }
-
-    s_key = PEM_read_bio_PrivateKey(key, NULL,
-      NULL, // (pem_password_cb*)password_callback // gilgil temp 2008.10.29
-      NULL // &cb_data);
-    );
-    if (s_key == NULL)
-    {
-      SET_ERROR(VSslError, "PEM_read_bio_PrivateKey return NULL", VERR_IN_PEM_READ_BIO_PRIVATEKEY);
-      break;
-    }
-    ok = true;
-    break;
-  }
-
-  if (key!= NULL) BIO_free(key);
-  return ok;
-}
-
-bool VSslServerSession::loadCrt(QString fileName)
-{
-  BIO* cert = NULL;
-  bool ok   = false;
-
-  while (true)
-  {
-    cert = BIO_new(BIO_s_file());
-    if (cert == NULL)
-    {
-      SET_ERROR(VSslError, "BIO_s_file return NULL", VERR_IN_BIO_S_FILE);
-      break;
-    }
-
-    long res = BIO_read_filename(cert, qPrintable(fileName));
-    if (res <= 0)
-    {
-      SET_ERROR(VSslError, qformat("BIO_read_filename(%s) %d", qPrintable(fileName), res), VERR_IN_BIO_READ_FILENAME);
-      break;
-    }
-
-    s_cert = PEM_read_bio_X509_AUX(cert, NULL, NULL, NULL);
-    if (s_cert == NULL)
-    {
-      SET_ERROR(VSslError, "PEM_read_bio_X509_AUX return NULL", VERR_IN_PEM_READ_BIO_X509_AUX);
-      break;
-    }
-    ok = true;
-    break;
-  }
-
-  if (cert != NULL) BIO_free(cert);
-  return ok;
-}
-
-bool VSslServerSession::setCrtKeyStuff()
-{
-  int res;
-
-  if (s_cert ==  NULL)
-  {
-    LOG_ERROR("s_cert is NULL");
-    return false;
-  }
-
-  if (s_key == NULL)
-  {
-    LOG_ERROR("s_key is NULL");
-    return false;
-  }
-
-  // res = SSL_CTX_use_certificate(ctx, s_cert); // gilgil temp 2014.02.27
-  res = SSL_use_certificate(con, s_cert); // gilgil temp 2014.02.27
-  if (res <= 0)
-  {
-    SET_ERROR(VSslError, qformat("SSL_CTX_use_certificate return %d", res), VERR_IN_SSL_CTX_USE_CERTIFICATE);
-    return false;
-  }
-
-  // res = SSL_CTX_use_PrivateKey(ctx, s_key); // gilgil temp 2014.02.27
-  res = SSL_use_PrivateKey(con, s_key); // gilgil temp 2014.02.27
-  if (res <= 0)
-  {
-    SET_ERROR(VSslError, qformat("SSL_CTX_use_PrivateKey return %d", res), VERR_SSL_CTX_USER_PRIVATEKEY);
-    return false;
-  }
-
-  // res = SSL_CTX_check_private_key(ctx); // gilgil temp 2014.02.27
-  res = SSL_check_private_key(con); // gilgil temp 2014.02.27
-  if (!res)
-  {
-    SET_ERROR(VSslError, qformat("SSL_CTX_check_private_key return %d", res), VERR_SSL_CTX_CHECK_PRIVATEKEY);
-    return false;
-  }
-
-  //LOG_DEBUG("bef SSL_set_SSL_CTX ctx=%p", ctx);
-  //ctx = SSL_set_SSL_CTX(con, ctx);
-  //LOG_DEBUG("aft SSL_set_SSL_CTX ctx=%p", ctx);
+  bool res = VSslServer::setKeyCrtStuff(error, con, m_key, m_crt);
+  if (!res) return false;
 
   return true;
 }
@@ -214,58 +80,57 @@ int VSslServerSession::ssl_servername_cb(SSL *s, int *ad, void *arg)
 
   const char* serverName = SSL_get_servername(s, TLSEXT_NAMETYPE_host_name);
 
-  QString fileName;
-  if (serverName != NULL)
+  if (serverName == NULL)
   {
-    LOG_DEBUG("serverName=%s", serverName);
-    fileName = server->certificatePath + serverName + ".pem";
-  } else
-  {
-    LOG_WARN("serverName is null");
-    fileName = server->certificatePath + server->defaultKeyCrtFileName;
+    LOG_DEBUG("serverName is null");
+    return SSL_TLSEXT_ERR_NOACK;
   }
 
-  VLock lock(server->certificateCs); // protect file create critical section
-  if (!QFile::exists(fileName))
+  LOG_DEBUG("serverName=%s", serverName);
+  QString fileName = server->certificatePath + serverName + ".pem";
+
   {
-    QProcess process;
-
-    QString path = server->certificatePath;
-    LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.01
-    QFileInfo fi(path);
-    if (!fi.isAbsolute())
+    VLock lock(server->certificateCs); // protect file create critical section
+    if (!QFile::exists(fileName))
     {
-      path = VApp::currentPath() + path;
-    }
-    process.setWorkingDirectory(path);
-    LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
+      QProcess process;
 
-    QString command = qformat("%s_ssl_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
-    LOG_DEBUG("command=%s", qPrintable(command));
+      QString path = server->certificatePath;
+      LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.01
+      QFileInfo fi(path);
+      if (!fi.isAbsolute())
+      {
+        path = VApp::currentPath() + path;
+      }
+      process.setWorkingDirectory(path);
+      LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
 
-    process.start(command);
-    LOG_DEBUG("pid=%p", process.pid());
+      QString command = qformat("%s_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
+      LOG_DEBUG("command=%s", qPrintable(command));
 
-    if(!process.waitForStarted())
-    {
-      LOG_FATAL("process.waitForStarted(%s) return false", qPrintable(command));
+      process.start(command);
+      LOG_DEBUG("pid=%p", process.pid());
+
+      if(!process.waitForStarted())
+      {
+        LOG_FATAL("process.waitForStarted(%s) return false", qPrintable(command));
+      }
+      while(process.waitForReadyRead())
+      {
+          LOG_INFO("%s", process.readAll().data());
+      }
+      // ----- gilgil temp 23014.02.26 -----
+      /*
+      if (!process.waitForFinished())
+      {
+        LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
+      }
+      */
+      // sleep(3); // gilgil temp 2015.02.27
+      // -----------------------------------
     }
-    while(process.waitForReadyRead())
-    {
-        LOG_DEBUG("%s", process.readAll().data());
-    }
-    // ----- gilgil temp 23014.02.26 -----
-    /*
-    if (!process.waitForFinished())
-    {
-      LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
-    }
-    */
-    // sleep(3); // gilgil temp 2015.02.27
-    // -----------------------------------
+    session->setup(fileName);
   }
-
-  session->setup(fileName);
 
   return SSL_TLSEXT_ERR_NOACK;
 }
@@ -315,6 +180,14 @@ bool VSslServer::doOpen()
       return false;
   }
   m_ctx = SSL_CTX_new(m_meth);
+
+  if (defaultKeyCrtFileName != "")
+  {
+    QString fileName = defaultKeyCrtFileName;
+    QFileInfo fi(fileName);
+    if (!fi.isAbsolute()) fileName = certificatePath + fileName;
+    if (!setup(fileName)) return false;
+  }
 
   return true;
 }
@@ -367,6 +240,159 @@ int VSslServer::doWrite(char* buf, int size)
   }
   sslSessionList.unlock();
   return size;
+}
+
+bool VSslServer::setup(QString fileName)
+{
+  LOG_DEBUG("------------------------------------------");
+  LOG_DEBUG("fileName=%s", qPrintable(fileName));
+  LOG_DEBUG("------------------------------------------");
+
+  EVP_PKEY* key = VSslServer::loadKey(error, fileName);
+  if (key == NULL) return false;
+
+  X509* crt = VSslServer::loadCrt(error, fileName);
+  if (crt == NULL) return false;
+
+  bool res = VSslServer::setKeyCrtStuff(error, m_ctx, key, crt);
+  if (!res) return false;
+
+  EVP_PKEY_free(key);
+  X509_free(crt);
+
+  return true;
+}
+
+EVP_PKEY* VSslServer::loadKey(VError& error, QString fileName)
+{
+  BIO* bio = BIO_new(BIO_s_file());
+  if (bio == NULL)
+  {
+    QString msg = "BIO_s_file return NULL";
+    LOG_ERROR("%s", msg);
+    setError<VSslError>(error, msg, VERR_IN_BIO_S_FILE);
+    return NULL;
+  }
+
+  long res = BIO_read_filename(bio, qPrintable(fileName));
+  if (res <= 0)
+  {
+    QString msg = qformat("BIO_read_filename(%s) return %d", qPrintable(fileName), res);
+    LOG_ERROR("%s", msg);
+    setError<VSslError>(error, msg, VERR_IN_BIO_READ_FILENAME);
+    BIO_free(bio);
+    return NULL;
+  }
+
+  EVP_PKEY* key = PEM_read_bio_PrivateKey(bio, NULL,
+    NULL, // (pem_password_cb*)password_callback // gilgil temp 2008.10.29
+    NULL  // &cb_data);
+  );
+  if (key == NULL)
+  {
+    QString msg = "PEM_read_bio_PrivateKey return NULL";
+    LOG_ERROR("%s", msg);
+    setError<VSslError>(error, msg, VERR_IN_PEM_READ_BIO_PRIVATEKEY);
+    BIO_free(bio);
+    return NULL;
+  }
+
+  BIO_free(bio);
+  return key;
+}
+
+X509* VSslServer::loadCrt(VError& error, QString fileName)
+{
+  BIO* bio = BIO_new(BIO_s_file());
+  if (bio == NULL)
+  {
+    QString msg = "BIO_s_file return NULL";
+    LOG_ERROR("%s", msg);
+    setError<VSslError>(error, msg, VERR_IN_BIO_S_FILE);
+    BIO_free(bio);
+    return NULL;
+  }
+
+  long res = BIO_read_filename(bio, qPrintable(fileName));
+  if (res <= 0)
+  {
+    QString msg = qformat("BIO_read_filename(%s) %d", qPrintable(fileName), res);
+    LOG_ERROR("%s", msg);
+    setError<VSslError>(error, msg, VERR_IN_BIO_READ_FILENAME);
+    BIO_free(bio);
+    return NULL;
+  }
+
+  X509* cert = PEM_read_bio_X509_AUX(bio, NULL, NULL, NULL);
+  if (cert == NULL)
+  {
+    QString msg = "PEM_read_bio_X509_AUX return NULL";
+    LOG_ERROR("%s", msg);
+    setError<VSslError>(error, msg, VERR_IN_PEM_READ_BIO_X509_AUX);
+    BIO_free(bio);
+    return NULL;
+  }
+
+  BIO_free(bio);
+  return cert;
+}
+
+bool VSslServer::setKeyCrtStuff(VError& error, SSL_CTX* ctx, EVP_PKEY* key, X509* cert)
+{
+  LOG_ASSERT(key != NULL);
+  LOG_ASSERT(cert != NULL);
+
+  int res = SSL_CTX_use_certificate(ctx, cert);
+  if (res <= 0)
+  {
+    setError<VSslError>(error, qformat("SSL_CTX_use_certificate return %d", res), VERR_IN_SSL_CTX_USE_CERTIFICATE);
+    return false;
+  }
+
+  res = SSL_CTX_use_PrivateKey(ctx, key);
+  if (res <= 0)
+  {
+    setError<VSslError>(error, qformat("SSL_CTX_use_PrivateKey return %d", res), VERR_SSL_CTX_USER_PRIVATEKEY);
+    return false;
+  }
+
+  res = SSL_CTX_check_private_key(ctx);
+  if (!res)
+  {
+    setError<VSslError>(error, qformat("SSL_CTX_check_private_key return %d", res), VERR_SSL_CTX_CHECK_PRIVATEKEY);
+    return false;
+  }
+
+  return true;
+}
+
+bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cert)
+{
+  LOG_ASSERT(key != NULL);
+  LOG_ASSERT(cert != NULL);
+
+  int res = SSL_use_certificate(con, cert);
+  if (res <= 0)
+  {
+    setError<VSslError>(error, qformat("SSL_CTX_use_certificate return %d", res), VERR_IN_SSL_CTX_USE_CERTIFICATE);
+    return false;
+  }
+
+  res = SSL_use_PrivateKey(con, key);
+  if (res <= 0)
+  {
+    setError<VSslError>(error, qformat("SSL_CTX_use_PrivateKey return %d", res), VERR_SSL_CTX_USER_PRIVATEKEY);
+    return false;
+  }
+
+  res = SSL_check_private_key(con);
+  if (!res)
+  {
+    setError<VSslError>(error, qformat("SSL_CTX_check_private_key return %d", res), VERR_SSL_CTX_CHECK_PRIVATEKEY);
+    return false;
+  }
+
+  return true;
 }
 
 void VSslServer::myRun(VTcpSession* tcpSession)

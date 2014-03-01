@@ -29,14 +29,12 @@ protected:
   virtual bool doOpen();
   virtual bool doClose();
 
-protected:
-  X509*     s_cert;
-  EVP_PKEY* s_key;
+public:
+  EVP_PKEY* m_key;
+  X509*     m_crt;
 
+protected:
   bool setup(QString fileName);
-  bool loadKey(QString fileName);
-  bool loadCrt(QString fileName);
-  bool setCrtKeyStuff();
   static int ssl_servername_cb(SSL *s, int *ad, void *arg);
 };
 
@@ -75,9 +73,18 @@ public:
   QString        certificatePath;
   QString        defaultKeyCrtFileName;
 
-protected:
+public:
   SSL_METHOD*     m_meth;
   SSL_CTX*        m_ctx;
+
+protected:
+  bool             setup(QString fileName);
+
+protected:
+  static EVP_PKEY* loadKey(VError& error, QString fileName);
+  static X509*     loadCrt(VError& error, QString fileName);
+  static bool      setKeyCrtStuff(VError& error, SSL_CTX* ctx, EVP_PKEY* key, X509* cert);
+  static bool      setKeyCrtStuff(VError& error, SSL*     con, EVP_PKEY* key, X509* cert);
 
 protected:
     VCS           certificateCs;
