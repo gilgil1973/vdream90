@@ -1,6 +1,6 @@
 @echo off
 rem --------------------------------------------------------
-rem _clear version 2013.10.16
+rem _clear version 2014.03.01
 rem Copyright (c) Gilbert Lee All rights reserved
 rem --------------------------------------------------------
 
@@ -88,27 +88,31 @@ call :rm_folder release
 rem call :rm_folder log
 call :rm_folder Win32
 call :rm_folder x64
+call :rm_folder cache
 call :rm_folder __history
 
 rem --------------------------------------------------------
 rem epilogue
 rem --------------------------------------------------------
-goto :eof
+goto eof
 
 rem --------------------------------------------------------
 rem rm_file
 rem --------------------------------------------------------
 :rm_file
   del /s %1 %2 %3 %4 %5 %6 %7 %8 
-goto :eof
+goto eof
 
 rem --------------------------------------------------------
 rem rm_folder
 rem --------------------------------------------------------
 :rm_folder
   set __path__=%1
-  if not defined __path__ goto :eof
+  if not defined __path__ goto eof
   for /f "tokens=*" %%I in ('dir /b /s /ad %__path__%*') do if %%~nxI==%__path__% (
     rmdir /s /q "%%I"
   )
-goto :eof
+goto eof
+
+:eof
+
