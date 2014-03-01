@@ -27,11 +27,14 @@ CONFIG(release, debug|release) {
 
 #-------------------------------------------------
 # openssl
-# gilgil temp 2014.02.25
 #-------------------------------------------------
-OPENSSL_PATH  = C:/OpenSSL-Win64
-INCLUDEPATH  += $${OPENSSL_PATH}/include
-LIBS         += -L$${OPENSSL_PATH}/lib -llibeay32 -lssleay32
+win32:contains(QMAKE_TARGET.arch, x86_64) {
+  OPENSSL_PATH = C:/OpenSSL-Win64
+} else {
+  OPENSSL_PATH = C:/OpenSSL-Win32
+}
+INCLUDEPATH   += $${OPENSSL_PATH}/include
+LIBS          += -L$${OPENSSL_PATH}/lib -llibeay32 -lssleay32
 
 #-------------------------------------------------
 # vdream
