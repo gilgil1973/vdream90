@@ -14,6 +14,60 @@ TEMPLATE = lib
 CONFIG  += staticlib
 DESTDIR  = ../lib
 
+SOURCES += \
+    ../include/common/vapp.cpp \
+    ../include/common/vcommon.cpp \
+    ../include/common/vdebugnew.cpp \
+    ../include/common/verror.cpp \
+    ../include/common/veventhandler.cpp \
+    ../include/common/vexception.cpp \
+    ../include/common/vfile.cpp \
+    ../include/common/vmemoryleak.cpp \
+    ../include/common/vobject.cpp \
+    ../include/common/vobjectwidget.cpp \
+    ../include/common/vperformance.cpp \
+    ../include/common/vrwobject.cpp \
+    ../include/common/vsecurelib.cpp \
+    ../include/common/vstring.cpp \
+    ../include/common/vsystem.cpp \
+    ../include/common/vthread.cpp \
+    ../include/common/vtick.cpp \
+    ../include/common/vxml.cpp \
+    ../include/common/vxmldoc.cpp \
+    ../include/graph/vgraph.cpp \
+    ../include/graph/vgraphlink.cpp \
+    ../include/graph/vgraphnode.cpp \
+    ../include/graph/vgraphstream.cpp \
+    ../include/log/vlog.cpp \
+    ../include/log/vlogdbwin32.cpp \
+    ../include/log/vlogfactory.cpp \
+    ../include/log/vlogfile.cpp \
+    ../include/log/vloghttp.cpp \
+    ../include/log/vloglist.cpp \
+    ../include/log/vlognull.cpp \
+    ../include/log/vlogstderr.cpp \
+    ../include/log/vlogstdout.cpp \
+    ../include/log/vlogudp.cpp \
+    ../include/net/vhttpheader.cpp \
+    ../include/net/vhttpproxy.cpp \
+    ../include/net/vhttprequest.cpp \
+    ../include/net/vhttpresponse.cpp \
+    ../include/net/vnet.cpp \
+    ../include/net/vnetclient.cpp \
+    ../include/net/vnetfactory.cpp \
+    ../include/net/vnetserver.cpp \
+    ../include/net/vsslclient.cpp \
+    ../include/net/vsslcommon.cpp \
+    ../include/net/vsslserver.cpp \
+    ../include/net/vsslsession.cpp \
+    ../include/net/vtcpclient.cpp \
+    ../include/net/vtcpserver.cpp \
+    ../include/net/vtcpsession.cpp \
+    ../include/net/vudpclient.cpp \
+    ../include/net/vudpserver.cpp \
+    ../include/net/vudpsession.cpp \
+    ../include/other/vmyobject.cpp
+
 HEADERS += \
     ../include/common/vapp.h \
     ../include/common/vcommon.h \
@@ -76,57 +130,3 @@ HEADERS += \
     ../include/net/vudpsession.h \
     ../include/other/vint.h \
     ../include/other/vmyobject.h
-
-SOURCES += \
-    ../include/common/vapp.cpp \
-    ../include/common/vcommon.cpp \
-    ../include/common/vdebugnew.cpp \
-    ../include/common/verror.cpp \
-    ../include/common/veventhandler.cpp \
-    ../include/common/vexception.cpp \
-    ../include/common/vfile.cpp \
-    ../include/common/vmemoryleak.cpp \
-    ../include/common/vobject.cpp \
-    ../include/common/vobjectwidget.cpp \
-    ../include/common/vperformance.cpp \
-    ../include/common/vrwobject.cpp \
-    ../include/common/vsecurelib.cpp \
-    ../include/common/vstring.cpp \
-    ../include/common/vsystem.cpp \
-    ../include/common/vthread.cpp \
-    ../include/common/vtick.cpp \
-    ../include/common/vxml.cpp \
-    ../include/common/vxmldoc.cpp \
-    ../include/graph/vgraph.cpp \
-    ../include/graph/vgraphlink.cpp \
-    ../include/graph/vgraphnode.cpp \
-    ../include/graph/vgraphstream.cpp \
-    ../include/log/vlog.cpp \
-    ../include/log/vlogdbwin32.cpp \
-    ../include/log/vlogfactory.cpp \
-    ../include/log/vlogfile.cpp \
-    ../include/log/vloghttp.cpp \
-    ../include/log/vloglist.cpp \
-    ../include/log/vlognull.cpp \
-    ../include/log/vlogstderr.cpp \
-    ../include/log/vlogstdout.cpp \
-    ../include/log/vlogudp.cpp \
-    ../include/net/vhttpheader.cpp \
-    ../include/net/vhttpproxy.cpp \
-    ../include/net/vhttprequest.cpp \
-    ../include/net/vhttpresponse.cpp \
-    ../include/net/vnet.cpp \
-    ../include/net/vnetclient.cpp \
-    ../include/net/vnetfactory.cpp \
-    ../include/net/vnetserver.cpp \
-    ../include/net/vsslclient.cpp \
-    ../include/net/vsslcommon.cpp \
-    ../include/net/vsslserver.cpp \
-    ../include/net/vsslsession.cpp \
-    ../include/net/vtcpclient.cpp \
-    ../include/net/vtcpserver.cpp \
-    ../include/net/vtcpsession.cpp \
-    ../include/net/vudpclient.cpp \
-    ../include/net/vudpserver.cpp \
-    ../include/net/vudpsession.cpp \
-    ../include/other/vmyobject.cpp
