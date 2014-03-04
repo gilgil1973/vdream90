@@ -61,6 +61,8 @@ public:
 public slots:
   virtual bool open();
   virtual bool close();
+
+public:
   virtual bool close(bool wait, VTimeout timeout = vd::DEFAULT_TIMEOUT);
   virtual bool wait(VTimeout timeout = vd::DEFAULT_TIMEOUT);
 
