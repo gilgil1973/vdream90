@@ -58,7 +58,7 @@ public:
   //
   // open and close
   //
-public:
+public slots:
   virtual bool open();
   virtual bool close();
   virtual bool close(bool wait, VTimeout timeout = vd::DEFAULT_TIMEOUT);
