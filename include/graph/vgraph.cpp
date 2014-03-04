@@ -112,6 +112,7 @@ QStringList VGraphObjectList::findNamesByCategoryName(QString categoryName)
   foreach(VObject* object, objectList) res.push_back(object->name);
   return res;
 }
+
 void VGraphObjectList::load(VXml xml)
 {
   clear();
@@ -334,6 +335,11 @@ bool VGraph::doOpen()
       error.setErrorMsg(qPrintable(msg));
       res = false;
       break;
+    }
+    QObject::disconnect(object, SIGNAL(closed()), this, SLOT(close()));
+    if (!QObject::connect(object, SIGNAL(closed()), this, SLOT(close())))
+    {
+      LOG_ERROR("connect %s closed > this close() return false", qPrintable(object->name));
     }
   }
   mgr.resume();
