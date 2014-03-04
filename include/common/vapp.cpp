@@ -81,10 +81,8 @@ void VApp::initialize(bool path, bool xml, QString uri)
   if (xml)
   {
     QString fileName = VXmlDoc::defaultFileName();
-    // qDebug() << "initialize" << VXmlDoc::instance().toString(); // gilgil temp 2012.05.30
     if (QFile::exists(fileName))
       VXmlDoc::instance().loadFromFile(fileName);
-    // qDebug() << "initialize" << VXmlDoc::instance().toString(); // gilgil temp 2012.05.30
   }
 
   //---------------------------------------------------------------------------
@@ -118,6 +116,5 @@ void VApp::finalize(bool xml)
   {
     QString fileName = VXmlDoc::defaultFileName();
     VXmlDoc::instance().saveToFile(fileName);
-    // qDebug() << "finalize" << VXmlDoc::instance().toString(); // gilgil temp 2012.05.30
   }
 }

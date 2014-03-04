@@ -114,7 +114,6 @@ bool VXmlDoc::loadFromFile(QString fileName)
     return false;
   }
   *this = tempDoc.cloneNode().toDocument();
-  // qDebug() << QDomDocument::toString(); // gilgil temp 2012.05.31
   return true;
 }
 
