@@ -130,11 +130,7 @@ VSslServer::VSslServer(void* owner) : VTcpServer(owner)
   m_meth                = NULL;
   m_ctx                 = NULL;
 
-  bool res = VObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(myRun(VTcpSession*)), Qt::DirectConnection);
-  if (!res)
-  {
-    LOG_FATAL("VObject::connect return false");
-  }
+  VObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(myRun(VTcpSession*)), Qt::DirectConnection);
 }
 
 VSslServer::~VSslServer()
