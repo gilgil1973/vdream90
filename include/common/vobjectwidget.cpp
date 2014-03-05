@@ -62,8 +62,8 @@ void VOptionable::addOkCancelButtons(QDialog* dialog)
   pbOK->setDefault(true);
   pbOK->setText("OK");
   pbCancel->setText("Cancel");
-  QObject::connect(pbOK, SIGNAL(clicked()), dialog, SLOT(accept()));
-  QObject::connect(pbCancel, SIGNAL(clicked()), dialog, SLOT(close()));
+  VObject::connect(pbOK, SIGNAL(clicked()), dialog, SLOT(accept()));
+  VObject::connect(pbCancel, SIGNAL(clicked()), dialog, SLOT(close()));
 
   QGridLayout* buttonsLayout = new QGridLayout;
   buttonsLayout->addWidget(pbOK,     0, 0);

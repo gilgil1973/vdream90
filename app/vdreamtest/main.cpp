@@ -2,7 +2,7 @@
 
 MyServer::MyServer(void* owner) : VSslServer(owner)
 {
-  QObject::connect(this, SIGNAL(runned(VSslSession*)), this, SLOT(run___(VSslSession*)), Qt::DirectConnection);
+  VObject::connect(this, SIGNAL(runned(VSslSession*)), this, SLOT(run___(VSslSession*)), Qt::DirectConnection);
 }
 
 void MyServer::run___(VSslSession *sslSession)

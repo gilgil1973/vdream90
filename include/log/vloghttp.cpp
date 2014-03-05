@@ -76,12 +76,7 @@ void VLogHttp::save(VXml xml)
 // ----------------------------------------------------------------------------
 VLogHttpTcpServer::VLogHttpTcpServer(void* owner) : VTcpServer(owner)
 {
-  if (!QObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*)), Qt::DirectConnection))
-  //if (!QObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*))))
-  {
-    LOG_ERROR("connect return false");
-  }
-  // setLog(NULL); // gilgil temp 2012.11.01
+  VObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*)), Qt::DirectConnection);
 }
 
 VLogHttpTcpServer::~VLogHttpTcpServer()

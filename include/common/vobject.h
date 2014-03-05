@@ -19,6 +19,27 @@
 #include <VLog>
 
 // ----------------------------------------------------------------------------
+// VObjectConnection
+// ----------------------------------------------------------------------------
+class VObjectConnection
+{
+public:
+  QString  signal;
+  QObject* receiver;
+  QString  slot;
+
+public:
+  bool operator == (const VObjectConnection& r) const;
+};
+
+// ----------------------------------------------------------------------------
+// VObjectConnections
+// ----------------------------------------------------------------------------
+class VObjectConnections : public QList<VObjectConnection>
+{
+};
+
+// ----------------------------------------------------------------------------
 // VObject
 // ----------------------------------------------------------------------------
 class VObject :
@@ -38,6 +59,13 @@ public:
 public:
   VObject(void* owner = NULL);
   virtual ~VObject();
+
+public:
+  VObjectConnections connections;
+  static bool connect(QObject* sender, const char* signal, QObject* receiver, const char* slot, Qt::ConnectionType type = Qt::AutoConnection);
+  static bool connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot, Qt::ConnectionType type = Qt::AutoConnection);
+  static bool disconnect(QObject* sender, const char* signal, QObject* receiver, const char* slot);
+  static bool connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot);
 
 protected:
   VState m_state;

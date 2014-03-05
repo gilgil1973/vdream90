@@ -48,7 +48,7 @@ void App::createNetServer()
   if (param->netType == ntTCP)
   {
     VTcpServer* tcpServer = new VTcpServer(this);
-    QObject::connect(tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(runned(VTcpSession*)), Qt::DirectConnection);
+    VObject::connect(tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(runned(VTcpSession*)), Qt::DirectConnection);
     tcpServer->port = param->port;
     if (param->localHost != "") tcpServer->localHost = param->localHost;
     netServer = tcpServer;

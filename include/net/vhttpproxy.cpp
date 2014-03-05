@@ -47,7 +47,7 @@ protected:
 VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
 {
   tcpServer.port = PORT;
-  QObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*)), Qt::DirectConnection);
+  VObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*)), Qt::DirectConnection);
   autoOpen = true;
 }
 

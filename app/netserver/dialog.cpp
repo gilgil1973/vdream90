@@ -131,8 +131,8 @@ void Dialog::initializeControl()
   ui->pteRecv->setWordWrapMode(QTextOption::NoWrap);
   ui->pteSend->setWordWrapMode(QTextOption::NoWrap);
 
-  QObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(tcpRun(VTcpSession*)), Qt::DirectConnection);
-  QObject::connect(&sslServer, SIGNAL(runned(VSslSession*)), this, SLOT(sslRun(VSslSession*)), Qt::DirectConnection);
+  VObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(tcpRun(VTcpSession*)), Qt::DirectConnection);
+  VObject::connect(&sslServer, SIGNAL(runned(VSslSession*)), this, SLOT(sslRun(VSslSession*)), Qt::DirectConnection);
 }
 
 void Dialog::finalizeControl()

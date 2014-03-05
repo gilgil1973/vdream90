@@ -227,10 +227,10 @@ bool VGraphConnectList::addConnect(const VGraphConnect connect)
   if (sender == NULL)   return false;
   if (receiver == NULL) return false;
 
-  bool res = QObject::connect(sender, signal, receiver, slot, Qt::DirectConnection);
+  bool res = VObject::connect(sender, signal, receiver, slot, Qt::DirectConnection);
   if (!res)
   {
-    LOG_ERROR("QObject::connect(%s %s %s %s) return false",
+    LOG_ERROR("VObject::connect(%s %s %s %s) return false",
       qPrintable(sender->name),   qPrintable(connect.signal),
       qPrintable(receiver->name), qPrintable(connect.slot));
     return false;
@@ -254,25 +254,20 @@ bool VGraphConnectList::delConnect(VGraphConnect connect)
   }
 
   VObject*    sender   = m_graph->objectList.findByName(connect.sender);
-  QMetaMethod signal   = VGraph::findMethod(sender, connect.signal);
+  QMetaMethod signal   = VGraph::findMethod(sender, connect.signal); // gilgil temp 2014.03.05
 
   VObject*    receiver = m_graph->objectList.findByName(connect.receiver);
-  QMetaMethod slot     = VGraph::findMethod(receiver, connect.slot);
+  QMetaMethod slot     = VGraph::findMethod(receiver, connect.slot); // gilgil temp 2014.03.05
 
   if (sender == NULL)   return false;
   if (receiver == NULL) return false;
 
-  bool res = QObject::disconnect(sender, signal, receiver, slot);
-  if (!res)
-  {
-    LOG_ERROR("QObject::connect(%s %s %s %s) return false",
-      qPrintable(sender->name),   qPrintable(connect.signal),
-      qPrintable(receiver->name), qPrintable(connect.slot));
-    return false;
-  }
+  // bool res = VObject::disconnect(sender, signal, receiver, slot);
+  bool res = VObject::disconnect(sender, qPrintable(connect.signal), receiver, qPrintable(connect.slot)); // gilgil temp 2014.03.05
+  if (!res) return false;
 
   this->removeAt(i);
-  return res;
+  return true;
 }
 
 void VGraphConnectList::load(VXml xml)
@@ -336,8 +331,7 @@ bool VGraph::doOpen()
       res = false;
       break;
     }
-    QObject::disconnect(object, SIGNAL(closed()), this, SLOT(close()));
-    if (!QObject::connect(object, SIGNAL(closed()), this, SLOT(close())))
+    if (!VObject::connect(object, SIGNAL(closed()), this, SLOT(close())))
     {
       LOG_ERROR("connect %s closed > this close() return false", qPrintable(object->name));
     }
@@ -396,7 +390,8 @@ QMetaMethod VGraph::findMethod(VObject* object, QString methodName)
   for (int i = 0; i < _count; i++)
   {
     QMetaMethod res = object->metaObject()->method(i);
-    if (QString(res.methodSignature()) == methodName)
+    QString signature = QString(res.methodSignature());
+    if (signature == methodName)
     {
       return res;
     }

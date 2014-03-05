@@ -11,7 +11,7 @@ MyTCPTest::MyTCPTest()
   m_tcpServer.port = vd::DEFAULT_PORT;
   m_tcpClient.host = "localhost";
   m_tcpClient.port = vd::DEFAULT_PORT;
-  QObject::connect(&m_tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*)), Qt::DirectConnection);
+  VObject::connect(&m_tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(run(VTcpSession*)), Qt::DirectConnection);
   m_succeed          = true;
 }
 

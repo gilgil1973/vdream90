@@ -2,6 +2,17 @@
 #include <VDebugNew>
 
 // ----------------------------------------------------------------------------
+// VObjectConnection
+// ----------------------------------------------------------------------------
+bool VObjectConnection::operator == (const VObjectConnection& r) const
+{
+  if (this->signal != r.signal)     return false;
+  if (this->receiver != r.receiver) return false;
+  if (this->slot != r.slot)         return false;
+  return true;
+}
+
+// ----------------------------------------------------------------------------
 // VObject
 // ----------------------------------------------------------------------------
 VObject::VObject(void* owner) : QObject((QObject*)owner) // gilgil temp 2012.05.29
@@ -20,6 +31,95 @@ VObject::~VObject()
     LOG_FATAL("%s close must be called in descendant of VObject(state=%s) %p", qPrintable(name), qPrintable(m_state.str()), this);
   }
 }
+
+bool VObject::connect(QObject* sender, const char* signal, QObject* receiver, const char* slot, Qt::ConnectionType type)
+{
+  LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot, (int)type);
+  bool res = QObject::connect(sender, signal, receiver, slot, type);
+  if (!res)
+  {
+    LOG_ERROR("VObject::connect(%s %s > %s %s %d) return false", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot, (int)type);
+    return false;
+  }
+  VObject* vsender = dynamic_cast<VObject*>(sender);
+  if (vsender != NULL)
+  {
+    VObjectConnection connection;
+    connection.signal   = signal;
+    connection.receiver = receiver;
+    connection.slot     = slot;
+    vsender->connections.push_back(connection);
+  }
+  return res;
+}
+
+bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot, Qt::ConnectionType type)
+{
+  LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data(), (int)type);
+  bool res = QObject::connect(sender, signal, receiver, slot, type);
+  if (!res)
+  {
+    LOG_ERROR("VObject::connect(%s %s > %s %s %d) return false", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data(), (int)type);
+    return false;
+  }
+  VObject* vsender = dynamic_cast<VObject*>(sender);
+  if (vsender != NULL)
+  {
+    VObjectConnection connection;
+    connection.signal   = signal.methodSignature();
+    connection.receiver = receiver;
+    connection.slot     = slot.methodSignature();
+    vsender->connections.push_back(connection);
+  }
+  return res;
+}
+
+bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver, const char* slot)
+{
+  LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot);
+  bool res = QObject::disconnect(sender, signal, receiver, slot);
+  if (!res)
+  {
+    LOG_ERROR("VObject::disconnect(%s %s > %s %s) return false", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot);
+    return false;
+  }
+  VObject* vsender = dynamic_cast<VObject*>(sender);
+  if (vsender != NULL)
+  {
+    VObjectConnection connection;
+    connection.signal   = signal;
+    connection.receiver = receiver;
+    connection.slot     = slot;
+    int index = vsender->connections.indexOf(connection);
+    if (index != -1)
+      vsender->connections.removeAt(index);
+  }
+  return res;
+}
+
+bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot)
+{
+  LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data());
+  bool res = QObject::disconnect(sender, signal, receiver, slot);
+  if (!res)
+  {
+    LOG_ERROR("VObject::disconnect(%s %s > %s %s) return false", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data());
+    return false;
+  }
+  VObject* vsender = dynamic_cast<VObject*>(sender);
+  if (vsender != NULL)
+  {
+    VObjectConnection connection;
+    connection.signal   = signal.methodSignature();
+    connection.receiver = receiver;
+    connection.slot     = slot.methodSignature();
+    int index = vsender->connections.indexOf(connection);
+    if (index != -1)
+      vsender->connections.removeAt(index);
+  }
+  return res;
+}
+
 
 bool VObject::open()
 {
