@@ -4,6 +4,13 @@
 // ----------------------------------------------------------------------------
 // VObjectConnection
 // ----------------------------------------------------------------------------
+VObjectConnection::VObjectConnection(QMetaMethod signal, QObject* receiver, QMetaMethod slot)
+{
+  this->signal   = signal;
+  this->receiver = receiver;
+  this->slot     = slot;
+}
+
 bool VObjectConnection::operator == (const VObjectConnection& r) const
 {
   if (this->signal != r.signal)     return false;
@@ -44,10 +51,7 @@ bool VObject::connect(QObject* sender, const char* signal, QObject* receiver, co
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection;
-    connection.signal   = signal;
-    connection.receiver = receiver;
-    connection.slot     = slot;
+    VObjectConnection connection(sender, findMethod(sender, signal), receiver, findMethod(recerver, slot));
     vsender->connections.push_back(connection);
   }
   return res;
@@ -65,10 +69,7 @@ bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *recei
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection;
-    connection.signal   = signal.methodSignature();
-    connection.receiver = receiver;
-    connection.slot     = slot.methodSignature();
+    VObjectConnection connection(signal.methodSignature(), receiver, slot.methodSignature());
     vsender->connections.push_back(connection);
   }
   return res;
@@ -86,10 +87,7 @@ bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver,
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection;
-    connection.signal   = signal;
-    connection.receiver = receiver;
-    connection.slot     = slot;
+    VObjectConnection connection(QByteArray(signal), receiver, QByteArray(slot));
     int index = vsender->connections.indexOf(connection);
     if (index != -1)
       vsender->connections.removeAt(index);
@@ -97,7 +95,7 @@ bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver,
   return res;
 }
 
-bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot)
+bool VObject::disconnect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot)
 {
   LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data());
   bool res = QObject::disconnect(sender, signal, receiver, slot);
@@ -109,10 +107,7 @@ bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *recei
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection;
-    connection.signal   = signal.methodSignature();
-    connection.receiver = receiver;
-    connection.slot     = slot.methodSignature();
+    VObjectConnection connection(signal.methodSignature(), receiver, slot.methodSignature());
     int index = vsender->connections.indexOf(connection);
     if (index != -1)
       vsender->connections.removeAt(index);
@@ -120,6 +115,28 @@ bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *recei
   return res;
 }
 
+QMetaMethod VObject::findMethod(VObject* object, QString methodName)
+{
+  if (object == NULL)
+  {
+    LOG_ERROR("object is null for method('%s')", qPrintable(methodName));
+    QMetaMethod blankMethod;
+    return blankMethod;
+  }
+  int _count = object->metaObject()->methodCount();
+  for (int i = 0; i < _count; i++)
+  {
+    QMetaMethod res = object->metaObject()->method(i);
+    QString signature = QString(res.methodSignature());
+    if (signature == methodName)
+    {
+      return res;
+    }
+  }
+  LOG_ERROR("can not find method('%s')", qPrintable(methodName));
+  QMetaMethod blankMethod;
+  return blankMethod;
+}
 
 bool VObject::open()
 {

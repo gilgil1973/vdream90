@@ -219,10 +219,10 @@ bool VGraphConnectList::addConnect(const VGraphConnect connect)
   }
 
   VObject*    sender   = m_graph->objectList.findByName(connect.sender);
-  QMetaMethod signal   = VGraph::findMethod(sender, connect.signal);
+  QMetaMethod signal   = VObject::findMethod(sender, connect.signal);
 
   VObject*    receiver = m_graph->objectList.findByName(connect.receiver);
-  QMetaMethod slot     = VGraph::findMethod(receiver, connect.slot);
+  QMetaMethod slot     = VObject::findMethod(receiver, connect.slot);
 
   if (sender == NULL)   return false;
   if (receiver == NULL) return false;
@@ -254,16 +254,15 @@ bool VGraphConnectList::delConnect(VGraphConnect connect)
   }
 
   VObject*    sender   = m_graph->objectList.findByName(connect.sender);
-  QMetaMethod signal   = VGraph::findMethod(sender, connect.signal); // gilgil temp 2014.03.05
+  QMetaMethod signal   = VObject::findMethod(sender, connect.signal); // gilgil temp 2014.03.05
 
   VObject*    receiver = m_graph->objectList.findByName(connect.receiver);
-  QMetaMethod slot     = VGraph::findMethod(receiver, connect.slot); // gilgil temp 2014.03.05
+  QMetaMethod slot     = VObject::findMethod(receiver, connect.slot); // gilgil temp 2014.03.05
 
   if (sender == NULL)   return false;
   if (receiver == NULL) return false;
 
-  // bool res = VObject::disconnect(sender, signal, receiver, slot);
-  bool res = VObject::disconnect(sender, qPrintable(connect.signal), receiver, qPrintable(connect.slot)); // gilgil temp 2014.03.05
+  bool res = VObject::disconnect(sender, signal, receiver, slot);
   if (!res) return false;
 
   this->removeAt(i);
@@ -376,29 +375,6 @@ QStringList VGraph::signalList(VObject *object)
 QStringList VGraph::slotList(VObject *object)
 {
   return methodList(object, QMetaMethod::Slot);
-}
-
-QMetaMethod VGraph::findMethod(VObject* object, QString methodName)
-{
-  if (object == NULL)
-  {
-    LOG_ERROR("object is null for method('%s')", qPrintable(methodName));
-    QMetaMethod blankMethod;
-    return blankMethod;
-  }
-  int _count = object->metaObject()->methodCount();
-  for (int i = 0; i < _count; i++)
-  {
-    QMetaMethod res = object->metaObject()->method(i);
-    QString signature = QString(res.methodSignature());
-    if (signature == methodName)
-    {
-      return res;
-    }
-  }
-  LOG_ERROR("can not find method('%s')", qPrintable(methodName));
-  QMetaMethod blankMethod;
-  return blankMethod;
 }
 
 void VGraph::load(VXml xml)

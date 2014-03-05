@@ -123,7 +123,6 @@ protected:
 public:
   static QStringList signalList(VObject* object);
   static QStringList slotList(VObject* object);
-  static QMetaMethod findMethod(VObject* object, QString methodName);
 
 public:
   virtual void load(VXml xml);

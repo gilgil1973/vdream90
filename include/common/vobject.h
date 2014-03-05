@@ -24,9 +24,12 @@
 class VObjectConnection
 {
 public:
-  QString  signal;
-  QObject* receiver;
-  QString  slot;
+  VObjectConnection(QMetaMethod signal, QObject* receiver, QMetaMethod slot);
+
+public:
+  QMetaMethod signal;
+  QObject*    receiver;
+  QMetaMethod slot;
 
 public:
   bool operator == (const VObjectConnection& r) const;
@@ -61,11 +64,13 @@ public:
   virtual ~VObject();
 
 public:
+
   VObjectConnections connections;
   static bool connect(QObject* sender, const char* signal, QObject* receiver, const char* slot, Qt::ConnectionType type = Qt::AutoConnection);
   static bool connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot, Qt::ConnectionType type = Qt::AutoConnection);
   static bool disconnect(QObject* sender, const char* signal, QObject* receiver, const char* slot);
-  static bool connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot);
+  static bool disconnect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot);
+  static QMetaMethod findMethod(VObject* object, QString methodName);
 
 protected:
   VState m_state;
