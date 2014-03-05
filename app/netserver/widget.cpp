@@ -401,6 +401,7 @@ void Widget::on_pbSend_clicked()
 {
   if (netServer == NULL) return;
   QByteArray ba = qPrintable(ui->pteSend->toPlainText());
+  ba = ba.replace("\n", "\r\n");
   if (ui->chkSendHexa->checkState() == Qt::Checked) ba = ba.fromHex(ba);
   netServer->write(ba);
 }
