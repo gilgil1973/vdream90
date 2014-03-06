@@ -87,6 +87,10 @@ void Widget::load(VXml xml)
     }
   }
 
+  bool checked = ui->chkShowMsg->checkState() == Qt::Checked;
+  checked = xml.getBool("showMsg", checked);
+  ui->chkShowMsg->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+
   proxy.load(xml.gotoChild("HttpProxy"));
 }
 
@@ -100,6 +104,8 @@ void Widget::save(VXml xml)
     coordXml.setInt("width",  rect.width());
     coordXml.setInt("height", rect.height());
   }
+
+  xml.setBool("showMsg", ui->chkShowMsg->checkState() == Qt::Checked);
 
   proxy.save(xml.gotoChild("HttpProxy"));
 }
