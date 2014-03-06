@@ -21,6 +21,8 @@
 class VSslServer;
 class VSslServerSession : public VSslSession
 {
+  friend class VSslServer;
+
 public:
   VSslServerSession(void* owner = NULL);
   virtual ~VSslServerSession();
@@ -31,7 +33,6 @@ protected:
 
 protected:
   bool setup(QString fileName);
-  static int ssl_servername_cb(SSL *s, int *ad, void *arg);
 };
 
 // ----------------------------------------------------------------------------
@@ -68,10 +69,15 @@ public:
   VSslMethodType methodType;
   QString        certificatePath;
   QString        defaultKeyCrtFileName;
+  bool           ignoreConnectMessage;
 
 public:
   SSL_METHOD*     m_meth;
   SSL_CTX*        m_ctx;
+
+protected:
+  static int ssl_servername_cb(SSL *s, int *ad, void *arg);
+  static int ssl_servername_cb_debug(SSL *s, int *ad, void *arg, int* debug);
 
 protected:
   bool             setup(QString fileName);

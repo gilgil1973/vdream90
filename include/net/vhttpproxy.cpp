@@ -103,7 +103,7 @@ protected:
 VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
 {
   tcpEnabled     = true;
-  sslEnabled     = false;
+  sslEnabled     = true;
 
   tcpServer.port = HTTP_PROXY_PORT;
   sslServer.port = SSL_PROXY_PORT;
@@ -178,7 +178,7 @@ void VHttpProxy::sslRun(VSslSession* sslSession)
 
 void VHttpProxy::run(VNetSession* inSession)
 {
-  LOG_DEBUG("stt"); // gilgil temp 2013.10.19
+  LOG_DEBUG("stt inSession=%p", inSession); // gilgil temp 2013.10.19
 
   VNetClient* outClient = NULL;
   int defaultOutPort;
@@ -279,7 +279,7 @@ void VHttpProxy::run(VNetSession* inSession)
     outClient->write(request.toByteArray());
     totalPacket = "";
   }
-  LOG_DEBUG("end"); // gilgil temp 2013.10.19
+  LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2013.10.19
   outClient->close();
   if (thread != NULL) delete thread;
   delete outClient;

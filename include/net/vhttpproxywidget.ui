@@ -32,7 +32,20 @@
          <height>80</height>
         </rect>
        </property>
-       <layout class="QGridLayout" name="glCommon"/>
+       <layout class="QGridLayout" name="glCommon">
+        <property name="leftMargin">
+         <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>9</number>
+        </property>
+        <property name="bottomMargin">
+         <number>9</number>
+        </property>
+       </layout>
       </widget>
      </widget>
      <widget class="QWidget" name="tabPolicy">
@@ -48,7 +61,20 @@
          <height>80</height>
         </rect>
        </property>
-       <layout class="QGridLayout" name="glPolicy"/>
+       <layout class="QGridLayout" name="glPolicy">
+        <property name="leftMargin">
+         <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>9</number>
+        </property>
+        <property name="bottomMargin">
+         <number>9</number>
+        </property>
+       </layout>
       </widget>
      </widget>
      <widget class="QWidget" name="tabTcpServer">
@@ -64,7 +90,20 @@
          <height>80</height>
         </rect>
        </property>
-       <layout class="QGridLayout" name="glTcpServer"/>
+       <layout class="QGridLayout" name="glTcpServer">
+        <property name="leftMargin">
+         <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>9</number>
+        </property>
+        <property name="bottomMargin">
+         <number>9</number>
+        </property>
+       </layout>
       </widget>
      </widget>
      <widget class="QWidget" name="tabSslServer">
@@ -80,7 +119,20 @@
          <height>80</height>
         </rect>
        </property>
-       <layout class="QGridLayout" name="glSslServer"/>
+       <layout class="QGridLayout" name="glSslServer">
+        <property name="leftMargin">
+         <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>9</number>
+        </property>
+        <property name="bottomMargin">
+         <number>9</number>
+        </property>
+       </layout>
       </widget>
      </widget>
     </widget>

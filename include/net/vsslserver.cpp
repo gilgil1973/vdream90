@@ -3,6 +3,8 @@
 #include <VFile>
 #include <VDebugNew>
 
+static __thread int thread_debug = 0; // gilgil temp 2014.03.01
+
 // ----------------------------------------------------------------------------
 // VSslServerSession
 // ----------------------------------------------------------------------------
@@ -17,16 +19,12 @@ VSslServerSession::~VSslServerSession()
 
 bool VSslServerSession::doOpen()
 {
-  LOG_DEBUG("bef SSL_CTX_set_tlsext_servername_callback"); // gilgil temp 2014.03.01
-  if (!SSL_CTX_set_tlsext_servername_callback(ctx, ssl_servername_cb))
-  {
-    LOG_ERROR("SSL_CTX_set_tlsext_servername_callback return false");
-  }
-  if (!SSL_CTX_set_tlsext_servername_arg(ctx, this))
-  {
-    LOG_ERROR("SSL_CTX_set_tlsext_servername_arg return false");
-  }
-  return VSslSession::doOpen();
+  if (!VSslSession::doOpen()) return false;
+  // ----- gilgil temp 2014.03.06 -----
+  //VSslServer* server = (VSslServer*)owner;
+  //VLock lock(server->certificateCs);
+  // ----------------------------------
+  return true;
 }
 
 bool VSslServerSession::doClose()
@@ -40,82 +38,24 @@ bool VSslServerSession::setup(QString fileName)
   LOG_DEBUG("fileName=%s", qPrintable(fileName));
   LOG_DEBUG("------------------------------------------");
 
+  thread_debug = 200;
   EVP_PKEY* key = VSslServer::loadKey(error, fileName);
   if (key == NULL) return false;
 
+  thread_debug = 300;
   X509* crt = VSslServer::loadCrt(error, fileName);
   if (crt == NULL) return false;
 
+  thread_debug = 400;
   bool res = VSslServer::setKeyCrtStuff(error, con, key, crt);
   if (!res) return false;
 
+  thread_debug = 500;
   EVP_PKEY_free(key);
   X509_free(crt);
 
+  thread_debug = 600;
   return true;
-}
-
-int VSslServerSession::ssl_servername_cb(SSL *s, int *ad, void *arg)
-{
-  Q_UNUSED(ad)
-  VSslServerSession* session = (VSslServerSession*)arg;
-  VSslServer*        server  = (VSslServer*)(session->owner);
-
-  const char* serverName = SSL_get_servername(s, TLSEXT_NAMETYPE_host_name);
-
-  if (serverName == NULL)
-  {
-    LOG_DEBUG("serverName is null");
-    return SSL_TLSEXT_ERR_NOACK;
-  }
-
-  LOG_DEBUG("serverName=%s", serverName);
-  QString fileName = server->certificatePath + serverName + ".pem";
-
-  {
-    VLock lock(server->certificateCs); // protect file create critical section
-    if (!QFile::exists(fileName))
-    {
-      QProcess process;
-
-      QString path = server->certificatePath;
-      LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.01
-      QFileInfo fi(path);
-      if (!fi.isAbsolute())
-      {
-        path = VApp::currentPath() + path;
-      }
-      process.setWorkingDirectory(path);
-      LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
-
-      QString command = qformat("%s_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
-      LOG_DEBUG("command=%s", qPrintable(command));
-
-      process.start(command);
-      LOG_DEBUG("pid=%p", process.pid());
-
-      if(!process.waitForStarted())
-      {
-        LOG_FATAL("process.waitForStarted(%s) return false", qPrintable(command));
-      }
-      while(process.waitForReadyRead())
-      {
-          LOG_INFO("%s", process.readAll().data());
-      }
-      // ----- gilgil temp 23014.02.26 -----
-      /*
-      if (!process.waitForFinished())
-      {
-        LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
-      }
-      */
-      // sleep(3); // gilgil temp 2015.02.27
-      // -----------------------------------
-    }
-    session->setup(fileName);
-  }
-
-  return SSL_TLSEXT_ERR_NOACK;
 }
 
 // ----------------------------------------------------------------------------
@@ -125,8 +65,9 @@ VSslServer::VSslServer(void* owner) : VTcpServer(owner)
 {
   VSslCommon::initialize();
   methodType            = VSslMethodType::mtTLSV1;
-  certificatePath       = "./certificate/"; // gilgil temp 2014.02.27
+  certificatePath       = "certificate/";
   defaultKeyCrtFileName = "default.pem";
+  ignoreConnectMessage  = false;
   m_meth                = NULL;
   m_ctx                 = NULL;
 
@@ -140,8 +81,6 @@ VSslServer::~VSslServer()
 
 bool VSslServer::doOpen()
 {
-  if (!VTcpServer::doOpen()) return false;
-
   //
   // Set server method
   //
@@ -158,7 +97,17 @@ bool VSslServer::doOpen()
       SET_ERROR(VSslError, qformat("client method error(%s)", qPrintable(methodType.str())), VERR_SSL_METHOD);
       return false;
   }
+
   m_ctx = SSL_CTX_new(m_meth);
+  if (!SSL_CTX_set_tlsext_servername_callback(m_ctx, ssl_servername_cb))
+  {
+    LOG_ERROR("SSL_CTX_set_tlsext_servername_callback return false");
+  }
+  msleep(1000); // gilgil temp 2014.03.07
+  if (!SSL_CTX_set_tlsext_servername_arg(m_ctx, this))
+  {
+    LOG_ERROR("SSL_CTX_set_tlsext_servername_arg return false");
+  }
 
   if (defaultKeyCrtFileName != "")
   {
@@ -167,6 +116,9 @@ bool VSslServer::doOpen()
     if (!fi.isAbsolute()) fileName = certificatePath + fileName;
     if (!setup(fileName)) return false;
   }
+
+
+  if (!VTcpServer::doOpen()) return false;
 
   return true;
 }
@@ -219,6 +171,105 @@ int VSslServer::doWrite(char* buf, int size)
   }
   sslSessionList.unlock();
   return size;
+}
+
+
+int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg) // gilgil temp 2014.03.07
+{
+  int debug = 0;
+  int res = 0;
+  TRY
+  {
+    res = ssl_servername_cb_debug(con, ad, arg, &debug);
+  } EXCEPT
+  {
+    LOG_FATAL("debug=%d %d", debug, thread_debug);
+  }
+  return res;
+}
+
+int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug)
+{
+  Q_UNUSED(ad)
+
+  const char* serverName = SSL_get_servername(con, TLSEXT_NAMETYPE_host_name);
+  *debug = 1000;
+
+  if (serverName == NULL)
+  {
+    LOG_DEBUG("serverName is null");
+    return SSL_TLSEXT_ERR_NOACK;
+  }
+  *debug = 2500;
+  LOG_DEBUG("serverName=%p %s", serverName, serverName);
+  *debug = 3000;
+
+  VSslServer* server  = (VSslServer*)(arg);
+  LOG_ASSERT(server != NULL);
+
+  VSslServerSession* session = (VSslServerSession*)SSL_get_ex_data(con, 0);
+  LOG_ASSERT(session->con == con);
+
+  *debug = 500;
+  LOG_DEBUG("server=%p session=%p", server, session); // gilgil temp 2014.03.06
+  VLock lock(server->certificateCs); // protect file create critical section
+
+  QString fileName = server->certificatePath + serverName + ".pem";
+  *debug = 4000;
+
+  {
+    // VLock lock(server->certificateCs); // protect file create critical section
+    *debug = 5000;
+    if (!QFile::exists(fileName))
+    {
+      QProcess process;
+
+      QString path = server->certificatePath;
+      LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.01
+      QFileInfo fi(path);
+      if (!fi.isAbsolute())
+      {
+        path = VApp::currentPath() + path;
+      }
+      process.setWorkingDirectory(path);
+      LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
+
+      QString command = qformat("%s_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
+      LOG_DEBUG("command=%s", qPrintable(command));
+
+      process.start(command);
+      LOG_DEBUG("pid=%p", process.pid());
+
+      *debug = 6000;
+      if(!process.waitForStarted())
+      {
+        LOG_FATAL("process.waitForStarted(%s) return false", qPrintable(command));
+      }
+      *debug = 700;
+      while(process.waitForReadyRead())
+      {
+        QByteArray ba = process.readAll();
+        LOG_INFO("ba.size=%d", ba.size())
+        LOG_INFO("ba.datas=%s", ba.data());
+      }
+      *debug = 8000;
+      // ----- gilgil temp 23014.02.26 -----
+      /*
+      if (!process.waitForFinished())
+      {
+        LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
+      }
+      */
+      // sleep(3); // gilgil temp 2015.02.27
+      // -----------------------------------
+    }
+    *debug = 9000;
+    LOG_DEBUG("s=%p", con); // gilgil temp 2014.03.07
+    session->setup(fileName);
+    *debug = 9500;
+  }
+
+  return SSL_TLSEXT_ERR_NOACK;
 }
 
 bool VSslServer::setup(QString fileName)
@@ -350,6 +401,7 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cr
   LOG_ASSERT(key != NULL);
   LOG_ASSERT(crt != NULL);
 
+  LOG_DEBUG("con=%p key=%p crt=%p", con, key, crt); // gilgil temp 2014.03.06
   int res = SSL_use_certificate(con, crt);
   if (res <= 0)
   {
@@ -376,21 +428,30 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cr
 
 void VSslServer::myRun(VTcpSession* tcpSession)
 {
-  VSslServerSession *session = new VSslServerSession;
-  session->owner       = this;
-  session->tcpSession  = tcpSession;
-  session->handle      = tcpSession->handle;
-  session->ctx         = m_ctx;
-  if (!session->open()) goto _end;
+  VSslServerSession *sslSession = new VSslServerSession;
+  sslSession->owner       = this;
+  sslSession->tcpSession  = tcpSession;
+  sslSession->handle      = tcpSession->handle;
+  sslSession->ctx         = m_ctx;
+  if (!sslSession->open()) goto _end;
+  LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
 
-  SSL_set_accept_state(session->con);
+  if (ignoreConnectMessage)
+  {
+    QByteArray ba;
+    int readLen = tcpSession->read(ba);
+    if (readLen == VERR_FAIL) goto _end;
+    tcpSession->write("HTTP/1.0 200 Connection established\r\n\r\n");
+  }
+
+  SSL_set_accept_state(sslSession->con);
   while (true)
   {
-    if (SSL_is_init_finished(session->con)) break;
-    int res = SSL_accept(session->con);
+    if (SSL_is_init_finished(sslSession->con)) break;
+    int res = SSL_accept(sslSession->con);
     if (res < 0)
     {
-      LOG_DEBUG("[VDSSLServer.cpp] VDSSLSessionList::add SSL_accept return %d error=%d", res, SSL_get_error(session->con, res));
+      LOG_DEBUG("[VDSSLServer.cpp] VDSSLSessionList::add SSL_accept return %d error=%d", res, SSL_get_error(sslSession->con, res));
       goto _end;
     }
     else if (res == 0) // may be the TLS/SSL handshake was not successful
@@ -404,17 +465,18 @@ void VSslServer::myRun(VTcpSession* tcpSession)
   }
 
   sslSessionList.lock();
-  sslSessionList.push_back(session);
+  sslSessionList.push_back(sslSession);
   sslSessionList.unlock();
 
-  emit runned(session);
+  emit runned(sslSession);
 
   sslSessionList.lock();
-  sslSessionList.removeOne(session);
+  sslSessionList.removeOne(sslSession);
   sslSessionList.unlock();
 
 _end:
-  delete session;
+  LOG_DEBUG("end sslSession=%p con=%p", sslSession, sslSession->con);  // gilgil temp 2014.03.07
+  delete sslSession;
 }
 
 void VSslServer::load(VXml xml)
@@ -424,6 +486,7 @@ void VSslServer::load(VXml xml)
   methodType            = xml.getInt("methodType", (int)methodType);
   certificatePath       = xml.getStr("certificatePath", certificatePath);
   defaultKeyCrtFileName = xml.getStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
+  ignoreConnectMessage  = xml.getBool("ignoreConnectMessage", ignoreConnectMessage);
 }
 
 void VSslServer::save(VXml xml)
@@ -433,6 +496,7 @@ void VSslServer::save(VXml xml)
   xml.setInt("methodType", (int)methodType);
   xml.setStr("certificatePath", certificatePath);
   xml.setStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
+  xml.setBool("ignoreConnectMessage", ignoreConnectMessage);
 }
 
 #ifdef QT_GUI_LIB
@@ -444,6 +508,7 @@ void VSslServer::optionAddWidget(QLayout* layout)
   VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
   VOptionable::addLineEdit(layout, "leCertificatePath", "Certificate Path", certificatePath);
   VOptionable::addLineEdit(layout, "leDefaultKeyCrtFileName", "Default KeyCrtFileName", defaultKeyCrtFileName);
+  VOptionable::addCheckBox(layout, "chkIgnoreConnectMessage", "Ignore Connect Message", ignoreConnectMessage);
 }
 
 void VSslServer::optionSaveDlg(QDialog* dialog)
@@ -453,5 +518,6 @@ void VSslServer::optionSaveDlg(QDialog* dialog)
   methodType            = (VSslMethodType)(dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex());
   certificatePath       = dialog->findChild<QLineEdit*>("leCertificatePath")->text();
   defaultKeyCrtFileName = dialog->findChild<QLineEdit*>("leDefaultKeyCrtFileName")->text();
+  ignoreConnectMessage  = dialog->findChild<QCheckBox*>("chkIgnoreConnectMessage")->checkState() == Qt::Checked;
 }
 #endif // QT_GUI_LIB
