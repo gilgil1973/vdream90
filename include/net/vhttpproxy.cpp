@@ -66,12 +66,27 @@ protected:
   virtual void run()
   {
     VHttpProxy* proxy = (VHttpProxy*)owner;
+    VNetSession* outSession;
+    {
+      VTcpClient* tcpClient = dynamic_cast<VTcpClient*>(outClient);
+      if (tcpClient != NULL) outSession = tcpClient->tcpSession;
+
+      VSslClient* sslClient = dynamic_cast<VSslClient*>(outClient);
+      if (sslClient != NULL) outSession = sslClient->tcpSession;
+
+      if (outSession == NULL)
+      {
+        LOG_FATAL("outSession is NULL");
+        return;
+      }
+    }
     LOG_DEBUG("stt"); // gilgil temp 2013.10.19
     while (true)
     {
       QByteArray msg;
       int readLen = outClient->read(msg);
       if (readLen == VERR_FAIL) break;
+      emit proxy->beforeMsg(msg, outSession);
       emit proxy->beforeResponse(msg, outClient, inSession);
       int writeLen = inSession->write(msg);
       if (writeLen == VERR_FAIL) break;
@@ -207,6 +222,7 @@ void VHttpProxy::run(VNetSession* inSession)
     QByteArray packet;
     int readLen = inSession->read(packet);
     if (readLen == VERR_FAIL) break;
+    emit beforeMsg(packet, inSession);
     // LOG_DEBUG("%s", packet.data()); // gilgil temp
 
     totalPacket += packet;
@@ -249,6 +265,7 @@ void VHttpProxy::run(VNetSession* inSession)
 
       outClient->host = host;
       outClient->port = port;
+      LOG_DEBUG("opening %s:%d", qPrintable(host), port);
       if (!outClient->open())
       {
         LOG_ERROR("%s", outClient->error.msg);

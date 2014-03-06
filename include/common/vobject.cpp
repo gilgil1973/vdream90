@@ -4,7 +4,7 @@
 // ----------------------------------------------------------------------------
 // VObjectConnection
 // ----------------------------------------------------------------------------
-VObjectConnection::VObjectConnection(QMetaMethod signal, QObject* receiver, QMetaMethod slot)
+VObjectConnection::VObjectConnection(QByteArray signal, QObject* receiver, QByteArray slot)
 {
   this->signal   = signal;
   this->receiver = receiver;
@@ -51,7 +51,7 @@ bool VObject::connect(QObject* sender, const char* signal, QObject* receiver, co
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection(findMethod(sender, signal), receiver, findMethod(receiver, slot));
+    VObjectConnection connection(signal, receiver, slot);
     vsender->connections.push_back(connection);
   }
   return res;
@@ -69,7 +69,7 @@ bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *recei
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection(signal, receiver, slot);
+    VObjectConnection connection(signal.methodSignature(), receiver, slot.methodSignature());
     vsender->connections.push_back(connection);
   }
   return res;
@@ -87,7 +87,7 @@ bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver,
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection(findMethod(sender, signal), receiver, findMethod(receiver, slot));
+    VObjectConnection connection(signal, receiver, slot);
     int index = vsender->connections.indexOf(connection);
     if (index != -1)
       vsender->connections.removeAt(index);
@@ -107,7 +107,7 @@ bool VObject::disconnect(QObject *sender, const QMetaMethod &signal, QObject *re
   VObject* vsender = dynamic_cast<VObject*>(sender);
   if (vsender != NULL)
   {
-    VObjectConnection connection(signal, receiver, slot);
+    VObjectConnection connection(signal.methodSignature(), receiver, slot.methodSignature());
     int index = vsender->connections.indexOf(connection);
     if (index != -1)
       vsender->connections.removeAt(index);

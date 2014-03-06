@@ -6,6 +6,7 @@ Widget::Widget(QWidget *parent) :
   ui(new Ui::Widget)
 {
   ui->setupUi(this);
+  initializeControl();
 }
 
 Widget::~Widget()
@@ -18,6 +19,7 @@ Widget::~Widget()
 void Widget::initializeControl()
 {
   move(0, 0); resize(640, 480);
+  VObject::connect(&proxy, SIGNAL(beforeMsg(QByteArray,VNetSession*)), this, SLOT(showMessage(QByteArray,VNetSession*)));
 }
 
 void Widget::finalizeControl()
@@ -57,7 +59,17 @@ void Widget::showEvent(QShowEvent* showEvent)
 
 void Widget::showMessage(QString msg)
 {
+  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
+  ui->pteMsg->insertPlainText(msg + "\r\n");
+  ui->pteMsg->ensureCursorVisible();
+}
+
+void Widget::showMessage(QByteArray msg, VNetSession* fromSession)
+{
+  Q_UNUSED(fromSession)
+  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
   ui->pteMsg->insertPlainText(msg);
+  ui->pteMsg->ensureCursorVisible();
 }
 
 void Widget::load(VXml xml)
@@ -106,6 +118,11 @@ void Widget::on_pbClose_clicked()
 {
   proxy.close();
   setControl();
+}
+
+void Widget::on_pbClear_clicked()
+{
+  ui->pteMsg->clear();
 }
 
 void Widget::on_pbOption_clicked()

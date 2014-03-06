@@ -95,6 +95,7 @@ protected:
   void run(VNetSession* inSession);
 
 signals:
+  void beforeMsg(QByteArray msg, VNetSession* session);
   void beforeRequest(VHttpRequest& request, VNetSession* inSession, VNetClient* outClient);
   void beforeResponse(QByteArray& msg, VNetClient* outClient, VNetSession* inSession);
 

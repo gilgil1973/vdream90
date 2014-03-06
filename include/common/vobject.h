@@ -24,12 +24,12 @@
 class VObjectConnection
 {
 public:
-  VObjectConnection(QMetaMethod signal, QObject* receiver, QMetaMethod slot);
+  VObjectConnection(QByteArray signal, QObject* receiver, QByteArray slot);
 
 public:
-  QMetaMethod signal;
-  QObject*    receiver;
-  QMetaMethod slot;
+  QByteArray signal;
+  QObject*   receiver;
+  QByteArray slot;
 
 public:
   bool operator == (const VObjectConnection& r) const;

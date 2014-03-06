@@ -32,6 +32,7 @@ protected:
 
 public slots:
   void showMessage(QString msg);
+  void showMessage(QByteArray msg, VNetSession* fromSession);
 
 public:
   virtual void load(VXml xml);
@@ -41,6 +42,8 @@ private slots:
   void on_pbOpen_clicked();
 
   void on_pbClose_clicked();
+
+  void on_pbClear_clicked();
 
   void on_pbOption_clicked();
 
