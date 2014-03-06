@@ -207,7 +207,7 @@ int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug
   VSslServer* server  = (VSslServer*)(arg);
   LOG_ASSERT(server != NULL);
 
-  VSslServerSession* session = (VSslServerSession*)SSL_get_ex_data(con, 0);
+  VSslServerSession* session = (VSslServerSession*)SSL_get_ex_data(con, VSslSession::VSSL_SESSION_IDENTIFY_INDEX);
   LOG_ASSERT(session->con == con);
 
   *debug = 500;

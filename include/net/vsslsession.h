@@ -38,6 +38,9 @@ public:
   SSL_CTX*     ctx;        // reference, used in open
   VTcpSession* tcpSession; // reference
 
+protected:
+  static const int VSSL_SESSION_IDENTIFY_INDEX = 0;
+
 public:
   Ip  getLocalIP();
   Ip  getRemoteIP();

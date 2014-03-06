@@ -89,7 +89,7 @@ bool VSslSession::doOpen()
     SSL_free(con);
   }
   con = SSL_new(ctx);
-  SSL_set_ex_data(con, 0, this);
+  SSL_set_ex_data(con, VSSL_SESSION_IDENTIFY_INDEX, this);
 
   // --------------------------------------------------------------------------
   // set sbio
