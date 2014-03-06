@@ -15,6 +15,8 @@ DESTDIR  = ../../bin
 SOURCES += main.cpp\
         dialog.cpp
 
-HEADERS  += dialog.h
+HEADERS  += \
+    widget
 
-FORMS    += dialog.ui
+FORMS    += \
+    widget.ui

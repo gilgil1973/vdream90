@@ -1,7 +1,7 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QDialog>
+#include <QWidget>
 
 #include <VThread>
 #include <VTcpClient>
@@ -79,9 +79,6 @@ public:
   explicit Dialog(QWidget *parent = 0);
   ~Dialog();
 
-protected:
-  void showEvent(QShowEvent* showEvent);
-
 public:
   void initializeControl();
   void finalizeControl();
@@ -99,6 +96,7 @@ public:
 
 public:
   virtual bool event(QEvent* event);
+  virtual void showEvent(QShowEvent* event);
 
 public:
   virtual void load(VXml xml);

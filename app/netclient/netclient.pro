@@ -12,9 +12,11 @@ TARGET   = netclient
 TEMPLATE = app
 DESTDIR  = ../../bin
 
-SOURCES += main.cpp\
-        dialog.cpp
+SOURCES += main.cpp \
+    widget.cpp
 
-HEADERS  += dialog.h
+HEADERS  += \
+    widget.h
 
-FORMS    += dialog.ui
+FORMS    += \
+    widget.ui

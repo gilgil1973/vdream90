@@ -72,13 +72,6 @@ Dialog::~Dialog()
   delete ui;
 }
 
-void Dialog::showEvent(QShowEvent* showEvent)
-{
-  loadControl();
-  setControl();
-  QDialog::showEvent(showEvent);
-}
-
 void Dialog::initializeControl()
 {
   netClient    = NULL;
@@ -154,6 +147,13 @@ bool Dialog::event(QEvent* event)
   }
 
   return QDialog::event(event);
+}
+
+void Dialog::showEvent(QShowEvent* showEvent)
+{
+  loadControl();
+  setControl();
+  QDialog::showEvent(showEvent);
 }
 
 void Dialog::load(VXml xml)

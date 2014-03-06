@@ -70,7 +70,7 @@ public:
   static bool connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot, Qt::ConnectionType type = Qt::AutoConnection);
   static bool disconnect(QObject* sender, const char* signal, QObject* receiver, const char* slot);
   static bool disconnect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot);
-  static QMetaMethod findMethod(VObject* object, QString methodName);
+  static QMetaMethod findMethod(QObject* object, QString methodName);
 
 protected:
   VState m_state;
