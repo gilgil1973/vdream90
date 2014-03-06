@@ -1,5 +1,5 @@
-#include "dialog.h"
-#include "ui_dialog.h"
+#include "widget.h"
+#include "ui_widget.h"
 #include <VDebugNew>
 
 // ----------------------------------------------------------------------------

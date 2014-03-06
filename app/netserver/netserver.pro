@@ -12,8 +12,8 @@ TARGET   = netserver
 TEMPLATE = app
 DESTDIR  = ../../bin
 
-SOURCES += main.cpp\
-        dialog.cpp
+SOURCES += main.cpp \
+    widget.cpp
 
 HEADERS  += \
     widget.h
