@@ -1,5 +1,5 @@
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef WIDGET_H
+#define WIDGET_H
 
 #include <QWidget>
 
@@ -44,11 +44,11 @@ public:
 // ----------------------------------------------------------------------------
 // ClientThread
 // ----------------------------------------------------------------------------
-class Dialog;
+class Widget;
 class ClientThread : public VThread
 {
 protected:
-  Dialog*     dialog;
+  Widget*     widget;
   VNetClient* netClient;
 
 public:
@@ -63,21 +63,21 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// Dialog
+// Widget
 // ----------------------------------------------------------------------------
 namespace Ui {
-  class Dialog;
+  class Widget;
 }
 
-class Dialog : public QDialog, public VXmlable
+class Widget : public QWidget, public VXmlable
 {
   Q_OBJECT
 
   friend class ClientThread;
 
 public:
-  explicit Dialog(QWidget *parent = 0);
-  ~Dialog();
+  explicit Widget(QWidget *parent = 0);
+  ~Widget();
 
 public:
   void initializeControl();
@@ -118,7 +118,7 @@ private slots:
   void on_pbSend_clicked();
 
 private:
-  Ui::Dialog *ui;
+  Ui::Widget *ui;
 };
 
-#endif // DIALOG_H
+#endif // WIDGET_H

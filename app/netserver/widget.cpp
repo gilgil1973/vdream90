@@ -1,12 +1,12 @@
-#include "dialog.h"
-#include "ui_dialog.h"
+#include "widget.h"
+#include "ui_widget.h"
 
 // ----------------------------------------------------------------------------
 // UdpServerThread
 // ----------------------------------------------------------------------------
 UdpServerThread::UdpServerThread(void* owner, VUdpServer* udpServer)
 {
-  this->dialog    = (Dialog*)owner;
+  this->widget    = (Widget*)owner;
   this->udpServer = udpServer;
 }
 
@@ -17,7 +17,7 @@ UdpServerThread::~UdpServerThread()
 
 void UdpServerThread::fireEvent(QEvent* event)
 {
-  QApplication::postEvent(dialog, event);
+  QApplication::postEvent(widget, event);
 }
 
 void UdpServerThread::run()
@@ -72,14 +72,14 @@ void UdpServerThread::run()
       LOG_DEBUG("count=%d", sockAddrList.size()); // gilgi temp 2009.08.16
     }
 
-    if (dialog->ui->chkShowHexa->checkState() == Qt::Checked)
+    if (widget->ui->chkShowHexa->checkState() == Qt::Checked)
       ba = ba.toHex();
     QString msg = ba;
     fireEvent(new MsgEvent(msg));
 
-    if (dialog->ui->chkEcho->checkState() == Qt::Checked)
+    if (widget->ui->chkEcho->checkState() == Qt::Checked)
     {
-      if (dialog->ui->chkEchoBroadcast->checkState() == Qt::Checked)
+      if (widget->ui->chkEchoBroadcast->checkState() == Qt::Checked)
       {
         udpServer->write(ba); // do not check result
       } else
@@ -94,31 +94,30 @@ void UdpServerThread::run()
 }
 
 // ----------------------------------------------------------------------------
-// Dialog
+// Widget
 // ----------------------------------------------------------------------------
-Dialog::Dialog(QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::Dialog)
+Widget::Widget(QWidget *parent) :
+  QWidget(parent),
+  ui(new Ui::Widget)
 {
   ui->setupUi(this);
   initializeControl();
 }
 
-Dialog::~Dialog()
+Widget::~Widget()
 {
   saveControl();
   finalizeControl();
   delete ui;
 }
 
-void Dialog::initializeControl()
+void Widget::initializeControl()
 {
   netServer       = NULL;
   udpServerThread = NULL;
 
   move(0, 0); resize(640, 480);
 
-  setWindowFlags(windowFlags() | Qt::WindowMinMaxButtonsHint);
   setLayout(ui->mainLayout);
   ui->mainLayout->setSpacing(0);
   ui->pteRecv->setWordWrapMode(QTextOption::NoWrap);
@@ -128,22 +127,22 @@ void Dialog::initializeControl()
   VObject::connect(&sslServer, SIGNAL(runned(VSslSession*)), this, SLOT(sslRun(VSslSession*)), Qt::DirectConnection);
 }
 
-void Dialog::finalizeControl()
+void Widget::finalizeControl()
 {
   on_pbClose_clicked();
 }
 
-void Dialog::loadControl()
+void Widget::loadControl()
 {
   this->loadFromDefaultDoc("MainWindow");
 }
 
-void Dialog::saveControl()
+void Widget::saveControl()
 {
   this->saveToDefaultDoc("MainWindow");
 }
 
-void Dialog::setControl(VState state)
+void Widget::setControl(VState state)
 {
   LOG_DEBUG(""); // gilgil temp 2014.02.28
   if (state == VState::None)
@@ -164,22 +163,22 @@ void Dialog::setControl(VState state)
   ui->pbSend->setEnabled(state == VState::Opened);
 }
 
-void Dialog::tcpRun(VTcpSession* tcpSession)
+void Widget::tcpRun(VTcpSession* tcpSession)
 {
   myRun(tcpSession);
 }
 
-void Dialog::sslRun(VSslSession* sslSession)
+void Widget::sslRun(VSslSession* sslSession)
 {
   myRun(sslSession);
 }
 
-void Dialog::fireEvent(QEvent* event)
+void Widget::fireEvent(QEvent* event)
 {
   QApplication::postEvent(this, event);
 }
 
-void Dialog::myRun(VNetSession* netSession)
+void Widget::myRun(VNetSession* netSession)
 {
   LOG_ASSERT(netSession != NULL);
 
@@ -214,7 +213,7 @@ void Dialog::myRun(VNetSession* netSession)
   // fireEvent(new CloseEvent); // gilgil temp 2014.03.01
 }
 
-bool Dialog::event(QEvent* event)
+bool Widget::event(QEvent* event)
 {
   StateEvent* stateEvent = dynamic_cast<StateEvent*>(event);
   if (stateEvent != NULL)
@@ -238,17 +237,17 @@ bool Dialog::event(QEvent* event)
     return true;
   }
 
-  return QDialog::event(event);
+  return QWidget::event(event);
 }
 
-void Dialog::showEvent(QShowEvent* showEvent)
+void Widget::showEvent(QShowEvent* showEvent)
 {
   loadControl();
   setControl();
-  QDialog::showEvent(showEvent);
+  QWidget::showEvent(showEvent);
 }
 
-void Dialog::load(VXml xml)
+void Widget::load(VXml xml)
 {
   {
     VXml coordXml = xml.findChild("coord");
@@ -289,7 +288,7 @@ void Dialog::load(VXml xml)
   sslServer.load(xml.gotoChilds("netClient/sslServer"));
 }
 
-void Dialog::save(VXml xml)
+void Widget::save(VXml xml)
 {
   {
     VXml coordXml = xml.gotoChild("coord");
@@ -324,7 +323,7 @@ void Dialog::save(VXml xml)
   sslServer.save(xml.gotoChilds("netClient/sslServer"));
 }
 
-void Dialog::on_pbOpen_clicked()
+void Widget::on_pbOpen_clicked()
 {
   int currentIndex = ui->tabOption->currentIndex();
   switch (currentIndex)
@@ -361,7 +360,7 @@ void Dialog::on_pbOpen_clicked()
   setControl();
 }
 
-void Dialog::on_pbClose_clicked()
+void Widget::on_pbClose_clicked()
 {
   LOG_ASSERT(netServer != NULL);
   netServer->close();
@@ -369,12 +368,12 @@ void Dialog::on_pbClose_clicked()
   setControl();
 }
 
-void Dialog::on_pbClear_clicked()
+void Widget::on_pbClear_clicked()
 {
   ui->pteRecv->clear();
 }
 
-void Dialog::on_tbTcpAdvance_clicked()
+void Widget::on_tbTcpAdvance_clicked()
 {
   if (tcpServer.optionDoAll())
   {
@@ -382,7 +381,7 @@ void Dialog::on_tbTcpAdvance_clicked()
   }
 }
 
-void Dialog::on_tbUdpAdvence_clicked()
+void Widget::on_tbUdpAdvence_clicked()
 {
   if (udpServer.optionDoAll())
   {
@@ -390,7 +389,7 @@ void Dialog::on_tbUdpAdvence_clicked()
   }
 }
 
-void Dialog::on_tbSslAdvanced_clicked()
+void Widget::on_tbSslAdvanced_clicked()
 {
   if (sslServer.optionDoAll())
   {
@@ -398,7 +397,7 @@ void Dialog::on_tbSslAdvanced_clicked()
   }
 }
 
-void Dialog::on_pbSend_clicked()
+void Widget::on_pbSend_clicked()
 {
   if (netServer == NULL) return;
   QByteArray ba = qPrintable(ui->pteSend->toPlainText());

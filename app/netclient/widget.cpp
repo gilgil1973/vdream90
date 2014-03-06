@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 ClientThread::ClientThread(void* owner, VNetClient* netClient) : VThread(owner)
 {
-  this->dialog    = (Dialog*)owner;
+  this->widget    = (Widget*)owner;
   this->netClient = netClient;
 }
 
@@ -18,7 +18,7 @@ ClientThread::~ClientThread()
 
 void ClientThread::fireEvent(QEvent* event)
 {
-  QApplication::postEvent(dialog, event);
+  QApplication::postEvent(widget, event);
 }
 
 void ClientThread::run()
@@ -44,7 +44,7 @@ void ClientThread::run()
     int readLen = netClient->read(ba);
     if (readLen == VERR_FAIL) break;
 
-    if (dialog->ui->chkShowHexa->checkState() == Qt::Checked)
+    if (widget->ui->chkShowHexa->checkState() == Qt::Checked)
       ba = ba.toHex();
     QString msg = ba;
     fireEvent(new MsgEvent(msg));
@@ -55,53 +55,52 @@ void ClientThread::run()
 }
 
 // ----------------------------------------------------------------------------
-// Dialog
+// Widget
 // ----------------------------------------------------------------------------
-Dialog::Dialog(QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::Dialog)
+Widget::Widget(QWidget *parent) :
+  QWidget(parent),
+  ui(new Ui::Widget)
 {
   ui->setupUi(this);
   initializeControl();
 }
 
-Dialog::~Dialog()
+Widget::~Widget()
 {
   saveControl();
   finalizeControl();
   delete ui;
 }
 
-void Dialog::initializeControl()
+void Widget::initializeControl()
 {
   netClient    = NULL;
   clientThread = NULL;
 
   move(0, 0); resize(640, 480);
 
-  setWindowFlags(windowFlags() | Qt::WindowMinMaxButtonsHint);
   setLayout(ui->mainLayout);
   ui->mainLayout->setSpacing(0);
   ui->pteRecv->setWordWrapMode(QTextOption::NoWrap);
   ui->pteSend->setWordWrapMode(QTextOption::NoWrap);
 }
 
-void Dialog::finalizeControl()
+void Widget::finalizeControl()
 {
   on_pbClose_clicked();
 }
 
-void Dialog::loadControl()
+void Widget::loadControl()
 {
   this->loadFromDefaultDoc("MainWindow");
 }
 
-void Dialog::saveControl()
+void Widget::saveControl()
 {
   this->saveToDefaultDoc("MainWindow");
 }
 
-void Dialog::setControl(VState state)
+void Widget::setControl(VState state)
 {
   LOG_DEBUG(""); // gilgil temp 2014.02.28
   if (state == VState::None)
@@ -122,7 +121,7 @@ void Dialog::setControl(VState state)
   ui->pbSend->setEnabled(state == VState::Opened);
 }
 
-bool Dialog::event(QEvent* event)
+bool Widget::event(QEvent* event)
 {
   StateEvent* stateEvent = dynamic_cast<StateEvent*>(event);
   if (stateEvent != NULL)
@@ -146,17 +145,17 @@ bool Dialog::event(QEvent* event)
     return true;
   }
 
-  return QDialog::event(event);
+  return QWidget::event(event);
 }
 
-void Dialog::showEvent(QShowEvent* showEvent)
+void Widget::showEvent(QShowEvent* showEvent)
 {
   loadControl();
   setControl();
-  QDialog::showEvent(showEvent);
+  QWidget::showEvent(showEvent);
 }
 
-void Dialog::load(VXml xml)
+void Widget::load(VXml xml)
 {
   {
     VXml coordXml = xml.findChild("coord");
@@ -198,7 +197,7 @@ void Dialog::load(VXml xml)
   sslClient.load(xml.gotoChilds("netClient/sslClient"));
 }
 
-void Dialog::save(VXml xml)
+void Widget::save(VXml xml)
 {
   {
     VXml coordXml = xml.gotoChild("coord");
@@ -234,7 +233,7 @@ void Dialog::save(VXml xml)
   sslClient.save(xml.gotoChilds("netClient/sslClient"));
 }
 
-void Dialog::on_pbOpen_clicked()
+void Widget::on_pbOpen_clicked()
 {
   int currentIndex = ui->tabOption->currentIndex();
   switch (currentIndex)
@@ -263,7 +262,7 @@ void Dialog::on_pbOpen_clicked()
   setControl();
 }
 
-void Dialog::on_pbClose_clicked()
+void Widget::on_pbClose_clicked()
 {
   LOG_ASSERT(netClient != NULL);
   netClient->close();
@@ -271,12 +270,12 @@ void Dialog::on_pbClose_clicked()
   setControl();
 }
 
-void Dialog::on_pbClear_clicked()
+void Widget::on_pbClear_clicked()
 {
   ui->pteRecv->clear();
 }
 
-void Dialog::on_tbTcpAdvance_clicked()
+void Widget::on_tbTcpAdvance_clicked()
 {
   if (tcpClient.optionDoAll())
   {
@@ -285,7 +284,7 @@ void Dialog::on_tbTcpAdvance_clicked()
   }
 }
 
-void Dialog::on_tbUdpAdvence_clicked()
+void Widget::on_tbUdpAdvence_clicked()
 {
   if (udpClient.optionDoAll())
   {
@@ -294,7 +293,7 @@ void Dialog::on_tbUdpAdvence_clicked()
   }
 }
 
-void Dialog::on_tbSslAdvanced_clicked()
+void Widget::on_tbSslAdvanced_clicked()
 {
   if (sslClient.optionDoAll())
   {
@@ -303,7 +302,7 @@ void Dialog::on_tbSslAdvanced_clicked()
   }
 }
 
-void Dialog::on_pbSend_clicked()
+void Widget::on_pbSend_clicked()
 {
   if (netClient == NULL) return;
   QByteArray ba = qPrintable(ui->pteSend->toPlainText());
