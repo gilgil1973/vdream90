@@ -25,6 +25,15 @@ public:
 
 public:
   int onceWriteSize;
+public:
+  /// IP address or HostName
+  QString host;
+  /// Port No
+  int port;
+  /// Local IP address or HostName
+  QString localHost;
+  /// Local Port No
+  int localPort;
 
 public:
   virtual void load(VXml &xml);

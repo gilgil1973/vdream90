@@ -66,7 +66,8 @@ SOURCES += \
     ../include/net/vudpclient.cpp \
     ../include/net/vudpserver.cpp \
     ../include/net/vudpsession.cpp \
-    ../include/other/vmyobject.cpp
+    ../include/other/vmyobject.cpp \
+    ../include/net/vhttpproxywidget.cpp
 
 HEADERS += \
     ../include/common/vapp.h \
@@ -129,4 +130,8 @@ HEADERS += \
     ../include/net/vudpserver.h \
     ../include/net/vudpsession.h \
     ../include/other/vint.h \
-    ../include/other/vmyobject.h
+    ../include/other/vmyobject.h \
+    ../include/net/vhttpproxywidget.h
+
+FORMS += \
+    ../include/net/vhttpproxywidget.ui

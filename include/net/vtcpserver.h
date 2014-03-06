@@ -69,12 +69,6 @@ public:
   /// tcp client thread list
   VTcpSessionThreadList threadList;
 
-public:
-  /// Port No
-  int port;
-  // Local IP address or HostName
-  QString localHost;
-
 signals:
   void runned(VTcpSession* tcpSession);
 

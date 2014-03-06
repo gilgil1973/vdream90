@@ -32,25 +32,9 @@ protected:
   virtual int  doRead(char* buf, int size);
   virtual int  doWrite(char* buf, int size);
 
-protected:
-  /// IP address of host(set when open is called)
-  Ip m_ip;
-
 public:
   /// read only
   VTcpSession *tcpSession;
-
-public:
-  /// IP address or HostName
-  QString host;
-  /// IP address(read only. set when open is completed successfully)
-  Ip  ip() { return m_ip; }
-  /// Port No
-  int port;
-  /// Local IP address or HostName
-  QString localHost;
-  /// Local Port No
-  int localPort;
 
 public:
   virtual void load(VXml xml);

@@ -73,14 +73,20 @@ void VOptionable::addOkCancelButtons(QDialog* dialog)
 
 QLineEdit* VOptionable::addLineEdit(QLayout* layout, QString objectName, QString text, QString value)
 {
-  if (layout->findChild<QObject*>(objectName) != NULL)
+  QWidget* parentWidget = layout->parentWidget();
+  if (parentWidget == NULL)
   {
-    LOG_FATAL("layout->findChild(%s) is not null", qPrintable(objectName));
+    LOG_FATAL("parentWidget is null(%s)", qPrintable(objectName));
+    return NULL;
+  }
+  if (parentWidget->findChild<QObject*>(objectName) != NULL)
+  {
+    LOG_FATAL("parentWidget->findChild(%s) is not null", qPrintable(objectName));
     return NULL;
   }
 
-  QLabel*    label    = new QLabel(layout->parentWidget());
-  QLineEdit* lineEdit = new QLineEdit(layout->parentWidget());
+  QLabel*    label    = new QLabel(parentWidget);
+  QLineEdit* lineEdit = new QLineEdit(parentWidget);
 
   label->setText(text);
   lineEdit->setObjectName(objectName);
@@ -97,13 +103,19 @@ QLineEdit* VOptionable::addLineEdit(QLayout* layout, QString objectName, QString
 
 QCheckBox* VOptionable::addCheckBox(QLayout* layout, QString objectName, QString text, bool value)
 {
-  if (layout->findChild<QObject*>(objectName) != NULL)
+  QWidget* parentWidget = layout->parentWidget();
+  if (parentWidget == NULL)
   {
-    LOG_FATAL("layout->findChild(%s) is not null", qPrintable(objectName));
+    LOG_FATAL("parentWidget is null(%s)", qPrintable(objectName));
+    return NULL;
+  }
+  if (parentWidget->findChild<QObject*>(objectName) != NULL)
+  {
+    LOG_FATAL("parentWidget->findChild(%s) is not null", qPrintable(objectName));
     return NULL;
   }
 
-  QCheckBox* checkBox = new QCheckBox(layout->parentWidget());
+  QCheckBox* checkBox = new QCheckBox(parentWidget);
 
   checkBox->setObjectName(objectName);
   checkBox->setText(text);
@@ -116,14 +128,19 @@ QCheckBox* VOptionable::addCheckBox(QLayout* layout, QString objectName, QString
 
 QComboBox* VOptionable::addComboBox(QLayout *layout, QString objectName, QString text, QStringList strList, int index, QString value)
 {
-  if (layout->findChild<QObject*>(objectName) != NULL)
+  QWidget* parentWidget = layout->parentWidget();
+  if (parentWidget == NULL)
   {
-    LOG_FATAL("layout->findChild(%s) is not null", qPrintable(objectName));
+    LOG_FATAL("parentWidget is null(%s)", qPrintable(objectName));
     return NULL;
   }
-
-  QLabel*    label    = new QLabel(layout->parentWidget());
-  QComboBox* comboBox = new QComboBox(layout->parentWidget());
+  if (parentWidget->findChild<QObject*>(objectName) != NULL)
+  {
+    LOG_FATAL("parentWidget->findChild(%s) is not null", qPrintable(objectName));
+    return NULL;
+  }
+  QLabel*    label    = new QLabel(parentWidget);
+  QComboBox* comboBox = new QComboBox(parentWidget);
 
   label->setText(text);
   comboBox->setObjectName(objectName);

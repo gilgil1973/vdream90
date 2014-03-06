@@ -136,17 +136,11 @@ int VUdpServer::doWrite(char* buf, int size)
 void VUdpServer::load(VXml xml)
 {
   VNetServer::load(xml);
-
-  port = xml.getInt("port", port);
-  localHost = xml.getStr("localHost", localHost);
 }
 
 void VUdpServer::save(VXml xml)
 {
   VNetServer::save(xml);
-
-  xml.setInt("port", port);
-  xml.setStr("localHost", localHost);
 }
 
 #ifdef QT_GUI_LIB

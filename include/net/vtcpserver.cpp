@@ -40,8 +40,6 @@ void VTcpSessionThread::run()
 VTcpServer::VTcpServer(void* owner) : VNetServer(owner)
 {
   acceptSession = new VTcpSession(this);
-  port          =  0;
-  localHost     = "";
 }
 
 VTcpServer::~VTcpServer()
@@ -283,33 +281,21 @@ void VTcpServer::run()
 void VTcpServer::load(VXml xml)
 {
   VNetServer::load(xml);
-
-  port = xml.getInt("port", port);
-  localHost = xml.getStr("localHost", localHost);
 }
 
 void VTcpServer::save(VXml xml)
 {
   VNetServer::save(xml);
-
-  xml.setInt("port", port);
-  xml.setStr("localHost", localHost);
 }
 
 #ifdef QT_GUI_LIB
 void VTcpServer::optionAddWidget(QLayout* layout)
 {
   VNetServer::optionAddWidget(layout);
-
-  VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
-  VOptionable::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
 }
 
 void VTcpServer::optionSaveDlg(QDialog* dialog)
 {
   VNetServer::optionSaveDlg(dialog);
-
-  port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();
-  localHost = dialog->findChild<QLineEdit*>("leLocalHost")->text();
 }
 #endif // QT_GUI_LIB

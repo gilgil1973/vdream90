@@ -83,7 +83,7 @@ bool VHttpRequest::findHost(QString& host, int& port)
   if (pos == -1)
   {
     host = hostValue;
-    port = 80;
+    port = -1;
   } else
   {
     host = hostValue.left(pos + 1);

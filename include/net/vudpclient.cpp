@@ -9,11 +9,6 @@ REGISTER_METACLASS(VUdpClient, VNet)
 VUdpClient::VUdpClient(void* owner) : VNetClient(owner)
 {
   udpSession = new VUdpSession(this);
-  m_ip       = 0;
-  host       = "";
-  port       = 0;
-  localHost  = "";
-  localPort  = 0;
 }
 
 VUdpClient::~VUdpClient()
@@ -77,13 +72,13 @@ bool VUdpClient::doOpen()
     SET_ERROR(VNetError, "host is invalid", VERR_INVALID_HOST);
     return false;
   }
-  m_ip = VNet::resolve(host);
-  if (m_ip == 0)
+  Ip ip = VNet::resolve(host);
+  if (ip == 0)
   {
     SET_ERROR(VNetError, qformat("can not resolve host(%s)", qPrintable(host)), VERR_CAN_NOT_RESOLVE_HOST);
     return false;
   }
-  udpSession->addr.sin_addr.s_addr = htonl(m_ip);
+  udpSession->addr.sin_addr.s_addr = htonl(ip);
   memset(udpSession->addr.sin_zero, 0, sizeof(udpSession->addr.sin_zero));
 
   // ------------------------------------------------------------------------
@@ -120,41 +115,21 @@ int  VUdpClient::doWrite(char* buf, int size)
 void VUdpClient::load(VXml xml)
 {
   VNetClient::load(xml);
-
-  host = xml.getStr("host", host);
-  port = xml.getInt("port", port);
-  localHost = xml.getStr("localHost", localHost);
-  localPort = xml.getInt("localPort", localPort);
 }
 
 void VUdpClient::save(VXml xml)
 {
   VNetClient::save(xml);
-
-  xml.setStr("host", host);
-  xml.setInt("port", port);
-  xml.setStr("localHost", localHost);
-  xml.setInt("localPort", localPort);
 }
 
 #ifdef QT_GUI_LIB
 void VUdpClient::optionAddWidget(QLayout* layout)
 {
   VNetClient::optionAddWidget(layout);
-
-  VOptionable::addLineEdit(layout, "leHost",      "Host",       host);
-  VOptionable::addLineEdit(layout, "lePort",      "Port",       QString::number(port));
-  VOptionable::addLineEdit(layout, "leLocalHost", "Local Host", localHost);
-  VOptionable::addLineEdit(layout, "leLocalPort", "Local Port", QString::number(localPort));
 }
 
 void VUdpClient::optionSaveDlg(QDialog* dialog)
 {
   VNetClient::optionSaveDlg(dialog);
-
-  host      = dialog->findChild<QLineEdit*>("leHost")->text();
-  port      = dialog->findChild<QLineEdit*>("lePort")->text().toInt();
-  localHost = dialog->findChild<QLineEdit*>("leLocalHost")->text();
-  localPort = dialog->findChild<QLineEdit*>("leLocalPort")->text().toInt();
 }
 #endif // QT_GUI_LIB

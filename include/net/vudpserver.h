@@ -53,12 +53,6 @@ public:
   VSockAddrList sockAddrList;
 
 public:
-  /// Port No
-  int port;
-  // Local IP address or HostName
-  QString localHost;
-
-public:
   virtual void load(VXml xml);
   virtual void save(VXml xml);
 
