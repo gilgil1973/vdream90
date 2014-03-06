@@ -16,7 +16,7 @@ SOURCES += main.cpp\
         dialog.cpp
 
 HEADERS  += \
-    widget
+    widget.h
 
 FORMS    += \
     widget.ui
