@@ -1,3 +1,5 @@
+#ifdef QT_GUI_LIB
+
 #include "vhttpproxywidget.h"
 #include "ui_vhttpproxywidget.h"
 
@@ -16,3 +18,4 @@ VHttpProxyWidget::~VHttpProxyWidget()
 {
   delete ui;
 }
+#endif // QT_GUI_LIB
