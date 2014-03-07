@@ -8,6 +8,6 @@ SUBDIRS += \
   app/netclient/netclient.pro \  
   app/nets/nets.pro \
   app/netserver/netserver.pro \  
-  app/unittest/unittest.pro \
+#  app/unittest/unittest.pro \
   app/vdreamtest/vdreamtest.pro \
   app/vlog/vlog.pro
