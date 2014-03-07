@@ -133,5 +133,5 @@ void Widget::on_pbClear_clicked()
 
 void Widget::on_pbOption_clicked()
 {
-  proxy.optionDoAll();
+  proxy.optionDoAll(this);
 }
