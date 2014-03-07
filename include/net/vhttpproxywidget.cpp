@@ -7,7 +7,7 @@ VHttpProxyWidget::VHttpProxyWidget(QWidget *parent) :
 {
   ui->setupUi(this);
   ui->tabCommon->setLayout(ui->glCommon);
-  ui->tabPolicy->setLayout(ui->glPolicy);
+  ui->tabOutPolicy->setLayout(ui->glOutPolicy);
   ui->tabTcpServer->setLayout(ui->glTcpServer);
   ui->tabSslServer->setLayout(ui->glSslServer);
 }

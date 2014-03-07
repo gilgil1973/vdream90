@@ -83,7 +83,7 @@ public:
 public:
   bool                tcpEnabled;
   bool                sslEnabled;
-  VHttpProxyOutPolicy policy;
+  VHttpProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
 

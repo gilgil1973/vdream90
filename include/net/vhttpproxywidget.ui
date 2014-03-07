@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabCommon">
       <attribute name="title">
@@ -48,9 +48,9 @@
        </layout>
       </widget>
      </widget>
-     <widget class="QWidget" name="tabPolicy">
+     <widget class="QWidget" name="tabOutPolicy">
       <attribute name="title">
-       <string>Policy</string>
+       <string>Out Policy</string>
       </attribute>
       <widget class="QWidget" name="gridLayoutWidget_2">
        <property name="geometry">
@@ -61,7 +61,7 @@
          <height>80</height>
         </rect>
        </property>
-       <layout class="QGridLayout" name="glPolicy">
+       <layout class="QGridLayout" name="glOutPolicy">
         <property name="leftMargin">
          <number>9</number>
         </property>

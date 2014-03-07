@@ -152,7 +152,7 @@ void VHttpProxy::load(VXml xml)
 {
   tcpEnabled = xml.getBool("tcpEnabled", tcpEnabled);
   sslEnabled = xml.getBool("sslEnabled", sslEnabled);
-  policy.load(xml.gotoChild("policy"));
+  outPolicy.load(xml.gotoChild("outPolicy"));
   tcpServer.load(xml.gotoChild("tcpServer"));
   sslServer.load(xml.gotoChild("sslServer"));
 }
@@ -161,7 +161,7 @@ void VHttpProxy::save(VXml xml)
 {
   xml.setBool("tcpEnabled", tcpEnabled);
   xml.setBool("sslEnabled", sslEnabled);
-  policy.save(xml.gotoChild("policy"));
+  outPolicy.save(xml.gotoChild("outPolicy"));
   tcpServer.save(xml.gotoChild("tcpServer"));
   sslServer.save(xml.gotoChild("sslServer"));
 }
@@ -182,7 +182,7 @@ void VHttpProxy::run(VNetSession* inSession)
 
   VNetClient* outClient = NULL;
   int defaultOutPort;
-  switch (policy.method)
+  switch (outPolicy.method)
   {
     case VHttpProxyOutPolicy::Auto:
       if (dynamic_cast<VTcpSession*>(inSession) != NULL)
@@ -209,7 +209,7 @@ void VHttpProxy::run(VNetSession* inSession)
       defaultOutPort = DEFAULT_SSL_PORT;
       break;
     default:
-      LOG_FATAL("invalid clientMethod value(%d)", (int)policy.method);
+      LOG_FATAL("invalid method value(%d)", (int)outPolicy.method);
       return;
   }
 
@@ -255,8 +255,8 @@ void VHttpProxy::run(VNetSession* inSession)
       break;
     }
     if (port == -1) port = defaultOutPort;
-    if (policy.host != "") host = policy.host;
-    if (policy.port != 0)  port = policy.port;
+    if (outPolicy.host != "") host = outPolicy.host;
+    if (outPolicy.port != 0)  port = outPolicy.port;
 
     if (outClient->host != host || outClient->port != port)
     {
@@ -296,7 +296,7 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
   VOptionable::addCheckBox(widget->ui->glCommon, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
   VOptionable::addCheckBox(widget->ui->glCommon, "chkSslEnabled", "SSL Enabled", sslEnabled);
 
-  policy.optionAddWidget(widget->ui->glPolicy);
+  outPolicy.optionAddWidget(widget->ui->glOutPolicy);
   tcpServer.optionAddWidget(widget->ui->glTcpServer);
   sslServer.optionAddWidget(widget->ui->glSslServer);
 
@@ -311,7 +311,7 @@ void VHttpProxy::optionSaveDlg(QDialog* dialog)
   tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;
   sslEnabled = widget->findChild<QCheckBox*>("chkSslEnabled")->checkState() == Qt::Checked;
 
-  policy.optionSaveDlg((QDialog*)widget->ui->tabPolicy);
+  outPolicy.optionSaveDlg((QDialog*)widget->ui->tabOutPolicy);
   tcpServer.optionSaveDlg((QDialog*)widget->ui->tabTcpServer);
   sslServer.optionSaveDlg((QDialog*)widget->ui->tabSslServer);
 }
