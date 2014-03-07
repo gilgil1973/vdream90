@@ -277,7 +277,7 @@ void Widget::on_pbClear_clicked()
 
 void Widget::on_tbTcpAdvance_clicked()
 {
-  if (tcpClient.optionDoAll())
+  if (tcpClient.optionDoAll(this))
   {
     ui->leTcpHost->setText(tcpClient.host);
     ui->leTcpPort->setText(QString::number(tcpClient.port));
@@ -286,7 +286,7 @@ void Widget::on_tbTcpAdvance_clicked()
 
 void Widget::on_tbUdpAdvence_clicked()
 {
-  if (udpClient.optionDoAll())
+  if (udpClient.optionDoAll(this))
   {
     ui->leUdpHost->setText(udpClient.host);
     ui->leUdpPort->setText(QString::number(udpClient.port));
@@ -295,7 +295,7 @@ void Widget::on_tbUdpAdvence_clicked()
 
 void Widget::on_tbSslAdvanced_clicked()
 {
-  if (sslClient.optionDoAll())
+  if (sslClient.optionDoAll(this))
   {
     ui->leSslHost->setText(sslClient.host);
     ui->leSslPort->setText(QString::number(sslClient.port));
