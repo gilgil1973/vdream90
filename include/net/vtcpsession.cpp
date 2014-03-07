@@ -39,7 +39,7 @@ bool VTcpSession::doClose()
   int res = ::shutdown(handle, SD_BOTH);
   if (res == SOCKET_ERROR)
   {
-    SET_ERROR(VSocketError, "error in shutdown", WSAGetLastError());
+    SET_DEBUG_ERROR(VSocketError, "error in shutdown", WSAGetLastError());
   }
 
   //
