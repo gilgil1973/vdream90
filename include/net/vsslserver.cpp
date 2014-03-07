@@ -19,12 +19,7 @@ VSslServerSession::~VSslServerSession()
 
 bool VSslServerSession::doOpen()
 {
-  if (!VSslSession::doOpen()) return false;
-  // ----- gilgil temp 2014.03.06 -----
-  //VSslServer* server = (VSslServer*)owner;
-  //VLock lock(server->certificateCs);
-  // ----------------------------------
-  return true;
+  return VSslSession::doOpen();
 }
 
 bool VSslServerSession::doClose()
@@ -103,7 +98,6 @@ bool VSslServer::doOpen()
   {
     LOG_ERROR("SSL_CTX_set_tlsext_servername_callback return false");
   }
-  msleep(1000); // gilgil temp 2014.03.07
   if (!SSL_CTX_set_tlsext_servername_arg(m_ctx, this))
   {
     LOG_ERROR("SSL_CTX_set_tlsext_servername_arg return false");
@@ -212,13 +206,12 @@ int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug
 
   *debug = 500;
   LOG_DEBUG("server=%p session=%p", server, session); // gilgil temp 2014.03.06
-  VLock lock(server->certificateCs); // protect file create critical section
 
   QString fileName = server->certificatePath + serverName + ".pem";
   *debug = 4000;
 
   {
-    // VLock lock(server->certificateCs); // protect file create critical section
+    VLock lock(server->certificateCs); // protect file create critical section
     *debug = 5000;
     if (!QFile::exists(fileName))
     {
@@ -253,15 +246,6 @@ int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug
         LOG_INFO("ba.datas=%s", ba.data());
       }
       *debug = 8000;
-      // ----- gilgil temp 23014.02.26 -----
-      /*
-      if (!process.waitForFinished())
-      {
-        LOG_FATAL("process.waitForFinished(%s) return false", qPrintable(command));
-      }
-      */
-      // sleep(3); // gilgil temp 2015.02.27
-      // -----------------------------------
     }
     *debug = 9000;
     LOG_DEBUG("s=%p", con); // gilgil temp 2014.03.07

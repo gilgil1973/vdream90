@@ -254,10 +254,10 @@ bool VGraphConnectList::delConnect(VGraphConnect connect)
   }
 
   VObject*    sender   = m_graph->objectList.findByName(connect.sender);
-  QMetaMethod signal   = VObject::findMethod(sender, connect.signal); // gilgil temp 2014.03.05
+  QMetaMethod signal   = VObject::findMethod(sender, connect.signal);
 
   VObject*    receiver = m_graph->objectList.findByName(connect.receiver);
-  QMetaMethod slot     = VObject::findMethod(receiver, connect.slot); // gilgil temp 2014.03.05
+  QMetaMethod slot     = VObject::findMethod(receiver, connect.slot);
 
   if (sender == NULL)   return false;
   if (receiver == NULL) return false;

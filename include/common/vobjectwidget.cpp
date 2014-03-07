@@ -51,7 +51,11 @@ bool VOptionable::optionDoAll(QWidget* parent)
   {
     this->optionSaveDlg(dialog);
   }
-  // delete dialog; // gilgil temp 2014.03.07
+  //
+  // do not delete dialog.
+  // dialog is automatically deleted when parent is delete.
+  //
+  // delete dialog;
   return res;
 }
 
