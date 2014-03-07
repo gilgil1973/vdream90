@@ -13,9 +13,9 @@ void vobjectwidget_foo() {}
 // ----------------------------------------------------------------------------
 // VOptionable
 // ----------------------------------------------------------------------------
-QDialog* VOptionable::optionCreateDlg()
+QDialog* VOptionable::optionCreateDlg(QWidget* parent)
 {
-  QDialog* dialog = new QDialog(NULL);
+  QDialog* dialog = new QDialog(parent);
   VObject* object = dynamic_cast<VObject*>(this);
   if (object != NULL)
     dialog->setWindowTitle(object->name == "" ? "Option" : object->name + " Option");
@@ -42,16 +42,16 @@ void VOptionable::optionSaveDlg(QDialog* dialog)
   LOG_FATAL("virtual function call");
 }
 
-bool VOptionable::optionDoAll()
+bool VOptionable::optionDoAll(QWidget* parent)
 {
-  QDialog* dialog = this->optionCreateDlg();
+  QDialog* dialog = this->optionCreateDlg(parent);
   this->optionAddWidget(dialog->layout());
   bool res = this->optionShowDlg(dialog);
   if (res)
   {
     this->optionSaveDlg(dialog);
   }
-  delete dialog;
+  // delete dialog; // gilgil temp 2014.03.07
   return res;
 }
 
