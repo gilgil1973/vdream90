@@ -375,7 +375,7 @@ void Widget::on_pbClear_clicked()
 
 void Widget::on_tbTcpAdvance_clicked()
 {
-  if (tcpServer.optionDoAll())
+  if (tcpServer.optionDoAll(this))
   {
     ui->leTcpPort->setText(QString::number(tcpServer.port));
   }
@@ -383,7 +383,7 @@ void Widget::on_tbTcpAdvance_clicked()
 
 void Widget::on_tbUdpAdvence_clicked()
 {
-  if (udpServer.optionDoAll())
+  if (udpServer.optionDoAll(this))
   {
     ui->leTcpPort->setText(QString::number(udpServer.port));
   }
@@ -391,7 +391,7 @@ void Widget::on_tbUdpAdvence_clicked()
 
 void Widget::on_tbSslAdvanced_clicked()
 {
-  if (sslServer.optionDoAll())
+  if (sslServer.optionDoAll(this))
   {
     ui->leTcpPort->setText(QString::number(sslServer.port));
   }

@@ -69,7 +69,7 @@ public:
   VSslMethodType methodType;
   QString        certificatePath;
   QString        defaultKeyCrtFileName;
-  bool           ignoreConnectMessage;
+  bool           processConnectMessage;
 
 public:
   SSL_METHOD*     m_meth;

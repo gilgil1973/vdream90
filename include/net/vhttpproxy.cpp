@@ -293,10 +293,10 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
   VHttpProxyWidget* widget = new VHttpProxyWidget(layout->parentWidget());
   widget->setObjectName("httpProcyWidget");
 
-  VOptionable::addCheckBox(widget->ui->glCommon, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
-  VOptionable::addCheckBox(widget->ui->glCommon, "chkSslEnabled", "SSL Enabled", sslEnabled);
+  VOptionable::addCheckBox(widget->ui->glTcpServer, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
+  VOptionable::addCheckBox(widget->ui->glSslServer, "chkSslEnabled", "SSL Enabled", sslEnabled);
 
-  outPolicy.optionAddWidget(widget->ui->glOutPolicy);
+  outPolicy.optionAddWidget(widget->ui->glOutbound);
   tcpServer.optionAddWidget(widget->ui->glTcpServer);
   sslServer.optionAddWidget(widget->ui->glSslServer);
 
@@ -311,7 +311,7 @@ void VHttpProxy::optionSaveDlg(QDialog* dialog)
   tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;
   sslEnabled = widget->findChild<QCheckBox*>("chkSslEnabled")->checkState() == Qt::Checked;
 
-  outPolicy.optionSaveDlg((QDialog*)widget->ui->tabOutPolicy);
+  outPolicy.optionSaveDlg((QDialog*)widget->ui->tabOutbound);
   tcpServer.optionSaveDlg((QDialog*)widget->ui->tabTcpServer);
   sslServer.optionSaveDlg((QDialog*)widget->ui->tabSslServer);
 }

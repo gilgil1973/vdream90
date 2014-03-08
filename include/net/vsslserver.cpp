@@ -59,12 +59,12 @@ bool VSslServerSession::setup(QString fileName)
 VSslServer::VSslServer(void* owner) : VTcpServer(owner)
 {
   VSslCommon::initialize();
-  methodType            = VSslMethodType::mtTLSV1;
-  certificatePath       = "certificate/";
-  defaultKeyCrtFileName = "default.pem";
-  ignoreConnectMessage  = false;
-  m_meth                = NULL;
-  m_ctx                 = NULL;
+  methodType             = VSslMethodType::mtTLSV1;
+  certificatePath        = "certificate/";
+  defaultKeyCrtFileName  = "default.pem";
+  processConnectMessage  = false;
+  m_meth                 = NULL;
+  m_ctx                  = NULL;
 
   VObject::connect(this, SIGNAL(runned(VTcpSession*)), this, SLOT(myRun(VTcpSession*)), Qt::DirectConnection);
 }
@@ -420,7 +420,7 @@ void VSslServer::myRun(VTcpSession* tcpSession)
   if (!sslSession->open()) goto _end;
   LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
 
-  if (ignoreConnectMessage)
+  if (processConnectMessage)
   {
     QByteArray ba;
     int readLen = tcpSession->read(ba);
@@ -470,7 +470,7 @@ void VSslServer::load(VXml xml)
   methodType            = xml.getInt("methodType", (int)methodType);
   certificatePath       = xml.getStr("certificatePath", certificatePath);
   defaultKeyCrtFileName = xml.getStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
-  ignoreConnectMessage  = xml.getBool("ignoreConnectMessage", ignoreConnectMessage);
+  processConnectMessage  = xml.getBool("processConnectMessage", processConnectMessage);
 }
 
 void VSslServer::save(VXml xml)
@@ -480,7 +480,7 @@ void VSslServer::save(VXml xml)
   xml.setInt("methodType", (int)methodType);
   xml.setStr("certificatePath", certificatePath);
   xml.setStr("defaultKeyCrtFileName", defaultKeyCrtFileName);
-  xml.setBool("ignoreConnectMessage", ignoreConnectMessage);
+  xml.setBool("processConnectMessage", processConnectMessage);
 }
 
 #ifdef QT_GUI_LIB
@@ -492,7 +492,7 @@ void VSslServer::optionAddWidget(QLayout* layout)
   VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
   VOptionable::addLineEdit(layout, "leCertificatePath", "Certificate Path", certificatePath);
   VOptionable::addLineEdit(layout, "leDefaultKeyCrtFileName", "Default KeyCrtFileName", defaultKeyCrtFileName);
-  VOptionable::addCheckBox(layout, "chkIgnoreConnectMessage", "Ignore Connect Message", ignoreConnectMessage);
+  VOptionable::addCheckBox(layout, "chkProcessConnectMessage", "Process Connect Message", processConnectMessage);
 }
 
 void VSslServer::optionSaveDlg(QDialog* dialog)
@@ -502,6 +502,6 @@ void VSslServer::optionSaveDlg(QDialog* dialog)
   methodType            = (VSslMethodType)(dialog->findChild<QComboBox*>("cbxMethodType")->currentIndex());
   certificatePath       = dialog->findChild<QLineEdit*>("leCertificatePath")->text();
   defaultKeyCrtFileName = dialog->findChild<QLineEdit*>("leDefaultKeyCrtFileName")->text();
-  ignoreConnectMessage  = dialog->findChild<QCheckBox*>("chkIgnoreConnectMessage")->checkState() == Qt::Checked;
+  processConnectMessage  = dialog->findChild<QCheckBox*>("chkProcessConnectMessage")->checkState() == Qt::Checked;
 }
 #endif // QT_GUI_LIB
