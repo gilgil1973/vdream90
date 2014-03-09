@@ -77,7 +77,7 @@ bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *recei
 
 bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver, const char* slot)
 {
-  LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot);
+  // LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot); // gilgil temp 2014.03.10
   bool res = QObject::disconnect(sender, signal, receiver, slot);
   if (!res)
   {
@@ -97,7 +97,7 @@ bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver,
 
 bool VObject::disconnect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot)
 {
-  LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data());
+  // LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data()); // gilgil temp 2014.03.10
   bool res = QObject::disconnect(sender, signal, receiver, slot);
   if (!res)
   {
