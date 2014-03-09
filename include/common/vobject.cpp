@@ -41,7 +41,7 @@ VObject::~VObject()
 
 bool VObject::connect(QObject* sender, const char* signal, QObject* receiver, const char* slot, Qt::ConnectionType type)
 {
-  LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot, (int)type);
+  // LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot, (int)type); // gilgil temp 2014.03.10
   bool res = QObject::connect(sender, signal, receiver, slot, type);
   if (!res)
   {
@@ -59,7 +59,7 @@ bool VObject::connect(QObject* sender, const char* signal, QObject* receiver, co
 
 bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot, Qt::ConnectionType type)
 {
-  LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data(), (int)type);
+  // LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data(), (int)type); // gilgil temp 2014.03.10
   bool res = QObject::connect(sender, signal, receiver, slot, type);
   if (!res)
   {
