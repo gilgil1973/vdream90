@@ -19,15 +19,15 @@ public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
-protected:
-  void showEvent(QShowEvent* showEvent);
-
 public:
   void initializeControl();
   void finalizeControl();
   void loadControl();
   void saveControl();
   void setControl();
+
+protected:
+  void showEvent(QShowEvent* showEvent);
 
 public:
   MyLog* myLog;

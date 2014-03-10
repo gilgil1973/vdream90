@@ -22,14 +22,6 @@ MainWindow::~MainWindow()
   delete ui;
 }
 
-void MainWindow::showEvent(QShowEvent* showEvent)
-{
-  loadControl();
-  setControl();
-  if (myLog->autoOpen) on_actionOpen_triggered();
-  QMainWindow::showEvent(showEvent);
-}
-
 void MainWindow::initializeControl()
 {
   optionDlg = NULL;
@@ -80,17 +72,19 @@ void MainWindow::setControl()
   Qt::WindowFlags flags = this->windowFlags();
   if (ui->actionAlwaysOnTop->isChecked())
   {
-    if ((flags & (Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint)) == 0)
+    if ((flags & Qt::WindowStaysOnTopHint) == 0)
     {
-      this->setWindowFlags(flags | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
+      flags |= Qt::WindowStaysOnTopHint;
+      this->setWindowFlags(flags);
       this->show();
     }
   }
   else
   {
-    if ((flags & (Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint)) != 0)
+    if ((flags & Qt::WindowStaysOnTopHint) != 0)
     {
-      this->setWindowFlags(flags ^ (Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint));
+      flags &= ~Qt::WindowStaysOnTopHint;
+      this->setWindowFlags(flags);
       this->show();
     }
   }
@@ -110,6 +104,15 @@ void MainWindow::setControl()
       this->show();
     }
   }
+}
+
+void MainWindow::showEvent(QShowEvent* showEvent)
+{
+  if (isVisible()) return;
+  loadControl();
+  setControl();
+  if (myLog->autoOpen) on_actionOpen_triggered();
+  QMainWindow::showEvent(showEvent);
 }
 
 void MainWindow::load(VXml xml)
