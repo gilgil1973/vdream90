@@ -56,16 +56,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// IVShowStatus
-// ----------------------------------------------------------------------------
-class IVShowStatus
-{
-public:
-  virtual void addStatusWidget(QLayout* layout) = 0;
-  virtual bool showStatus(QDialog* parent) = 0;
-};
-
-// ----------------------------------------------------------------------------
 // VShowStatus
 // ----------------------------------------------------------------------------
 class VShowStatus : public IVShowStatus
