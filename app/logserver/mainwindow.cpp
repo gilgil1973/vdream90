@@ -108,10 +108,12 @@ void MainWindow::setControl()
 
 void MainWindow::showEvent(QShowEvent* showEvent)
 {
+  if (this->userData(0) != NULL) return;
   loadControl();
   setControl();
-  if (myLog->autoOpen && !myLog->active()) on_actionOpen_triggered();
+  if (myLog->autoOpen) on_actionOpen_triggered();
   QMainWindow::showEvent(showEvent);
+  this->setUserData(0, (QObjectUserData*)this);
 }
 
 void MainWindow::load(VXml xml)
