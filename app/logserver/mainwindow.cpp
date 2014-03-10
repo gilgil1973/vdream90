@@ -108,10 +108,9 @@ void MainWindow::setControl()
 
 void MainWindow::showEvent(QShowEvent* showEvent)
 {
-  if (isVisible()) return;
   loadControl();
   setControl();
-  if (myLog->autoOpen) on_actionOpen_triggered();
+  if (myLog->autoOpen && !myLog->active()) on_actionOpen_triggered();
   QMainWindow::showEvent(showEvent);
 }
 
@@ -167,6 +166,7 @@ void MainWindow::_onMessage(QString qs)
     qs = ts + qs;
   }
   ui->plainTextEdit->appendPlainText(qs);
+  ui->plainTextEdit->ensureCursorVisible();
 }
 
 void MainWindow::on_actionOpen_triggered()
