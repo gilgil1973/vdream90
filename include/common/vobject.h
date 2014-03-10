@@ -24,7 +24,8 @@
 class VObjectConnection
 {
 public:
-  VObjectConnection(QByteArray signal, QObject* receiver, QByteArray slot);
+  VObjectConnection(QByteArray  signal, QObject* receiver, QByteArray  slot);
+  VObjectConnection(const char* signal, QObject* receiver, const char* slot);
 
 public:
   QByteArray signal;

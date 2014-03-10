@@ -11,6 +11,13 @@ VObjectConnection::VObjectConnection(QByteArray signal, QObject* receiver, QByte
   this->slot     = slot;
 }
 
+VObjectConnection::VObjectConnection(const char* signal, QObject* receiver, const char* slot)
+{
+  this->signal   = signal;
+  this->receiver = receiver;
+  this->slot     = slot;
+}
+
 bool VObjectConnection::operator == (const VObjectConnection& r) const
 {
   if (this->signal != r.signal)     return false;
@@ -41,7 +48,7 @@ VObject::~VObject()
 
 bool VObject::connect(QObject* sender, const char* signal, QObject* receiver, const char* slot, Qt::ConnectionType type)
 {
-  // LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot, (int)type); // gilgil temp 2014.03.10
+  //LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot, (int)type); // gilgil temp 2014.03.10
   bool res = QObject::connect(sender, signal, receiver, slot, type);
   if (!res)
   {
@@ -59,25 +66,16 @@ bool VObject::connect(QObject* sender, const char* signal, QObject* receiver, co
 
 bool VObject::connect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot, Qt::ConnectionType type)
 {
-  // LOG_DEBUG("%s %s > %s %s %d", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data(), (int)type); // gilgil temp 2014.03.10
-  bool res = QObject::connect(sender, signal, receiver, slot, type);
-  if (!res)
-  {
-    LOG_ERROR("VObject::connect(%s %s > %s %s %d) return false", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data(), (int)type);
-    return false;
-  }
-  VObject* vsender = dynamic_cast<VObject*>(sender);
-  if (vsender != NULL)
-  {
-    VObjectConnection connection(signal.methodSignature(), receiver, slot.methodSignature());
-    vsender->connections.push_back(connection);
-  }
-  return res;
+  QByteArray baSignal = signal.methodSignature();
+  baSignal = "2" + baSignal; // # define SIGNAL(a)   qFlagLocation("2"#a QLOCATION)
+  QByteArray baSlot  = slot.methodSignature();
+  baSlot = "1" + baSlot;    // # define SLOT(a)     qFlagLocation("1"#a QLOCATION)
+  return VObject::connect(sender, baSignal.data(), receiver, baSlot.data(), type);
 }
 
 bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver, const char* slot)
 {
-  // LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot); // gilgil temp 2014.03.10
+  //LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal, receiver->metaObject()->className(), slot); // gilgil temp 2014.03.10
   bool res = QObject::disconnect(sender, signal, receiver, slot);
   if (!res)
   {
@@ -97,22 +95,11 @@ bool VObject::disconnect(QObject* sender, const char* signal, QObject* receiver,
 
 bool VObject::disconnect(QObject *sender, const QMetaMethod &signal, QObject *receiver, const QMetaMethod &slot)
 {
-  // LOG_DEBUG("%s %s > %s %s", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data()); // gilgil temp 2014.03.10
-  bool res = QObject::disconnect(sender, signal, receiver, slot);
-  if (!res)
-  {
-    LOG_ERROR("VObject::disconnect(%s %s > %s %s) return false", sender->metaObject()->className(), signal.methodSignature().data(), receiver->metaObject()->className(), slot.methodSignature().data());
-    return false;
-  }
-  VObject* vsender = dynamic_cast<VObject*>(sender);
-  if (vsender != NULL)
-  {
-    VObjectConnection connection(signal.methodSignature(), receiver, slot.methodSignature());
-    int index = vsender->connections.indexOf(connection);
-    if (index != -1)
-      vsender->connections.removeAt(index);
-  }
-  return res;
+  QByteArray baSignal = signal.methodSignature();
+  baSignal = "2" + baSignal; // # define SIGNAL(a)   qFlagLocation("2"#a QLOCATION)
+  QByteArray baSlot  = slot.methodSignature();
+  baSlot = "1" + baSlot;     // # define SLOT(a)     qFlagLocation("1"#a QLOCATION)
+  return VObject::disconnect(sender, baSignal.data(), receiver, baSlot.data());
 }
 
 QMetaMethod VObject::findMethod(QObject* object, QString methodName)
