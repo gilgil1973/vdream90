@@ -55,15 +55,6 @@ public:
   QComboBox* addComboBox(QLayout* layout, QString objectName, QString text, QStringList strList, int index = -1, QString value = "");
 };
 
-// ----------------------------------------------------------------------------
-// VShowStatus
-// ----------------------------------------------------------------------------
-class VShowStatus : public IVShowStatus
-{
-public:
-  virtual bool showStatus(QDialog* parent);
-};
-
 #else // QT_GUI_LIB
 class IVOptionlable {};
 class VOptionable : public IVOptionlable {};

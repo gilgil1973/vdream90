@@ -164,13 +164,4 @@ QComboBox* VOptionable::addComboBox(QLayout *layout, QString objectName, QString
   return comboBox;
 }
 
-// ----------------------------------------------------------------------------
-// VShowStatus
-// ----------------------------------------------------------------------------
-bool VShowStatus::showStatus(QDialog* parent)
-{
-  parent->exec();
-  return true;
-}
-
 #endif // QT_GUI_LIB
