@@ -3,6 +3,7 @@ CONFIG  += ordered
 SUBDIRS += \
   lib/vdream.pro \
   app/getline/getline.pro \
+  app/httpproxy/httpproxy.pro \
   app/logserver/logserver.pro \
   app/netc/netc.pro \
   app/netclient/netclient.pro \  
