@@ -3,8 +3,6 @@
 #include <VFile>
 #include <VDebugNew>
 
-static __thread int thread_debug = 0; // gilgil temp 2014.03.01
-
 // ----------------------------------------------------------------------------
 // VSslServerSession
 // ----------------------------------------------------------------------------
@@ -33,23 +31,23 @@ bool VSslServerSession::setup(QString fileName)
   LOG_DEBUG("fileName=%s", qPrintable(fileName));
   LOG_DEBUG("------------------------------------------");
 
-  thread_debug = 200;
+  threadTag = 200;
   EVP_PKEY* key = VSslServer::loadKey(error, fileName);
   if (key == NULL) return false;
 
-  thread_debug = 300;
+  threadTag = 300;
   X509* crt = VSslServer::loadCrt(error, fileName);
   if (crt == NULL) return false;
 
-  thread_debug = 400;
+  threadTag = 400;
   bool res = VSslServer::setKeyCrtStuff(error, con, key, crt);
   if (!res) return false;
 
-  thread_debug = 500;
+  threadTag = 500;
   EVP_PKEY_free(key);
   X509_free(crt);
 
-  thread_debug = 600;
+  threadTag = 600;
   return true;
 }
 
@@ -177,7 +175,7 @@ int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg) // gilgil temp 2
     res = ssl_servername_cb_debug(con, ad, arg, &debug);
   } EXCEPT
   {
-    LOG_FATAL("debug=%d %d", debug, thread_debug);
+    LOG_FATAL("debug=%d %d", debug, threadTag);
   }
   return res;
 }
@@ -412,6 +410,7 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cr
 
 void VSslServer::myRun(VTcpSession* tcpSession)
 {
+  threadTag = 10000;
   VSslServerSession *sslSession = new VSslServerSession;
   sslSession->owner       = this;
   sslSession->tcpSession  = tcpSession;
@@ -419,6 +418,7 @@ void VSslServer::myRun(VTcpSession* tcpSession)
   sslSession->ctx         = m_ctx;
   if (!sslSession->open()) goto _end;
   LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
+  threadTag = 20000;
 
   if (processConnectMessage)
   {
@@ -427,6 +427,7 @@ void VSslServer::myRun(VTcpSession* tcpSession)
     if (readLen == VERR_FAIL) goto _end;
     tcpSession->write("HTTP/1.0 200 Connection established\r\n\r\n");
   }
+  threadTag = 30000;
 
   SSL_set_accept_state(sslSession->con);
   while (true)
@@ -447,20 +448,26 @@ void VSslServer::myRun(VTcpSession* tcpSession)
       break;
     }
   }
+  threadTag = 40000;
 
   sslSessionList.lock();
   sslSessionList.push_back(sslSession);
   sslSessionList.unlock();
+  threadTag = 50000;
 
   emit runned(sslSession);
+  threadTag = 60000;
 
   sslSessionList.lock();
   sslSessionList.removeOne(sslSession);
   sslSessionList.unlock();
+  threadTag = 70000;
 
 _end:
   LOG_DEBUG("end sslSession=%p con=%p", sslSession, sslSession->con);  // gilgil temp 2014.03.07
+  threadTag = 80000;
   delete sslSession;
+  threadTag = 90000;
 }
 
 void VSslServer::load(VXml xml)
