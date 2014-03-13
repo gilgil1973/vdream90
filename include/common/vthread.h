@@ -89,6 +89,7 @@ public:
   virtual void load(VXml xml);
   virtual void save(VXml xml);
 };
+extern __declspec( thread ) int threadTag;
 
 // ----------------------------------------------------------------------------
 // VThreadMgr

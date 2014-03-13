@@ -98,7 +98,7 @@ void VQThread::run()
     }
     catch (...)
     {
-      LOG_FATAL("%p oops1 exception threadName=%s className=%s tag=%d", thread, threadName, className, thread->tag);
+      LOG_FATAL("%p oops1 exception threadName=%s className=%s tag=%d threadTag=%d", thread, threadName, className, thread->tag, threadTag);
     }
 
     bool freeThread = thread->freeOnTerminate;
@@ -113,7 +113,7 @@ void VQThread::run()
   }
   catch(...)
   {
-    LOG_FATAL("%p oops2 exception threadName=%s className=%s tag=%d", thread, threadName, className, thread->tag);
+    LOG_FATAL("%p oops2 exception threadName=%s className=%s tag=%d threadTag=%d", thread, threadName, className, thread->tag, threadTag);
   }
 }
 
@@ -275,6 +275,7 @@ void VThread::save(VXml xml)
   xml.setBool("freeOnTerminate", freeOnTerminate);
   xml.setInt("threadPriority", (int)threadPriority);
 }
+__declspec( thread ) int threadTag = 0;
 
 // ----------------------------------------------------------------------------
 // VThreadMgr
