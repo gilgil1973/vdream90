@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QTreeWidget>
+#include <VDataChange>
 
 namespace Ui {
   class VDataChangeWidget;
@@ -30,11 +31,9 @@ private slots:
   void on_pbDel_clicked();
 };
 
-class VDataChangeItem;
-class VDataChangeItems;
 void operator << (VDataChangeItem& item, QTreeWidgetItem& treeWidgetItem);
 void operator << (QTreeWidgetItem& treeWidgetItem, VDataChangeItem& item);
-void operator << (VDataChangeItems& items, QTreeWidget& treeWidget);
-void operator << (QTreeWidget& treeWidget, VDataChangeItems& items);
+void operator << (VDataChange& dataChange, QTreeWidget& treeWidget);
+void operator << (QTreeWidget& treeWidget, VDataChange& dataChange);
 
 #endif // VDATACHANGEWIDGET_H

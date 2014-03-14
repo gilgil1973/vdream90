@@ -86,7 +86,7 @@ protected:
       QByteArray msg;
       int readLen = outClient->read(msg);
       if (readLen == VERR_FAIL) break;
-      proxy->inboundDataChangeItems.change(msg);
+      proxy->inboundDataChange.change(msg);
       emit proxy->beforeMsg(msg, outSession);
       emit proxy->beforeResponse(msg, outClient, inSession);
       int writeLen = inSession->write(msg);
@@ -205,7 +205,7 @@ void VHttpProxy::run(VNetSession* inSession)
     QByteArray msg;
     int readLen = inSession->read(msg);
     if (readLen == VERR_FAIL) break;
-    outboundDataChangeItems.change(msg);
+    outboundDataChange.change(msg);
     emit beforeMsg(msg, inSession);
     // LOG_DEBUG("%s", packet.data()); // gilgil temp
 
@@ -276,8 +276,8 @@ void VHttpProxy::load(VXml xml)
   outPolicy.load(xml.gotoChild("outPolicy"));
   tcpServer.load(xml.gotoChild("tcpServer"));
   sslServer.load(xml.gotoChild("sslServer"));
-  inboundDataChangeItems.load(xml.gotoChild("inboundDataChangeItems"));
-  outboundDataChangeItems.load(xml.gotoChild("outboundDataChangeItems"));
+  inboundDataChange.load(xml.gotoChild("inboundDataChange"));
+  outboundDataChange.load(xml.gotoChild("outboundDataChange"));
 }
 
 void VHttpProxy::save(VXml xml)
@@ -287,8 +287,8 @@ void VHttpProxy::save(VXml xml)
   outPolicy.save(xml.gotoChild("outPolicy"));
   tcpServer.save(xml.gotoChild("tcpServer"));
   sslServer.save(xml.gotoChild("sslServer"));
-  inboundDataChangeItems.save(xml.gotoChild("inboundDataChangeItems"));
-  outboundDataChangeItems.save(xml.gotoChild("outboundDataChangeItems"));
+  inboundDataChange.save(xml.gotoChild("inboundDataChange"));
+  outboundDataChange.save(xml.gotoChild("outboundDataChange"));
 }
 
 #ifdef QT_GUI_LIB
@@ -305,8 +305,8 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
   outPolicy.optionAddWidget(widget->ui->glExternal);
   tcpServer.optionAddWidget(widget->ui->glTcpServer);
   sslServer.optionAddWidget(widget->ui->glSslServer);
-  inboundDataChangeItems.optionAddWidget(widget->ui->glInbound);
-  outboundDataChangeItems.optionAddWidget(widget->ui->glOutbound);
+  inboundDataChange.optionAddWidget(widget->ui->glInbound);
+  outboundDataChange.optionAddWidget(widget->ui->glOutbound);
 
   layout->addWidget(widget);
 }
@@ -322,7 +322,7 @@ void VHttpProxy::optionSaveDlg(QDialog* dialog)
   outPolicy.optionSaveDlg((QDialog*)widget->ui->tabExternal);
   tcpServer.optionSaveDlg((QDialog*)widget->ui->tabTcpServer);
   sslServer.optionSaveDlg((QDialog*)widget->ui->tabSslServer);
-  inboundDataChangeItems.optionSaveDlg((QDialog*)widget->ui->tabInbound);
-  outboundDataChangeItems.optionSaveDlg((QDialog*)widget->ui->tabOutbound);
+  inboundDataChange.optionSaveDlg((QDialog*)widget->ui->tabInbound);
+  outboundDataChange.optionSaveDlg((QDialog*)widget->ui->tabOutbound);
 }
 #endif // QT_GUI_LIB

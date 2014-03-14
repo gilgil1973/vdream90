@@ -78,8 +78,8 @@ public:
   VHttpProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
-  VDataChangeItems    inboundDataChangeItems;
-  VDataChangeItems    outboundDataChangeItems;
+  VDataChange         inboundDataChange;
+  VDataChange         outboundDataChange;
 
 public slots:
   void tcpRun(VTcpSession* tcpSession);

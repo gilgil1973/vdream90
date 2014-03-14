@@ -31,17 +31,17 @@ void VDataChangeItem::save(VXml xml)
 }
 
 // ----------------------------------------------------------------------------
-// VDataChangeItems
+// VDataChange
 // ----------------------------------------------------------------------------
-VDataChangeItems::VDataChangeItems()
+VDataChange::VDataChange()
 {
 }
 
-VDataChangeItems::~VDataChangeItems()
+VDataChange::~VDataChange()
 {
 }
 
-bool VDataChangeItems::change(QByteArray& ba)
+bool VDataChange::change(QByteArray& ba)
 {
   bool res = false;
   QByteArray _old = ba;
@@ -63,7 +63,7 @@ bool VDataChangeItems::change(QByteArray& ba)
   return res;
 }
 
-void VDataChangeItems::load(VXml xml)
+void VDataChange::load(VXml xml)
 {
   clear();
   {
@@ -76,10 +76,10 @@ void VDataChangeItems::load(VXml xml)
   }
 }
 
-void VDataChangeItems::save(VXml xml)
+void VDataChange::save(VXml xml)
 {
   xml.clearChild();
-  for (VDataChangeItems::iterator it = begin(); it != end(); it++)
+  for (VDataChange::iterator it = begin(); it != end(); it++)
   {
     VDataChangeItem& item = *it;
     VXml childXml = xml.addChild("item");
@@ -90,7 +90,7 @@ void VDataChangeItems::save(VXml xml)
 #ifdef QT_GUI_LIB
 #include "vdatachangewidget.h"
 #include "ui_vdatachangewidget.h"
-void VDataChangeItems::optionAddWidget(QLayout* layout)
+void VDataChange::optionAddWidget(QLayout* layout)
 {
   VDataChangeWidget* widget = new VDataChangeWidget(layout->parentWidget());
   widget->setObjectName("dataChangeWidget");
@@ -98,7 +98,7 @@ void VDataChangeItems::optionAddWidget(QLayout* layout)
   layout->addWidget(widget);
 }
 
-void VDataChangeItems::optionSaveDlg(QDialog* dialog)
+void VDataChange::optionSaveDlg(QDialog* dialog)
 {
   VDataChangeWidget* widget = dialog->findChild<VDataChangeWidget*>("dataChangeWidget");
   LOG_ASSERT(widget != NULL);

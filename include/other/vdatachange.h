@@ -35,13 +35,13 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// VDataChangeItems
+// VDataChange
 // ----------------------------------------------------------------------------
-class VDataChangeItems : public QList<VDataChangeItem>, public VXmlable, public VOptionable
+class VDataChange : public QList<VDataChangeItem>, public VXmlable, public VOptionable
 {
 public:
-  VDataChangeItems();
-  virtual ~VDataChangeItems();
+  VDataChange();
+  virtual ~VDataChange();
 
 public:
   bool change(QByteArray& ba);

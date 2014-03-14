@@ -1,6 +1,5 @@
 #include "vdatachangewidget.h"
 #include "ui_vdatachangewidget.h"
-#include <VDataChange>
 
 VDataChangeWidget::VDataChangeWidget(QWidget *parent) :
   QWidget(parent),
@@ -65,26 +64,26 @@ void operator << (QTreeWidgetItem& treeWidgetItem, VDataChangeItem& item)
   treeWidgetItem.setFlags(treeWidgetItem.flags() | Qt::ItemFlag::ItemIsEditable);
 }
 
-void operator << (VDataChangeItems& items, QTreeWidget& treeWidget)
+void operator << (VDataChange& dataChange, QTreeWidget& treeWidget)
 {
-  items.clear();
+  dataChange.clear();
   int count = treeWidget.topLevelItemCount();
   for (int i = 0; i < count; i++)
   {
     QTreeWidgetItem* treeWidgetItem = treeWidget.topLevelItem(i);
     VDataChangeItem newItem;
     newItem << *treeWidgetItem;
-    items.push_back(newItem);
+    dataChange.push_back(newItem);
   }
 }
 
-void operator << (QTreeWidget& treeWidget, VDataChangeItems& items)
+void operator << (QTreeWidget& treeWidget, VDataChange& dataChange)
 {
   treeWidget.clear();
   QList<QTreeWidgetItem*> treeWidgetItems;
-  for (int i = 0; i < items.count(); i++)
+  for (int i = 0; i < dataChange.count(); i++)
   {
-    VDataChangeItem& item = (VDataChangeItem&)items.at(i);
+    VDataChangeItem& item = (VDataChangeItem&)dataChange.at(i);
     QTreeWidgetItem* newWidgetItem = new QTreeWidgetItem(&treeWidget);
     *newWidgetItem << item;
     treeWidgetItems.push_back(newWidgetItem);
