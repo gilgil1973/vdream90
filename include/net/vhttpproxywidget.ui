@@ -6,22 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>327</width>
-    <height>283</height>
+    <width>640</width>
+    <height>492</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="mainLayout">
+  <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tabInbound">
+     <widget class="QWidget" name="tabInternal">
       <attribute name="title">
-       <string>Inbound</string>
+       <string>Internal</string>
       </attribute>
       <widget class="QWidget" name="gridLayoutWidget">
        <property name="geometry">
@@ -32,19 +32,7 @@
          <height>211</height>
         </rect>
        </property>
-       <layout class="QGridLayout" name="glInbound">
-        <property name="leftMargin">
-         <number>9</number>
-        </property>
-        <property name="topMargin">
-         <number>9</number>
-        </property>
-        <property name="rightMargin">
-         <number>9</number>
-        </property>
-        <property name="bottomMargin">
-         <number>9</number>
-        </property>
+       <layout class="QGridLayout" name="glInternal">
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget2">
           <property name="currentIndex">
@@ -63,20 +51,7 @@
               <height>80</height>
              </rect>
             </property>
-            <layout class="QGridLayout" name="glTcpServer">
-             <property name="leftMargin">
-              <number>9</number>
-             </property>
-             <property name="topMargin">
-              <number>9</number>
-             </property>
-             <property name="rightMargin">
-              <number>9</number>
-             </property>
-             <property name="bottomMargin">
-              <number>9</number>
-             </property>
-            </layout>
+            <layout class="QGridLayout" name="glTcpServer"/>
            </widget>
           </widget>
           <widget class="QWidget" name="tabSslServer">
@@ -92,20 +67,7 @@
               <height>80</height>
              </rect>
             </property>
-            <layout class="QGridLayout" name="glSslServer">
-             <property name="leftMargin">
-              <number>9</number>
-             </property>
-             <property name="topMargin">
-              <number>9</number>
-             </property>
-             <property name="rightMargin">
-              <number>9</number>
-             </property>
-             <property name="bottomMargin">
-              <number>9</number>
-             </property>
-            </layout>
+            <layout class="QGridLayout" name="glSslServer"/>
            </widget>
           </widget>
          </widget>
@@ -113,9 +75,9 @@
        </layout>
       </widget>
      </widget>
-     <widget class="QWidget" name="tabOutbound">
+     <widget class="QWidget" name="tabExternal">
       <attribute name="title">
-       <string>Outbound</string>
+       <string>External</string>
       </attribute>
       <widget class="QWidget" name="gridLayoutWidget_2">
        <property name="geometry">
@@ -126,19 +88,62 @@
          <height>80</height>
         </rect>
        </property>
-       <layout class="QGridLayout" name="glOutbound">
-        <property name="leftMargin">
-         <number>9</number>
-        </property>
-        <property name="topMargin">
-         <number>9</number>
-        </property>
-        <property name="rightMargin">
-         <number>9</number>
-        </property>
-        <property name="bottomMargin">
-         <number>9</number>
-        </property>
+       <layout class="QGridLayout" name="glExternal"/>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tabDataChange">
+      <attribute name="title">
+       <string>DataChange</string>
+      </attribute>
+      <widget class="QWidget" name="gridLayoutWidget_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>401</width>
+         <height>321</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="glDataChange">
+        <item row="0" column="0">
+         <widget class="QTabWidget" name="tabWidget3">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tabInbound">
+           <attribute name="title">
+            <string>Inbound</string>
+           </attribute>
+           <widget class="QWidget" name="gridLayoutWidget_6">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>160</width>
+              <height>80</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="glInbound"/>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="tabOutbound">
+           <attribute name="title">
+            <string>Outbound</string>
+           </attribute>
+           <widget class="QWidget" name="gridLayoutWidget_7">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>160</width>
+              <height>80</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="glOutbound"/>
+           </widget>
+          </widget>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>

@@ -46,7 +46,6 @@ private slots:
   void on_pbClear_clicked();
 
   void on_pbOption_clicked();
-
 private:
   Ui::Widget *ui;
 };

@@ -16,9 +16,8 @@
 #include <VTcpClient>
 #include <VSslServer>
 #include <VSslClient>
-#include <QRegExp>
-#include <QUrl>
 #include <VHttpRequest>
+#include <VDataChange>
 
 // ----------------------------------------------------------------------------
 // VHttpProxyOutPolicy
@@ -60,19 +59,12 @@ class VHttpProxy : public VObject, public VOptionable
   Q_OBJECT
 
 public:
-
-
-public:
   VHttpProxy(void* owner = NULL);
   virtual ~VHttpProxy();
 
 protected:
   virtual bool doOpen();
   virtual bool doClose();
-
-public:
-  virtual void load(VXml xml);
-  virtual void save(VXml xml);
 
 public:
   const static int DEFAULT_HTTP_PORT = 80;
@@ -86,6 +78,8 @@ public:
   VHttpProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
+  VDataChangeItems    inboundDataChangeItems;
+  VDataChangeItems    outboundDataChangeItems;
 
 public slots:
   void tcpRun(VTcpSession* tcpSession);
@@ -98,6 +92,10 @@ signals:
   void beforeMsg(QByteArray msg, VNetSession* session);
   void beforeRequest(VHttpRequest& request, VNetSession* inSession, VNetClient* outClient);
   void beforeResponse(QByteArray& msg, VNetClient* outClient, VNetSession* inSession);
+
+public:
+  virtual void load(VXml xml);
+  virtual void save(VXml xml);
 
 #ifdef QT_GUI_LIB
 public: // for VOptionable

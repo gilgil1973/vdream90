@@ -86,6 +86,7 @@ protected:
       QByteArray msg;
       int readLen = outClient->read(msg);
       if (readLen == VERR_FAIL) break;
+      proxy->inboundDataChangeItems.change(msg);
       emit proxy->beforeMsg(msg, outSession);
       emit proxy->beforeResponse(msg, outClient, inSession);
       int writeLen = inSession->write(msg);
@@ -148,24 +149,6 @@ bool VHttpProxy::doClose()
   return true;
 }
 
-void VHttpProxy::load(VXml xml)
-{
-  tcpEnabled = xml.getBool("tcpEnabled", tcpEnabled);
-  sslEnabled = xml.getBool("sslEnabled", sslEnabled);
-  outPolicy.load(xml.gotoChild("outPolicy"));
-  tcpServer.load(xml.gotoChild("tcpServer"));
-  sslServer.load(xml.gotoChild("sslServer"));
-}
-
-void VHttpProxy::save(VXml xml)
-{
-  xml.setBool("tcpEnabled", tcpEnabled);
-  xml.setBool("sslEnabled", sslEnabled);
-  outPolicy.save(xml.gotoChild("outPolicy"));
-  tcpServer.save(xml.gotoChild("tcpServer"));
-  sslServer.save(xml.gotoChild("sslServer"));
-}
-
 void VHttpProxy::tcpRun(VTcpSession* tcpSession)
 {
   run(tcpSession);
@@ -216,22 +199,23 @@ void VHttpProxy::run(VNetSession* inSession)
   VHttpRequest           request;
   VHttpProxyOutInThread* thread = NULL;
 
-  QByteArray totalPacket;
+  QByteArray totalMsg;
   while (true)
   {
-    QByteArray packet;
-    int readLen = inSession->read(packet);
+    QByteArray msg;
+    int readLen = inSession->read(msg);
     if (readLen == VERR_FAIL) break;
-    emit beforeMsg(packet, inSession);
+    outboundDataChangeItems.change(msg);
+    emit beforeMsg(msg, inSession);
     // LOG_DEBUG("%s", packet.data()); // gilgil temp
 
-    totalPacket += packet;
-    if (!request.parse(totalPacket))
+    totalMsg += msg;
+    if (!request.parse(totalMsg))
     {
       if (outClient->active())
       {
-        outClient->write(totalPacket);
-        totalPacket = "";
+        outClient->write(totalMsg);
+        totalMsg = "";
       }
       continue;
     }
@@ -251,7 +235,7 @@ void VHttpProxy::run(VNetSession* inSession)
     } else
     if (!request.findHost(host, port))
     {
-      LOG_ERROR("can not find host:%s", totalPacket.data());
+      LOG_ERROR("can not find host:%s", totalMsg.data());
       break;
     }
     if (port == -1) port = defaultOutPort;
@@ -277,12 +261,34 @@ void VHttpProxy::run(VNetSession* inSession)
 
     emit beforeRequest(request, inSession, outClient);
     outClient->write(request.toByteArray());
-    totalPacket = "";
+    totalMsg = "";
   }
   LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2013.10.19
   outClient->close();
   if (thread != NULL) delete thread;
   delete outClient;
+}
+
+void VHttpProxy::load(VXml xml)
+{
+  tcpEnabled = xml.getBool("tcpEnabled", tcpEnabled);
+  sslEnabled = xml.getBool("sslEnabled", sslEnabled);
+  outPolicy.load(xml.gotoChild("outPolicy"));
+  tcpServer.load(xml.gotoChild("tcpServer"));
+  sslServer.load(xml.gotoChild("sslServer"));
+  inboundDataChangeItems.load(xml.gotoChild("inboundDataChangeItems"));
+  outboundDataChangeItems.load(xml.gotoChild("outboundDataChangeItems"));
+}
+
+void VHttpProxy::save(VXml xml)
+{
+  xml.setBool("tcpEnabled", tcpEnabled);
+  xml.setBool("sslEnabled", sslEnabled);
+  outPolicy.save(xml.gotoChild("outPolicy"));
+  tcpServer.save(xml.gotoChild("tcpServer"));
+  sslServer.save(xml.gotoChild("sslServer"));
+  inboundDataChangeItems.save(xml.gotoChild("inboundDataChangeItems"));
+  outboundDataChangeItems.save(xml.gotoChild("outboundDataChangeItems"));
 }
 
 #ifdef QT_GUI_LIB
@@ -296,9 +302,11 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
   VOptionable::addCheckBox(widget->ui->glTcpServer, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
   VOptionable::addCheckBox(widget->ui->glSslServer, "chkSslEnabled", "SSL Enabled", sslEnabled);
 
-  outPolicy.optionAddWidget(widget->ui->glOutbound);
+  outPolicy.optionAddWidget(widget->ui->glExternal);
   tcpServer.optionAddWidget(widget->ui->glTcpServer);
   sslServer.optionAddWidget(widget->ui->glSslServer);
+  inboundDataChangeItems.optionAddWidget(widget->ui->glInbound);
+  outboundDataChangeItems.optionAddWidget(widget->ui->glOutbound);
 
   layout->addWidget(widget);
 }
@@ -311,9 +319,10 @@ void VHttpProxy::optionSaveDlg(QDialog* dialog)
   tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;
   sslEnabled = widget->findChild<QCheckBox*>("chkSslEnabled")->checkState() == Qt::Checked;
 
-  outPolicy.optionSaveDlg((QDialog*)widget->ui->tabOutbound);
+  outPolicy.optionSaveDlg((QDialog*)widget->ui->tabExternal);
   tcpServer.optionSaveDlg((QDialog*)widget->ui->tabTcpServer);
   sslServer.optionSaveDlg((QDialog*)widget->ui->tabSslServer);
+  inboundDataChangeItems.optionSaveDlg((QDialog*)widget->ui->tabInbound);
+  outboundDataChangeItems.optionSaveDlg((QDialog*)widget->ui->tabOutbound);
 }
 #endif // QT_GUI_LIB
-
