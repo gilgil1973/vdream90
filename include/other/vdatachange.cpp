@@ -33,18 +33,30 @@ bool VDataChangeItem::prepare(VError& error)
 bool VDataChangeItem::change(QByteArray& ba)
 {
   QString text(ba);
+  bool changed = false;
+  int offset = 0;
 
-  int index = rx.indexIn(text);
-  if (index == -1) return false;
-  LOG_DEBUG("index=%d", index); // gilgil temp 2014.03.15
-
-  QString from = rx.cap(0);
-  ba.replace(index, from.length(), replace);
-  if (log)
+  while (true)
   {
-    LOG_INFO("changed %s > %s", qPrintable(from), qPrintable(replace));
+    int index = rx.indexIn(text, offset);
+    if (index == -1) break;
+    // LOG_DEBUG("index=%d", index); // gilgil temp 2014.03.15
+
+    QString from = rx.cap(0);
+    if (from == replace) continue;
+    text.replace(index, from.length(), replace);
+    changed = true;
+    if (log)
+    {
+      LOG_INFO("changed %s > %s", qPrintable(from), qPrintable(replace));
+    }
+    offset = index;
   }
-  return true;
+  if (changed)
+  {
+    ba = qPrintable(text);
+  }
+  return changed;
 }
 
 void VDataChangeItem::load(VXml xml)
