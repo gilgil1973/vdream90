@@ -53,7 +53,7 @@ VTcpServer::~VTcpServer()
 #endif // BACKLOG
 bool VTcpServer::doOpen()
 {
-  VLock lock(m_openCloseCS);
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
 
   if (port == 0)
   {
@@ -125,7 +125,7 @@ bool VTcpServer::doOpen()
 
 bool VTcpServer::doClose()
 {
-  VLock lock(m_openCloseCS);
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
 
   if (acceptSession->handle == INVALID_SOCKET) return true;
 
@@ -195,6 +195,8 @@ bool VTcpServer::doClose()
 
 int VTcpServer::doRead(char* buf, int size)
 {
+  // VLock lock(stateReadCs); // gilgil temp 2014.03.14
+
   Q_UNUSED(buf)
   Q_UNUSED(size)
   SET_ERROR(VError, "not readable", VERR_NOT_READABLE);
@@ -203,7 +205,7 @@ int VTcpServer::doRead(char* buf, int size)
 
 int VTcpServer::doWrite(char* buf, int size)
 {
-  VLock lock(m_writeCS);
+  VLock lock(stateWriteCs); // gilgil temp 2014.03.14
 
   threadList.lock();
   for (VTcpSessionThreadList::iterator it = threadList.begin(); it != threadList.end(); it++)

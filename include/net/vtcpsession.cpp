@@ -17,7 +17,7 @@ VTcpSession::~VTcpSession()
 
 bool VTcpSession::doOpen()
 {
-  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
 
   if (handle == INVALID_SOCKET)
   {
@@ -29,7 +29,7 @@ bool VTcpSession::doOpen()
 
 bool VTcpSession::doClose()
 {
-  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
 
   if (handle == INVALID_SOCKET) return true;
 
@@ -62,7 +62,7 @@ bool VTcpSession::doClose()
 
 int VTcpSession::doRead(char* buf, int size)
 {
-  VLock lock(m_readCS);
+  VLock lock(stateReadCs); // gilgil temp 2014.03.14
 
   int res = ::recv(handle, buf, size, 0);
   if (res == SOCKET_ERROR)
@@ -81,7 +81,7 @@ int VTcpSession::doRead(char* buf, int size)
 
 int VTcpSession::doWrite(char* buf, int size)
 {
-  VLock lock(m_writeCS);
+  VLock lock(stateWriteCs); // gilgil temp 2014.03.14
 
   int res;
   int restSize = size;

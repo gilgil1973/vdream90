@@ -68,9 +68,10 @@ class VStateLockable
 {
   friend class VLock;
 protected:
-  VCS m_openCloseCS;
-  VCS m_readCS;
-  VCS m_writeCS;
+  VCS stateOpenCs;
+  VCS stateCloseCs;
+  VCS stateReadCs;
+  VCS stateWriteCs;
 };
 
 // ----------------------------------------------------------------------------

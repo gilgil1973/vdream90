@@ -21,6 +21,8 @@ VSslClient::~VSslClient()
 
 bool VSslClient::doOpen()
 {
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
+
   if (!VTcpClient::doOpen()) return false;
 
   //
@@ -65,6 +67,8 @@ bool VSslClient::doOpen()
 
 bool VSslClient::doClose()
 {
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
+
   sslSession->close();
 
   //
@@ -86,11 +90,15 @@ bool VSslClient::doClose()
 
 int VSslClient::doRead(char* buf, int size)
 {
+  // VLock lock(stateReadCs); // gilgil temp 2014.03.14
+
   return sslSession->read(buf, size);
 }
 
 int VSslClient::doWrite(char* buf, int size)
 {
+  // VLock lock(stateWriteCs); // gilgil temp 2014.03.14
+
   return sslSession->write(buf, size);
 }
 

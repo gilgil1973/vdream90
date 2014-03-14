@@ -17,7 +17,7 @@
 // ----------------------------------------------------------------------------
 // VTcpClient
 // ----------------------------------------------------------------------------
-class VTcpClient : public VNetClient
+class VTcpClient : public VNetClient, protected VStateLockable
 {
 public:
   VTcpClient(void* owner = NULL);

@@ -63,8 +63,10 @@ void apps_ssl_info_callback(const SSL* s, int where, int ret)
 
 bool VSslSession::doOpen()
 {
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
+
   // --------------------------------------------------------------------------
-  // check sock(must be set in other place_
+  // check sock(must be set in other place)
   // --------------------------------------------------------------------------
   if (handle == INVALID_SOCKET)
   {
@@ -73,7 +75,7 @@ bool VSslSession::doOpen()
   }
 
   // --------------------------------------------------------------------------
-  // check ctx(must be set in other place
+  // check ctx(must be set in other place)
   // --------------------------------------------------------------------------
   if (ctx == NULL)
   {
@@ -128,6 +130,8 @@ bool VSslSession::doOpen()
 // ----------------------------------
 bool VSslSession::doClose()
 {
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
+
   ctx = NULL;
   if (con != NULL)
   {
@@ -153,6 +157,8 @@ bool VSslSession::doClose()
 
 int VSslSession::doRead(char* buf, int size)
 {
+  VLock lock(stateReadCs); // gilgil temp 2014.03.14
+
   int res = SSL_read(con, buf, size);
   // sleep(1); // gilgil temp 2014.02.28
   if (res < 0)
@@ -170,6 +176,8 @@ int VSslSession::doRead(char* buf, int size)
 
 int VSslSession::doWrite(char* buf, int size)
 {
+  VLock lock(stateWriteCs); // gilgil temp 2014.03.14
+
   int res = SSL_write(con, buf, size);
   if (res < 0)
   {

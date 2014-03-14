@@ -17,7 +17,7 @@
 // ----------------------------------------------------------------------------
 // VUdpClient
 // ----------------------------------------------------------------------------
-class VUdpClient : public VNetClient
+class VUdpClient : public VNetClient, protected VStateLockable
 {
 public:
   VUdpClient(void* owner = NULL);

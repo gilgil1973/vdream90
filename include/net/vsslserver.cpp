@@ -74,6 +74,8 @@ VSslServer::~VSslServer()
 
 bool VSslServer::doOpen()
 {
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
+
   //
   // Set server method
   //
@@ -109,7 +111,6 @@ bool VSslServer::doOpen()
     if (!setup(fileName)) return false;
   }
 
-
   if (!VTcpServer::doOpen()) return false;
 
   return true;
@@ -117,6 +118,8 @@ bool VSslServer::doOpen()
 
 bool VSslServer::doClose()
 {
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
+
   sslSessionList.lock();
   for (int i = 0; i < sslSessionList.count(); i++)
   {
@@ -145,6 +148,8 @@ bool VSslServer::doClose()
 
 int VSslServer::doRead(char* buf, int size)
 {
+  // VLock lock(stateReadCs); // gilgil temp 2014.03.14
+
   Q_UNUSED(buf)
   Q_UNUSED(size)
   SET_ERROR(VError, "not readable", VERR_NOT_READABLE);
@@ -153,7 +158,7 @@ int VSslServer::doRead(char* buf, int size)
 
 int VSslServer::doWrite(char* buf, int size)
 {
-  VLock lock(m_writeCS);
+  VLock lock(stateWriteCs);
 
   sslSessionList.lock();
   for (int i = 0; i < sslSessionList.count(); i++)
@@ -164,7 +169,6 @@ int VSslServer::doWrite(char* buf, int size)
   sslSessionList.unlock();
   return size;
 }
-
 
 int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg) // gilgil temp 2014.03.07
 {
@@ -412,11 +416,14 @@ void VSslServer::myRun(VTcpSession* tcpSession)
 {
   threadTag = 10000;
   VSslServerSession *sslSession = new VSslServerSession;
+  threadTag = 11000;
   sslSession->owner       = this;
   sslSession->tcpSession  = tcpSession;
   sslSession->handle      = tcpSession->handle;
   sslSession->ctx         = m_ctx;
+  threadTag = 12000;
   if (!sslSession->open()) goto _end;
+  threadTag = 13000;
   LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
   threadTag = 20000;
 

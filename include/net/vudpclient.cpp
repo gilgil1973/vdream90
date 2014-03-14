@@ -19,6 +19,8 @@ VUdpClient::~VUdpClient()
 
 bool VUdpClient::doOpen()
 {
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
+
   if (port == 0)
   {
     SET_ERROR(VNetError, "port is zero", VERR_PORT_IS_ZERO);
@@ -92,12 +94,16 @@ bool VUdpClient::doOpen()
 
 bool VUdpClient::doClose()
 {
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
+
   udpSession->close();
   return true;
 }
 
 int  VUdpClient::doRead(char* buf, int size)
 {
+  // VLock lock(stateReadCs); // gilgil temp 2014.03.14
+
   int res = udpSession->read(buf, size);
   if (res == VERR_FAIL)
     error = udpSession->error;
@@ -106,6 +112,8 @@ int  VUdpClient::doRead(char* buf, int size)
 
 int  VUdpClient::doWrite(char* buf, int size)
 {
+  // VLock lock(stateWriteCs); // gilgil temp 2014.03.14
+
   int res = udpSession->write(buf, size);
   if (res == VERR_FAIL)
     error = udpSession->error;

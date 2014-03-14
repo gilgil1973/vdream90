@@ -17,7 +17,7 @@ VUdpSession::~VUdpSession()
 
 bool VUdpSession::doOpen()
 {
-  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
 
   if (handle == INVALID_SOCKET)
   {
@@ -29,7 +29,7 @@ bool VUdpSession::doOpen()
 
 bool VUdpSession::doClose()
 {
-  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
 
   if (handle == INVALID_SOCKET) return true;
 
@@ -78,7 +78,7 @@ void VUdpSession::logAddr(SOCKADDR_IN* sockAddr)
 
 int VUdpSession::doRead(char* buf, int size)
 {
-  VLock lock(m_readCS);
+  VLock lock(stateReadCs); // gilgil temp 2014.03.14
 
   SOCKADDR_IN tempAddr;
   socklen_t fromLen = sizeof(tempAddr);
@@ -104,7 +104,7 @@ int VUdpSession::doWrite(char* buf, int size)
 {
   LOG_DEBUG("log test"); // gilgil temp 2012.11.01
 
-  VLock lock(m_writeCS);
+  VLock lock(stateWriteCs); // gilgil temp 2014.03.14
 
   int res;
   int restSize = size;

@@ -47,7 +47,7 @@ VUdpServer::~VUdpServer()
 
 bool VUdpServer::doOpen()
 {
-  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
+  VLock lock(stateOpenCs); // gilgil temp 2014.03.14
 
   if (port == 0)
   {
@@ -102,7 +102,8 @@ bool VUdpServer::doOpen()
 
 bool VUdpServer::doClose()
 {
-  // VLock lock(m_openCloseCS); // gilgil temp 2014.02.28
+  VLock lock(stateCloseCs); // gilgil temp 2014.03.14
+
   sockAddrList.lock();
   sockAddrList.clear();
   sockAddrList.unlock();
@@ -112,7 +113,8 @@ bool VUdpServer::doClose()
 
 int VUdpServer::doRead(char* buf, int size)
 {
-  VLock lock(m_readCS);
+  VLock lock(stateReadCs); // gilgil temp 2014.03.14
+
   return udpSession->read(buf, size);
   SOCKADDR_IN sockAddr = udpSession->addr;
   sockAddrList.insert(sockAddr);
@@ -120,7 +122,7 @@ int VUdpServer::doRead(char* buf, int size)
 
 int VUdpServer::doWrite(char* buf, int size)
 {
-  VLock lock(m_writeCS);
+  VLock lock(stateWriteCs); // gilgil temp 2014.03.14
 
   sockAddrList.lock();
   for (VSockAddrList::iterator it = sockAddrList.begin(); it != sockAddrList.end(); it++)
