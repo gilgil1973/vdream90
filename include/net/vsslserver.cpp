@@ -250,7 +250,8 @@ int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug
       *debug = 8000;
     }
     *debug = 9000;
-    LOG_DEBUG("s=%p", con); // gilgil temp 2014.03.07
+    LOG_DEBUG("con=%p", con); // gilgil temp 2014.03.07
+    *debug = 9100;
     session->setup(fileName);
     *debug = 9500;
   }
@@ -437,13 +438,18 @@ void VSslServer::myRun(VTcpSession* tcpSession)
   threadTag = 30000;
 
   SSL_set_accept_state(sslSession->con);
+  threadTag = 31000;
   while (true)
   {
+    threadTag = 32000;
     if (SSL_is_init_finished(sslSession->con)) break;
+    threadTag = 33000;
     int res = SSL_accept(sslSession->con);
+    threadTag = 34000;
     if (res < 0)
     {
       LOG_DEBUG("[VDSSLServer.cpp] VDSSLSessionList::add SSL_accept return %d error=%d", res, SSL_get_error(sslSession->con, res));
+      threadTag = 35000;
       goto _end;
     }
     else if (res == 0) // may be the TLS/SSL handshake was not successful

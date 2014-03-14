@@ -14,7 +14,9 @@ int run(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
   VApp::initialize();
+  LOG_INFO("httpproxy started %s", VDREAM_VERSION);
   int res = run(argc, argv);
   VApp::finalize();
+  LOG_INFO("httpproxy terminated");
   return res;
 }
