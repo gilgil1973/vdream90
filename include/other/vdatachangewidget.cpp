@@ -1,3 +1,5 @@
+#ifdef QT_GUI_LIB
+
 #include "vdatachangewidget.h"
 #include "ui_vdatachangewidget.h"
 
@@ -107,3 +109,5 @@ void operator << (QTreeWidget& treeWidget, VDataChange& dataChange)
   }
   treeWidget.insertTopLevelItems(0, treeWidgetItems);
 }
+
+#endif // QT_GUI_LIB

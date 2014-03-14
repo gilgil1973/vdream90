@@ -1,6 +1,8 @@
 #ifndef VDATACHANGEWIDGET_H
 #define VDATACHANGEWIDGET_H
 
+#ifdef QT_GUI_LIB
+
 #include <QWidget>
 #include <QTreeWidget>
 #include <VDataChange>
@@ -39,3 +41,5 @@ void operator << (VDataChange& dataChange, QTreeWidget& treeWidget);
 void operator << (QTreeWidget& treeWidget, VDataChange& dataChange);
 
 #endif // VDATACHANGEWIDGET_H
+
+#endif // QT_GUI_LIB
