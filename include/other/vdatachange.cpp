@@ -6,28 +6,67 @@
 VDataChangeItem::VDataChangeItem()
 {
   enabled = true;
-  re      = false;
-  log     = true;
-  from    = "";
-  to      = "";
+  pattern = "";
+  syntax  = QRegExp::RegExp;
+  cs      = Qt::CaseSensitive;
+  minimal = false;
+  replace = "";
+}
+
+bool VDataChangeItem::prepare(VError& error)
+{
+  // gilgil temp 2014.03.15 order ???
+  rx.setPattern(pattern);
+  rx.setCaseSensitivity(cs);
+  rx.setMinimal(minimal);
+  rx.setPatternSyntax(syntax);
+
+  if (!rx.isValid())
+  {
+    SET_ERROR(VError, qformat("rx is not valid(%s)", qPrintable(pattern)), VERR_UNKNOWN);
+    return false;
+  }
+
+  return true;
+}
+
+bool VDataChangeItem::change(QByteArray& ba)
+{
+  QString text(ba);
+
+  int index = rx.indexIn(text);
+  if (index == -1) return false;
+  LOG_DEBUG("index=%d", index); // gilgil temp 2014.03.15
+
+  QString from = rx.cap(0);
+  ba.replace(index, from.length(), replace);
+  if (log)
+  {
+    LOG_INFO("changed %s > %s", qPrintable(from), qPrintable(replace));
+  }
+  return true;
 }
 
 void VDataChangeItem::load(VXml xml)
 {
   enabled = xml.getBool("enabled", enabled);
-  re      = xml.getBool("re", re);
   log     = xml.getBool("log", log);
-  from    = qPrintable(xml.getStr("from", from));
-  to      = qPrintable(xml.getStr("to",   to));
+  pattern = xml.getStr("pattern", pattern);
+  syntax  = (QRegExp::PatternSyntax)xml.getInt("syntax", (int)syntax);
+  cs      = (Qt::CaseSensitivity)xml.getInt("cs", (int)cs);
+  minimal = xml.getBool("minimal", minimal);
+  replace = qPrintable(xml.getStr("replace", QString(replace)));
 }
 
 void VDataChangeItem::save(VXml xml)
 {
   xml.setBool("enabled", enabled);
-  xml.setBool("re", re);
   xml.setBool("log", log);
-  xml.setStr("from", qPrintable(from));
-  xml.setStr("to",   qPrintable(to));
+  xml.setStr("pattern", pattern);
+  xml.setInt("syntax", (int)syntax);
+  xml.setInt("cs", (int)cs);
+  xml.setBool("minimal", minimal);
+  xml.setStr("replace", QString(replace));
 }
 
 // ----------------------------------------------------------------------------
@@ -41,6 +80,16 @@ VDataChange::~VDataChange()
 {
 }
 
+bool VDataChange::prepare(VError& error)
+{
+  for (int i = 0; i < count(); i++)
+  {
+    VDataChangeItem& item = (VDataChangeItem&)at(i);
+    if (!item.prepare(error)) return false;
+  }
+  return true;
+}
+
 bool VDataChange::change(QByteArray& ba)
 {
   bool res = false;
@@ -49,13 +98,10 @@ bool VDataChange::change(QByteArray& ba)
   {
     VDataChangeItem& item = (VDataChangeItem&)at(i);
     if (!item.enabled) continue;
-    ba.replace(item.from, item.to);
+    item.change(ba);
     if (ba != _old)
     {
-      if (item.log)
-      {
-        LOG_INFO("changed %s > %s", qPrintable(item.from), qPrintable(item.to));
-      }
+      res = true;
       _old = ba;
       res = true;
     }

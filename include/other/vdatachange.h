@@ -19,15 +19,24 @@
 // ----------------------------------------------------------------------------
 class VDataChangeItem : public VXmlable
 {
-public:
-  bool       enabled;
-  bool       re;
-  bool       log;
-  QByteArray from;
-  QByteArray to;
+  friend class VDataChange;
 
 public:
   VDataChangeItem();
+
+public:
+  bool                   enabled;
+  bool                   log;
+  QString                pattern;
+  QRegExp::PatternSyntax syntax;
+  Qt::CaseSensitivity    cs;
+  bool                   minimal;
+  QByteArray             replace;
+
+protected:
+  QRegExp rx;
+  bool prepare(VError& error);
+  bool change(QByteArray& ba);
 
 public:
   virtual void load(VXml xml);
@@ -44,6 +53,7 @@ public:
   virtual ~VDataChange();
 
 public:
+  bool prepare(VError& error);
   bool change(QByteArray& ba);
 
 public:

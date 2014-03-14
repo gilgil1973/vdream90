@@ -138,6 +138,9 @@ bool VHttpProxy::doOpen()
     }
   }
 
+  if (!inboundDataChange.prepare(error)) return false;
+  if (!outboundDataChange.prepare(error)) return false;
+
   return true;
 }
 
