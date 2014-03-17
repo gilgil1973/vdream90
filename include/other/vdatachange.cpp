@@ -48,7 +48,7 @@ bool VDataChangeItem::change(QByteArray& ba)
     changed = true;
     if (log)
     {
-      LOG_INFO("changed %s > %s", qPrintable(from), qPrintable(replace));
+      LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(from), qPrintable(replace));
     }
     offset = index;
   }

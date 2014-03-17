@@ -64,6 +64,7 @@ void operator << (VDataChangeItem& item, QTreeWidgetItem& treeWidgetItem)
   item.cs      = treeWidgetItem.checkState(VDataChangeWidget::CS_IDX) == Qt::Checked ? Qt::CaseSensitive : Qt::CaseInsensitive;
   item.minimal = treeWidgetItem.checkState(VDataChangeWidget::MINIMAL_IDX) == Qt::Checked;
   item.replace = qPrintable(treeWidgetItem.text(VDataChangeWidget::REPLACE_IDX));
+  VError error; item.prepare(error);
 }
 
 void operator << (QTreeWidgetItem& treeWidgetItem, VDataChangeItem& item)

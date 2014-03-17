@@ -33,7 +33,7 @@ public:
   bool                   minimal;
   QByteArray             replace;
 
-protected:
+public:
   QRegExp rx;
   bool prepare(VError& error);
   bool change(QByteArray& ba);
