@@ -32,7 +32,7 @@ bool VDataChangeItem::prepare(VError& error)
 
 bool VDataChangeItem::change(QByteArray& ba)
 {
-  QString text(ba);
+  QString text = QString::fromLatin1(ba);
   bool changed = false;
   int offset = 0;
 
@@ -54,7 +54,7 @@ bool VDataChangeItem::change(QByteArray& ba)
   }
   if (changed)
   {
-    ba = qPrintable(text);
+    ba = text.toLatin1();
   }
   return changed;
 }
