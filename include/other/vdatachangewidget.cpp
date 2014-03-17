@@ -16,8 +16,8 @@ VDataChangeWidget::VDataChangeWidget(QWidget *parent) :
   ui->treeWidget->setColumnWidth(ENABLED_IDX, 70);
   ui->treeWidget->setColumnWidth(LOG_IDX,     30);
   ui->treeWidget->setColumnWidth(SYNTAX_IDX,  100);
-  ui->treeWidget->setColumnWidth(CS_IDX,      30);
-  ui->treeWidget->setColumnWidth(MINIMAL_IDX, 70);
+  ui->treeWidget->setColumnWidth(CS_IDX,      40);
+  ui->treeWidget->setColumnWidth(MINIMAL_IDX, 30);
 
 
   ui->treeWidget->header()->setSectionResizeMode(ENABLED_IDX, QHeaderView::Fixed);
