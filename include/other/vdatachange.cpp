@@ -7,7 +7,7 @@ VDataChangeItem::VDataChangeItem()
 {
   enabled = true;
   pattern = "";
-  syntax  = QRegExp::RegExp;
+  syntax  = QRegExp::FixedString;
   cs      = Qt::CaseSensitive;
   minimal = false;
   replace = "";
