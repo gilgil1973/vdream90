@@ -34,7 +34,10 @@ void ClientThread::run()
     return;
   }
 
-  fireEvent(new MsgEvent("******** connected ********"));
+  if (dynamic_cast<VUdpClient*>(netClient) == NULL)
+  {
+    fireEvent(new MsgEvent("******** connected ********"));
+  }
   fireEvent(new StateEvent(VState::Opened));
 
   while (true)
@@ -50,7 +53,10 @@ void ClientThread::run()
     fireEvent(new MsgEvent(msg));
   }
 
-  fireEvent(new MsgEvent("******** disconnected ********"));
+  if (dynamic_cast<VUdpClient*>(netClient) == NULL)
+  {
+    fireEvent(new MsgEvent("******** disconnected ********"));
+  }
   fireEvent(new CloseEvent);
 }
 
