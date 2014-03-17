@@ -104,21 +104,17 @@ bool VDataChange::prepare(VError& error)
 
 bool VDataChange::change(QByteArray& ba)
 {
-  bool res = false;
-  QByteArray _old = ba;
+  bool _changed = false;
   for (int i = 0; i < count(); i++)
   {
     VDataChangeItem& item = (VDataChangeItem&)at(i);
     if (!item.enabled) continue;
-    item.change(ba);
-    if (ba != _old)
+    if (item.change(ba))
     {
-      res = true;
-      _old = ba;
-      res = true;
+      _changed = true;
     }
   }
-  return res;
+  return _changed;
 }
 
 void VDataChange::load(VXml xml)
