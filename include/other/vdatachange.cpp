@@ -5,12 +5,13 @@
 // ----------------------------------------------------------------------------
 VDataChangeItem::VDataChangeItem()
 {
-  enabled = true;
-  pattern = "";
-  syntax  = QRegExp::FixedString;
-  cs      = Qt::CaseSensitive;
-  minimal = false;
-  replace = "";
+  enabled    = true;
+  pattern    = "";
+  syntax     = QRegExp::FixedString;
+  cs         = Qt::CaseSensitive;
+  minimal    = false;
+  replace    = true;
+  replaceStr = "";
 }
 
 bool VDataChangeItem::prepare(VError& error)
@@ -30,7 +31,7 @@ bool VDataChangeItem::prepare(VError& error)
   return true;
 }
 
-bool VDataChangeItem::change(QByteArray& ba)
+bool VDataChangeItem::change(QByteArray& ba, bool* found)
 {
   QString text = QString::fromLatin1(ba);
   bool changed = false;
@@ -40,17 +41,29 @@ bool VDataChangeItem::change(QByteArray& ba)
   {
     int index = rx.indexIn(text, offset);
     if (index == -1) break;
+
+    offset       = index;
+    QString from = rx.cap(0);
+
+    if (!replace)
+    {
+      if (found != NULL) *found = true;
+      if (log)
+      {
+        LOG_INFO("found   \"%s\"", qPrintable(from));
+      }
+      offset++;
+      continue;
+    }
     // LOG_DEBUG("index=%d", index); // gilgil temp 2014.03.15
 
-    QString from = rx.cap(0);
-    if (from == replace) continue;
-    text.replace(index, from.length(), replace);
+    if (from == replaceStr) continue;
+    text.replace(index, from.length(), replaceStr);
     changed = true;
     if (log)
     {
-      LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(from), qPrintable(replace));
+      LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(from), qPrintable(replaceStr));
     }
-    offset = index;
   }
   if (changed)
   {
@@ -67,7 +80,8 @@ void VDataChangeItem::load(VXml xml)
   syntax  = (QRegExp::PatternSyntax)xml.getInt("syntax", (int)syntax);
   cs      = (Qt::CaseSensitivity)xml.getInt("cs", (int)cs);
   minimal = xml.getBool("minimal", minimal);
-  replace = qPrintable(xml.getStr("replace", QString(replace)));
+  replace = xml.getBool("replace", replace);
+  replaceStr = qPrintable(xml.getStr("replaceStr", QString(replaceStr)));
 }
 
 void VDataChangeItem::save(VXml xml)
@@ -78,7 +92,8 @@ void VDataChangeItem::save(VXml xml)
   xml.setInt("syntax", (int)syntax);
   xml.setInt("cs", (int)cs);
   xml.setBool("minimal", minimal);
-  xml.setStr("replace", QString(replace));
+  xml.setBool("replace", replace);
+  xml.setStr("replaceStr", QString(replaceStr));
 }
 
 // ----------------------------------------------------------------------------
@@ -102,14 +117,14 @@ bool VDataChange::prepare(VError& error)
   return true;
 }
 
-bool VDataChange::change(QByteArray& ba)
+bool VDataChange::change(QByteArray& ba, bool* found)
 {
   bool _changed = false;
   for (int i = 0; i < count(); i++)
   {
     VDataChangeItem& item = (VDataChangeItem&)at(i);
     if (!item.enabled) continue;
-    if (item.change(ba))
+    if (item.change(ba, found))
     {
       _changed = true;
     }

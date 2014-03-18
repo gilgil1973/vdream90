@@ -20,13 +20,14 @@ public:
   ~VDataChangeWidget();
 
 public:
-  static const int ENABLED_IDX = 0;
-  static const int LOG_IDX     = 1;
-  static const int PATTERN_IDX = 2;
-  static const int SYNTAX_IDX  = 3;
-  static const int CS_IDX      = 4;
-  static const int MINIMAL_IDX = 5;
-  static const int REPLACE_IDX = 6;
+  static const int ENABLED_IDX     = 0;
+  static const int LOG_IDX         = 1;
+  static const int PATTERN_IDX     = 2;
+  static const int SYNTAX_IDX      = 3;
+  static const int CS_IDX          = 4;
+  static const int MINIMAL_IDX     = 5;
+  static const int REPLACE_IDX     = 6;
+  static const int REPLACE_STR_IDX = 7;
 
 public:
   Ui::VDataChangeWidget *ui;

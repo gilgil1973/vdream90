@@ -10,23 +10,25 @@ VDataChangeWidget::VDataChangeWidget(QWidget *parent) :
   ui->setupUi(this);
 
   layout()->setContentsMargins(0, 0, 0, 0);
-  QStringList headerLables; headerLables << "Enabled" << "Log" << "Pattern" << "Syntax" << "Case" << "Minimal" << "Replace";
+  QStringList headerLables; headerLables << "Enabled" << "Log" << "Pattern" << "Syntax" << "Case" << "Minimal" << "Replace" << "Replace Str";
 
   ui->treeWidget->setHeaderLabels(headerLables);
-  ui->treeWidget->setColumnWidth(ENABLED_IDX, 70);
+  ui->treeWidget->setColumnWidth(ENABLED_IDX, 60);
   ui->treeWidget->setColumnWidth(LOG_IDX,     30);
   ui->treeWidget->setColumnWidth(SYNTAX_IDX,  100);
   ui->treeWidget->setColumnWidth(CS_IDX,      40);
   ui->treeWidget->setColumnWidth(MINIMAL_IDX, 30);
+  ui->treeWidget->setColumnWidth(REPLACE_IDX, 30);
 
 
-  ui->treeWidget->header()->setSectionResizeMode(ENABLED_IDX, QHeaderView::Fixed);
-  ui->treeWidget->header()->setSectionResizeMode(LOG_IDX,     QHeaderView::Fixed);
-  ui->treeWidget->header()->setSectionResizeMode(PATTERN_IDX, QHeaderView::Stretch);
-  ui->treeWidget->header()->setSectionResizeMode(SYNTAX_IDX,  QHeaderView::Fixed);
-  ui->treeWidget->header()->setSectionResizeMode(CS_IDX,      QHeaderView::Fixed);
-  ui->treeWidget->header()->setSectionResizeMode(MINIMAL_IDX, QHeaderView::Fixed);
-  ui->treeWidget->header()->setSectionResizeMode(REPLACE_IDX, QHeaderView::Stretch);
+  ui->treeWidget->header()->setSectionResizeMode(ENABLED_IDX,     QHeaderView::Fixed);
+  ui->treeWidget->header()->setSectionResizeMode(LOG_IDX,         QHeaderView::Fixed);
+  ui->treeWidget->header()->setSectionResizeMode(PATTERN_IDX,     QHeaderView::Stretch);
+  ui->treeWidget->header()->setSectionResizeMode(SYNTAX_IDX,      QHeaderView::Fixed);
+  ui->treeWidget->header()->setSectionResizeMode(CS_IDX,          QHeaderView::Fixed);
+  ui->treeWidget->header()->setSectionResizeMode(MINIMAL_IDX,     QHeaderView::Fixed);
+  ui->treeWidget->header()->setSectionResizeMode(REPLACE_IDX,     QHeaderView::Fixed);
+  ui->treeWidget->header()->setSectionResizeMode(REPLACE_STR_IDX, QHeaderView::Stretch);
   ui->treeWidget->header()->setStretchLastSection(false);
   ui->treeWidget->setMinimumWidth(600);
 }
@@ -56,14 +58,15 @@ void VDataChangeWidget::on_pbDel_clicked()
 
 void operator << (VDataChangeItem& item, QTreeWidgetItem& treeWidgetItem)
 {
-  item.enabled = treeWidgetItem.checkState(VDataChangeWidget::ENABLED_IDX) == Qt::Checked;
-  item.log     = treeWidgetItem.checkState(VDataChangeWidget::LOG_IDX)     == Qt::Checked;
-  item.pattern = treeWidgetItem.text(VDataChangeWidget::PATTERN_IDX);
+  item.enabled    = treeWidgetItem.checkState(VDataChangeWidget::ENABLED_IDX) == Qt::Checked;
+  item.log        = treeWidgetItem.checkState(VDataChangeWidget::LOG_IDX)     == Qt::Checked;
+  item.pattern    = treeWidgetItem.text(VDataChangeWidget::PATTERN_IDX);
   QComboBox* syntaxComboBox = dynamic_cast<QComboBox*>(treeWidgetItem.treeWidget()->itemWidget(&treeWidgetItem, VDataChangeWidget::SYNTAX_IDX));
-  item.syntax  = (QRegExp::PatternSyntax)(syntaxComboBox->currentIndex());
-  item.cs      = treeWidgetItem.checkState(VDataChangeWidget::CS_IDX) == Qt::Checked ? Qt::CaseSensitive : Qt::CaseInsensitive;
-  item.minimal = treeWidgetItem.checkState(VDataChangeWidget::MINIMAL_IDX) == Qt::Checked;
-  item.replace = qPrintable(treeWidgetItem.text(VDataChangeWidget::REPLACE_IDX));
+  item.syntax     = (QRegExp::PatternSyntax)(syntaxComboBox->currentIndex());
+  item.cs         = treeWidgetItem.checkState(VDataChangeWidget::CS_IDX) == Qt::Checked ? Qt::CaseSensitive : Qt::CaseInsensitive;
+  item.minimal    = treeWidgetItem.checkState(VDataChangeWidget::MINIMAL_IDX) == Qt::Checked;
+  item.replace    = treeWidgetItem.checkState(VDataChangeWidget::REPLACE_IDX) == Qt::Checked;
+  item.replaceStr = qPrintable(treeWidgetItem.text(VDataChangeWidget::REPLACE_STR_IDX));
   VError error; item.prepare(error);
 }
 
@@ -79,7 +82,8 @@ void operator << (QTreeWidgetItem& treeWidgetItem, VDataChangeItem& item)
   treeWidgetItem.treeWidget()->setItemWidget(&treeWidgetItem, VDataChangeWidget::SYNTAX_IDX, syntaxComboBox);
   treeWidgetItem.setCheckState(VDataChangeWidget::CS_IDX, item.cs == Qt::CaseSensitive ? Qt::Checked : Qt::Unchecked);
   treeWidgetItem.setCheckState(VDataChangeWidget::MINIMAL_IDX, item.minimal ? Qt::Checked : Qt::Unchecked);
-  treeWidgetItem.setText(VDataChangeWidget::REPLACE_IDX, QString(item.replace));
+  treeWidgetItem.setCheckState(VDataChangeWidget::REPLACE_IDX, item.replace ? Qt::Checked : Qt::Unchecked);
+  treeWidgetItem.setText(VDataChangeWidget::REPLACE_STR_IDX, QString(item.replaceStr));
 
   treeWidgetItem.setFlags(treeWidgetItem.flags() | Qt::ItemIsEditable);
 }

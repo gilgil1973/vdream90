@@ -31,12 +31,13 @@ public:
   QRegExp::PatternSyntax syntax;
   Qt::CaseSensitivity    cs;
   bool                   minimal;
-  QByteArray             replace;
+  bool                   replace;
+  QByteArray             replaceStr;
 
 public:
   QRegExp rx;
   bool prepare(VError& error);
-  bool change(QByteArray& ba);
+  bool change(QByteArray& ba, bool* found);
 
 public:
   virtual void load(VXml xml);
@@ -54,7 +55,7 @@ public:
 
 public:
   bool prepare(VError& error);
-  bool change(QByteArray& ba);
+  bool change(QByteArray& ba, bool* found);
 
 public:
   virtual void load(VXml xml);
