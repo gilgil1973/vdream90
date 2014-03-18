@@ -31,8 +31,8 @@ public:
   QRegExp::PatternSyntax syntax;
   Qt::CaseSensitivity    cs;
   bool                   minimal;
-  bool                   replace;
-  QByteArray             replaceStr;
+  bool                   findOnly;
+  QByteArray             replace;
 
 public:
   QRegExp rx;

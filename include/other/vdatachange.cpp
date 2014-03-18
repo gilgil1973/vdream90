@@ -5,13 +5,13 @@
 // ----------------------------------------------------------------------------
 VDataChangeItem::VDataChangeItem()
 {
-  enabled    = true;
-  pattern    = "";
-  syntax     = QRegExp::FixedString;
-  cs         = Qt::CaseSensitive;
-  minimal    = false;
-  replace    = true;
-  replaceStr = "";
+  enabled  = true;
+  pattern  = "";
+  syntax   = QRegExp::FixedString;
+  cs       = Qt::CaseSensitive;
+  minimal  = false;
+  findOnly = false;
+  replace  = "";
 }
 
 bool VDataChangeItem::prepare(VError& error)
@@ -45,7 +45,7 @@ bool VDataChangeItem::change(QByteArray& ba, bool* found)
     offset       = index;
     QString from = rx.cap(0);
 
-    if (!replace)
+    if (findOnly)
     {
       if (found != NULL) *found = true;
       if (log)
@@ -57,12 +57,12 @@ bool VDataChangeItem::change(QByteArray& ba, bool* found)
     }
     // LOG_DEBUG("index=%d", index); // gilgil temp 2014.03.15
 
-    if (from == replaceStr) continue;
-    text.replace(index, from.length(), replaceStr);
+    if (from == replace) continue;
+    text.replace(index, from.length(), replace);
     changed = true;
     if (log)
     {
-      LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(from), qPrintable(replaceStr));
+      LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(from), qPrintable(replace));
     }
   }
   if (changed)
@@ -74,14 +74,14 @@ bool VDataChangeItem::change(QByteArray& ba, bool* found)
 
 void VDataChangeItem::load(VXml xml)
 {
-  enabled = xml.getBool("enabled", enabled);
-  log     = xml.getBool("log", log);
-  pattern = xml.getStr("pattern", pattern);
-  syntax  = (QRegExp::PatternSyntax)xml.getInt("syntax", (int)syntax);
-  cs      = (Qt::CaseSensitivity)xml.getInt("cs", (int)cs);
-  minimal = xml.getBool("minimal", minimal);
-  replace = xml.getBool("replace", replace);
-  replaceStr = qPrintable(xml.getStr("replaceStr", QString(replaceStr)));
+  enabled  = xml.getBool("enabled", enabled);
+  log      = xml.getBool("log", log);
+  pattern  = xml.getStr("pattern", pattern);
+  syntax   = (QRegExp::PatternSyntax)xml.getInt("syntax", (int)syntax);
+  cs       = (Qt::CaseSensitivity)xml.getInt("cs", (int)cs);
+  minimal  = xml.getBool("minimal", minimal);
+  findOnly = xml.getBool("findOnly", findOnly);
+  replace  = qPrintable(xml.getStr("replace", QString(replace)));
 }
 
 void VDataChangeItem::save(VXml xml)
@@ -92,8 +92,8 @@ void VDataChangeItem::save(VXml xml)
   xml.setInt("syntax", (int)syntax);
   xml.setInt("cs", (int)cs);
   xml.setBool("minimal", minimal);
-  xml.setBool("replace", replace);
-  xml.setStr("replaceStr", QString(replaceStr));
+  xml.setBool("findOnly", findOnly);
+  xml.setStr("replace", QString(replace));
 }
 
 // ----------------------------------------------------------------------------
