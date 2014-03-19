@@ -188,8 +188,11 @@ bool VDataFind::find(QByteArray& ba)
   {
     VDataFindItem& item = (VDataFindItem&)at(i);
     if (!item.enabled) continue;
-    if (item.find(ba))
+    int offset = 0;
+    while (true)
     {
+      offset = item.find(ba, offset);
+      if (offset == -1) break;
       res = true;
     }
   }

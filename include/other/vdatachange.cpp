@@ -116,8 +116,11 @@ bool VDataChange::change(QByteArray& ba)
   {
     VDataChangeItem& item = (VDataChangeItem&)at(i);
     if (!item.enabled) continue;
-    if (item.change(ba))
+    int offset = 0;
+    while (true)
     {
+      offset = item.change(ba, offset);
+      if (offset == -1) break;
       res = true;
     }
   }
