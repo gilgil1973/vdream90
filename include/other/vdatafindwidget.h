@@ -21,9 +21,6 @@ public:
 
 public:
   Ui::VDataFindWidget *ui;
-private slots:
-  void on_pbAdd_clicked();
-  void on_pbDel_clicked();
 };
 
 #endif // QT_GUI_LIB

@@ -151,6 +151,36 @@ void VDataChange::save(VXml xml)
 #ifdef QT_GUI_LIB
 #include "vdatafindwidget.h"
 #include "ui_vdatafindwidget.h"
+void VDataChange::__on_pbAdd_clicked()
+{
+  QPushButton* pbAdd = dynamic_cast<QPushButton*>(this->sender());
+  LOG_ASSERT(pbAdd != NULL);
+  VDataFindWidget* widget = dynamic_cast<VDataFindWidget*>(pbAdd->parent());
+  LOG_ASSERT(widget != NULL);
+  QTreeWidget* treeWidget = widget->ui->treeWidget;
+
+  QTreeWidgetItem* treeWidgetItem = new QTreeWidgetItem(treeWidget);
+  VDataChangeItem newItem;
+  *treeWidgetItem << newItem;
+  int count = treeWidget->topLevelItemCount();
+  treeWidget->insertTopLevelItem(count, treeWidgetItem);
+}
+
+void VDataChange::__on_pbDel_clicked()
+{
+  QPushButton* pbDel = dynamic_cast<QPushButton*>(this->sender());
+  LOG_ASSERT(pbDel != NULL);
+  VDataFindWidget* widget = dynamic_cast<VDataFindWidget*>(pbDel->parent());
+  LOG_ASSERT(widget != NULL);
+  QTreeWidget* treeWidget = widget->ui->treeWidget;
+
+  QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+  foreach (QTreeWidgetItem* item, items)
+  {
+    delete item;
+  }
+}
+
 void VDataChange::optionAddWidget(QLayout* layout)
 {
   VDataFindWidget* widget = new VDataFindWidget(layout->parentWidget());
@@ -158,6 +188,8 @@ void VDataChange::optionAddWidget(QLayout* layout)
   widget->setObjectName("dataChangeWidget");
   *(widget->ui->treeWidget) << *this;
   layout->addWidget(widget);
+  VObject::connect(widget->ui->pbAdd, SIGNAL(clicked()), this, SLOT(__on_pbAdd_clicked()));
+  VObject::connect(widget->ui->pbDel, SIGNAL(clicked()), this, SLOT(__on_pbDel_clicked()));
 }
 
 void VDataChange::optionSaveDlg(QDialog* dialog)

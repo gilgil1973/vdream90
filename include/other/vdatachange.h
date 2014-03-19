@@ -52,8 +52,15 @@ void operator << (VDataChangeItem& item, QTreeWidgetItem& treeWidgetItem);
 // ----------------------------------------------------------------------------
 // VDataChange
 // ----------------------------------------------------------------------------
+#ifdef QT_GUI_LIB
+class VDataChange : public QObject, public QList<VDataChangeItem>, public VXmlable, public VOptionable
+{
+  Q_OBJECT
+#else  // QT_GUI_LIB
 class VDataChange : public QList<VDataChangeItem>, public VXmlable, public VOptionable
 {
+#endif // QT_GUI_LIB
+
 public:
   VDataChange();
   virtual ~VDataChange();
@@ -67,6 +74,10 @@ public:
   virtual void save(VXml xml);
 
 #ifdef QT_GUI_LIB
+protected slots:
+  void __on_pbAdd_clicked();
+  void __on_pbDel_clicked();
+
 public:
   virtual void optionAddWidget(QLayout* layout);
   virtual void optionSaveDlg(QDialog* dialog);
