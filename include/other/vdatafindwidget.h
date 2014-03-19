@@ -5,7 +5,6 @@
 
 #include <QWidget>
 #include <QTreeWidget>
-#include <VDataChange>
 
 namespace Ui {
   class VDataFindWidget;

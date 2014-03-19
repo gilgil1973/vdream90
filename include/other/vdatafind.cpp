@@ -1,4 +1,4 @@
-#include "vdatachange.h"
+#include "vdatafind.h"
 
 // ----------------------------------------------------------------------------
 // VRegExp
@@ -97,6 +97,7 @@ void operator << (QTreeWidgetItem& treeWidgetItem, VRegExp& regexp)
 VDataFindItem::VDataFindItem()
 {
   enabled = true;
+  log     = true;
 }
 
 int VDataFindItem::find(QByteArray& ba, int offset)
@@ -106,8 +107,11 @@ int VDataFindItem::find(QByteArray& ba, int offset)
   int index = rx.indexIn(text, offset);
   if (index == -1) return -1;
 
-  QString found = rx.cap(0);
-  LOG_INFO("found   \"%s\"", qPrintable(found));
+  if (log)
+  {
+    QString found = rx.cap(0);
+    LOG_INFO("found     \"%s\"", qPrintable(found));
+  }
 
   return index;
 }
@@ -131,16 +135,16 @@ void VDataFindItem::initialize(QTreeWidget* treeWidget)
 {
   VRegExp::initialize(treeWidget);
 
-  LOG_DEBUG("column count=%d", treeWidget->header()->count()); // gilgil temp 2014.03.19
   QStringList headerLables;
   for (int i = 0; i < treeWidget->columnCount(); i++) headerLables << treeWidget->headerItem()->text(i);
-  headerLables << "Enabled";
+  headerLables << "Enabled" << "Log";
   treeWidget->setHeaderLabels(headerLables);
-  LOG_DEBUG("column count=%d", treeWidget->header()->count()); // gilgil temp 2014.03.19
 
   treeWidget->setColumnWidth(ENABLED_IDX, 30);
+  treeWidget->setColumnWidth(LOG_IDX,     30);
 
-  treeWidget->header()->setSectionResizeMode(ENABLED_IDX,   QHeaderView::Interactive);
+  treeWidget->header()->setSectionResizeMode(ENABLED_IDX, QHeaderView::Interactive);
+  treeWidget->header()->setSectionResizeMode(LOG_IDX,     QHeaderView::Interactive);
 }
 
 void operator << (QTreeWidgetItem& treeWidgetItem, VDataFindItem& item)
@@ -148,13 +152,15 @@ void operator << (QTreeWidgetItem& treeWidgetItem, VDataFindItem& item)
   treeWidgetItem << (VRegExp&)item;
 
   treeWidgetItem.setCheckState(VDataFindItem::ENABLED_IDX, item.enabled ? Qt::Checked : Qt::Unchecked);
+  treeWidgetItem.setCheckState(VDataFindItem::LOG_IDX,     item.log     ? Qt::Checked : Qt::Unchecked);
 }
 
 void operator << (VDataFindItem& item, QTreeWidgetItem& treeWidgetItem)
 {
   (VRegExp&)item << treeWidgetItem;
 
-  item.enabled  = treeWidgetItem.checkState(VDataFindItem::ENABLED_IDX) == Qt::Checked;
+  item.enabled = treeWidgetItem.checkState(VDataFindItem::ENABLED_IDX) == Qt::Checked;
+  item.log     = treeWidgetItem.checkState(VDataFindItem::LOG_IDX) == Qt::Checked;
 
   VError error; item.prepare(error);
 }
@@ -194,6 +200,7 @@ bool VDataFind::find(QByteArray& ba)
       offset = item.find(ba, offset);
       if (offset == -1) break;
       res = true;
+      offset++;
     }
   }
   return res;
@@ -226,12 +233,45 @@ void VDataFind::save(VXml xml)
 #ifdef QT_GUI_LIB
 #include "vdatafindwidget.h"
 #include "ui_vdatafindwidget.h"
+void VDataFind::__on_pbAdd_clicked()
+{
+  QPushButton* pbAdd = dynamic_cast<QPushButton*>(this->sender());
+  LOG_ASSERT(pbAdd != NULL);
+  VDataFindWidget* widget = dynamic_cast<VDataFindWidget*>(pbAdd->parent());
+  LOG_ASSERT(widget != NULL);
+  QTreeWidget* treeWidget = widget->ui->treeWidget;
+
+  QTreeWidgetItem* treeWidgetItem = new QTreeWidgetItem(treeWidget);
+  VDataFindItem newItem;
+  *treeWidgetItem << newItem;
+  int count = treeWidget->topLevelItemCount();
+  treeWidget->insertTopLevelItem(count, treeWidgetItem);
+}
+
+void VDataFind::__on_pbDel_clicked()
+{
+  QPushButton* pbDel = dynamic_cast<QPushButton*>(this->sender());
+  LOG_ASSERT(pbDel != NULL);
+  VDataFindWidget* widget = dynamic_cast<VDataFindWidget*>(pbDel->parent());
+  LOG_ASSERT(widget != NULL);
+  QTreeWidget* treeWidget = widget->ui->treeWidget;
+
+  QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+  foreach (QTreeWidgetItem* item, items)
+  {
+    delete item;
+  }
+}
+
 void VDataFind::optionAddWidget(QLayout* layout)
 {
   VDataFindWidget* widget = new VDataFindWidget(layout->parentWidget());
+  VDataFindItem::initialize(widget->ui->treeWidget);
   widget->setObjectName("dataFindWidget");
   *(widget->ui->treeWidget) << *this;
   layout->addWidget(widget);
+  VObject::connect(widget->ui->pbAdd, SIGNAL(clicked()), this, SLOT(__on_pbAdd_clicked()));
+  VObject::connect(widget->ui->pbDel, SIGNAL(clicked()), this, SLOT(__on_pbDel_clicked()));
 }
 
 void VDataFind::optionSaveDlg(QDialog* dialog)

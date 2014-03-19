@@ -65,7 +65,7 @@ public:
 
 public:
   bool enabled;
-  // bool log; // gilgil temp 2014.03.19
+  bool log;
 
 public:
   int find(QByteArray& ba, int offset = 0);
@@ -77,6 +77,7 @@ public:
 #ifdef QT_GUI_LIB
 public:
   static const int ENABLED_IDX = 4;
+  static const int LOG_IDX     = 5;
 
   static void initialize(QTreeWidget* treeWidget);
 #endif // QT_GUI_LIB
@@ -90,8 +91,15 @@ void operator << (VDataFindItem& item, QTreeWidgetItem& treeWidgetItem);
 // ----------------------------------------------------------------------------
 // VDataFind
 // ----------------------------------------------------------------------------
+#ifdef QT_GUI_LIB
+class VDataFind : public QObject, public QList<VDataFindItem>, public VXmlable, public VOptionable
+{
+  Q_OBJECT
+#else // QT_GUI_LIB
 class VDataFind : public QList<VDataFindItem>, public VXmlable, public VOptionable
 {
+#endif // QT_GUI_LIB
+
 public:
   VDataFind();
   virtual ~VDataFind();
@@ -105,6 +113,10 @@ public:
   virtual void save(VXml xml);
 
 #ifdef QT_GUI_LIB
+protected slots:
+  void __on_pbAdd_clicked();
+  void __on_pbDel_clicked();
+
 public:
   virtual void optionAddWidget(QLayout* layout);
   virtual void optionSaveDlg(QDialog* dialog);
@@ -116,4 +128,4 @@ void operator << (QTreeWidget& treeWidget, VDataFind& dataFind);
 void operator << (VDataFind& dataFind, QTreeWidget& treeWidget);
 #endif // QT_GUI_LIB
 
-#endif // __V_DATA_CHANGE_H__
+#endif // __V_DATA_FIND_H__
