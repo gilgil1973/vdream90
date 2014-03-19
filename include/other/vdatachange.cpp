@@ -7,95 +7,86 @@ VDataChangeItem::VDataChangeItem()
 {
   enabled  = true;
   log      = true;
-  pattern  = "";
-  syntax   = QRegExp::FixedString;
-  cs       = Qt::CaseSensitive;
-  minimal  = false;
-  findOnly = false;
   replace  = "";
 }
 
-bool VDataChangeItem::prepare(VError& error)
-{
-  // gilgil temp 2014.03.15 order ???
-  rx.setPattern(pattern);
-  rx.setCaseSensitivity(cs);
-  rx.setMinimal(minimal);
-  rx.setPatternSyntax(syntax);
-
-  if (!rx.isValid())
-  {
-    SET_ERROR(VError, qformat("rx is not valid(%s)", qPrintable(pattern)), VERR_UNKNOWN);
-    return false;
-  }
-
-  return true;
-}
-
-bool VDataChangeItem::change(QByteArray& ba, bool* found)
+int VDataChangeItem::change(QByteArray& ba, int offset)
 {
   QString text = QString::fromLatin1(ba);
-  bool changed = false;
-  int offset = 0;
 
-  while (true)
+  int index = rx.indexIn(text, offset);
+  if (index == -1) return -1;
+
+  QString found = rx.cap(0);
+  if (found == replace) return -1;
+  text.replace(index, found.length(), replace);
+  ba = text.toLatin1();
+
+  if (log)
   {
-    int index = rx.indexIn(text, offset);
-    if (index == -1) break;
-
-    offset       = index;
-    QString from = rx.cap(0);
-
-    if (findOnly)
-    {
-      if (found != NULL) *found = true;
-      if (log)
-      {
-        LOG_INFO("found   \"%s\"", qPrintable(from));
-      }
-      offset++;
-      continue;
-    }
-    // LOG_DEBUG("index=%d", index); // gilgil temp 2014.03.15
-
-    if (from == replace) continue;
-    text.replace(index, from.length(), replace);
-    changed = true;
-    if (log)
-    {
-      LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(from), qPrintable(replace));
-    }
+    LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(found), qPrintable(replace));
   }
-  if (changed)
-  {
-    ba = text.toLatin1();
-  }
-  return changed;
+
+  return index;
 }
 
 void VDataChangeItem::load(VXml xml)
 {
+  VRegExp::load(xml);
+
   enabled  = xml.getBool("enabled", enabled);
   log      = xml.getBool("log", log);
-  pattern  = xml.getStr("pattern", pattern);
-  syntax   = (QRegExp::PatternSyntax)xml.getInt("syntax", (int)syntax);
-  cs       = (Qt::CaseSensitivity)xml.getInt("cs", (int)cs);
-  minimal  = xml.getBool("minimal", minimal);
-  findOnly = xml.getBool("findOnly", findOnly);
   replace  = qPrintable(xml.getStr("replace", QString(replace)));
 }
 
 void VDataChangeItem::save(VXml xml)
 {
+  VRegExp::save(xml);
+
   xml.setBool("enabled", enabled);
-  xml.setBool("log", log);
-  xml.setStr("pattern", pattern);
-  xml.setInt("syntax", (int)syntax);
-  xml.setInt("cs", (int)cs);
-  xml.setBool("minimal", minimal);
-  xml.setBool("findOnly", findOnly);
-  xml.setStr("replace", QString(replace));
+  xml.setBool("log",     log);
+  xml.setStr("replace",  QString(replace));
 }
+
+#ifdef QT_GUI_LIB
+void VDataChangeItem::initialize(QTreeWidget* treeWidget)
+{
+  VRegExp::initialize(treeWidget);
+
+  QStringList headerLables;
+  for (int i = 0; i < treeWidget->columnCount(); i++) headerLables << treeWidget->headerItem()->text(i);
+  headerLables << "Enabled" << "Log" << "Replace";
+  treeWidget->setHeaderLabels(headerLables);
+
+  treeWidget->setColumnWidth(ENABLED_IDX, 30);
+  treeWidget->setColumnWidth(LOG_IDX,     30);
+  // treeWidget->setColumnWidth(REPLACE_IDX, 0);
+
+  treeWidget->header()->setSectionResizeMode(ENABLED_IDX,   QHeaderView::Interactive);
+  treeWidget->header()->setSectionResizeMode(LOG_IDX,       QHeaderView::Interactive);
+  treeWidget->header()->setSectionResizeMode(REPLACE_IDX,   QHeaderView::Stretch);
+}
+
+void operator << (QTreeWidgetItem& treeWidgetItem, VDataChangeItem& item)
+{
+  treeWidgetItem << (VRegExp&)item;
+
+  treeWidgetItem.setCheckState(VDataChangeItem::ENABLED_IDX, item.enabled ? Qt::Checked : Qt::Unchecked);
+  treeWidgetItem.setCheckState(VDataChangeItem::LOG_IDX,     item.log ? Qt::Checked : Qt::Unchecked);
+  treeWidgetItem.setText(VDataChangeItem::REPLACE_IDX, QString(item.replace));
+}
+
+void operator << (VDataChangeItem& item, QTreeWidgetItem& treeWidgetItem)
+{
+  (VRegExp&)item << treeWidgetItem;
+
+  item.enabled  = treeWidgetItem.checkState(VDataChangeItem::ENABLED_IDX) == Qt::Checked;
+  item.log      = treeWidgetItem.checkState(VDataChangeItem::LOG_IDX)     == Qt::Checked;
+  item.replace  = qPrintable(treeWidgetItem.text(VDataChangeItem::REPLACE_IDX));
+
+  VError error; item.prepare(error);
+}
+#endif // QT_GUI_LIB
 
 // ----------------------------------------------------------------------------
 // VDataChange
@@ -118,19 +109,19 @@ bool VDataChange::prepare(VError& error)
   return true;
 }
 
-bool VDataChange::change(QByteArray& ba, bool* found)
+bool VDataChange::change(QByteArray& ba)
 {
-  bool _changed = false;
+  bool res = false;
   for (int i = 0; i < count(); i++)
   {
     VDataChangeItem& item = (VDataChangeItem&)at(i);
     if (!item.enabled) continue;
-    if (item.change(ba, found))
+    if (item.change(ba))
     {
-      _changed = true;
+      res = true;
     }
   }
-  return _changed;
+  return res;
 }
 
 void VDataChange::load(VXml xml)
@@ -163,6 +154,7 @@ void VDataChange::save(VXml xml)
 void VDataChange::optionAddWidget(QLayout* layout)
 {
   VDataChangeWidget* widget = new VDataChangeWidget(layout->parentWidget());
+  VDataChangeItem::initialize(widget->ui->treeWidget);
   widget->setObjectName("dataChangeWidget");
   *(widget->ui->treeWidget) << *this;
   layout->addWidget(widget);
@@ -175,4 +167,30 @@ void VDataChange::optionSaveDlg(QDialog* dialog)
   *this << *(widget->ui->treeWidget);
 }
 
+void operator << (QTreeWidget& treeWidget, VDataChange& dataChange)
+{
+  treeWidget.clear();
+  QList<QTreeWidgetItem*> treeWidgetItems;
+  for (int i = 0; i < dataChange.count(); i++)
+  {
+    VDataChangeItem& item = (VDataChangeItem&)dataChange.at(i);
+    QTreeWidgetItem* newWidgetItem = new QTreeWidgetItem(&treeWidget);
+    *newWidgetItem << item;
+    treeWidgetItems.push_back(newWidgetItem);
+  }
+  treeWidget.insertTopLevelItems(0, treeWidgetItems);
+}
+
+void operator << (VDataChange& dataChange, QTreeWidget& treeWidget)
+{
+  dataChange.clear();
+  int count = treeWidget.topLevelItemCount();
+  for (int i = 0; i < count; i++)
+  {
+    QTreeWidgetItem* treeWidgetItem = treeWidget.topLevelItem(i);
+    VDataChangeItem newItem;
+    newItem << *treeWidgetItem;
+    dataChange.push_back(newItem);
+  }
+}
 #endif // QT_GUI_LIB

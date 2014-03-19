@@ -86,7 +86,7 @@ protected:
       QByteArray msg;
       int readLen = outClient->read(msg);
       if (readLen == VERR_FAIL) break;
-      proxy->inboundDataChange.change(msg, NULL);
+      proxy->inboundDataChange.change(msg);
       emit proxy->beforeMsg(msg, outSession);
       emit proxy->beforeResponse(msg, outClient, inSession);
       int writeLen = inSession->write(msg);
@@ -208,7 +208,7 @@ void VHttpProxy::run(VNetSession* inSession)
     QByteArray msg;
     int readLen = inSession->read(msg);
     if (readLen == VERR_FAIL) break;
-    outboundDataChange.change(msg, NULL);
+    outboundDataChange.change(msg);
     emit beforeMsg(msg, inSession);
     // LOG_DEBUG("%s", packet.data()); // gilgil temp
 
