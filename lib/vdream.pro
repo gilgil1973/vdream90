@@ -67,8 +67,8 @@ SOURCES += \
     ../include/net/vudpserver.cpp \
     ../include/net/vudpsession.cpp \
     ../include/other/vdatachange.cpp \
-    ../include/other/vdatachangewidget.cpp \
     ../include/other/vdatafind.cpp \
+    ../include/other/vdatafindwidget.cpp \
     ../include/other/vmyobject.cpp \
     ../include/net/vhttpproxywidget.cpp
 
@@ -134,11 +134,11 @@ HEADERS += \
     ../include/net/vudpsession.h \
     ../include/other/vint.h \
     ../include/other/vdatachange.h \
-    ../include/other/vdatachangewidget.h \
     ../include/other/vdatafind.h \
+    ../include/other/vdatafindwidget.h \
     ../include/other/vmyobject.h \
     ../include/net/vhttpproxywidget.h
 
 FORMS += \
     ../include/net/vhttpproxywidget.ui \
-    ../include/other/vdatachangewidget.ui
+    ../include/other/vdatafindwidget.ui

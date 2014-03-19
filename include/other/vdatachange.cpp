@@ -149,11 +149,11 @@ void VDataChange::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-#include "vdatachangewidget.h"
-#include "ui_vdatachangewidget.h"
+#include "vdatafindwidget.h"
+#include "ui_vdatafindwidget.h"
 void VDataChange::optionAddWidget(QLayout* layout)
 {
-  VDataChangeWidget* widget = new VDataChangeWidget(layout->parentWidget());
+  VDataFindWidget* widget = new VDataFindWidget(layout->parentWidget());
   VDataChangeItem::initialize(widget->ui->treeWidget);
   widget->setObjectName("dataChangeWidget");
   *(widget->ui->treeWidget) << *this;
@@ -162,7 +162,7 @@ void VDataChange::optionAddWidget(QLayout* layout)
 
 void VDataChange::optionSaveDlg(QDialog* dialog)
 {
-  VDataChangeWidget* widget = dialog->findChild<VDataChangeWidget*>("dataChangeWidget");
+  VDataFindWidget* widget = dialog->findChild<VDataFindWidget*>("dataChangeWidget");
   LOG_ASSERT(widget != NULL);
   *this << *(widget->ui->treeWidget);
 }

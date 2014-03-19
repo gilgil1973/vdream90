@@ -1,23 +1,23 @@
 #ifdef QT_GUI_LIB
 
-#include "vdatachangewidget.h"
-#include "ui_vdatachangewidget.h"
+#include "vdatafindwidget.h"
+#include "ui_vdatafindwidget.h"
 
-VDataChangeWidget::VDataChangeWidget(QWidget *parent) :
+VDataFindWidget::VDataFindWidget(QWidget *parent) :
   QWidget(parent),
-  ui(new Ui::VDataChangeWidget)
+  ui(new Ui::VDataFindWidget)
 {
   ui->setupUi(this);
 
   layout()->setContentsMargins(0, 0, 0, 0);
 }
 
-VDataChangeWidget::~VDataChangeWidget()
+VDataFindWidget::~VDataFindWidget()
 {
   delete ui;
 }
 
-void VDataChangeWidget::on_pbAdd_clicked()
+void VDataFindWidget::on_pbAdd_clicked()
 {
   QTreeWidgetItem* treeWidgetItem = new QTreeWidgetItem(ui->treeWidget);
   VDataChangeItem newItem;
@@ -26,7 +26,7 @@ void VDataChangeWidget::on_pbAdd_clicked()
   ui->treeWidget->insertTopLevelItem(count, treeWidgetItem);
 }
 
-void VDataChangeWidget::on_pbDel_clicked()
+void VDataFindWidget::on_pbDel_clicked()
 {
   QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
   foreach (QTreeWidgetItem* item, items)
