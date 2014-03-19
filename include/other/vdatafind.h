@@ -91,14 +91,9 @@ void operator << (VDataFindItem& item, QTreeWidgetItem& treeWidgetItem);
 // ----------------------------------------------------------------------------
 // VDataFind
 // ----------------------------------------------------------------------------
-#ifdef QT_GUI_LIB
 class VDataFind : public QObject, public QList<VDataFindItem>, public VXmlable, public VOptionable
 {
   Q_OBJECT
-#else // QT_GUI_LIB
-class VDataFind : public QList<VDataFindItem>, public VXmlable, public VOptionable
-{
-#endif // QT_GUI_LIB
 
 public:
   VDataFind();

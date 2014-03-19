@@ -52,14 +52,9 @@ void operator << (VDataChangeItem& item, QTreeWidgetItem& treeWidgetItem);
 // ----------------------------------------------------------------------------
 // VDataChange
 // ----------------------------------------------------------------------------
-#ifdef QT_GUI_LIB
 class VDataChange : public QObject, public QList<VDataChangeItem>, public VXmlable, public VOptionable
 {
   Q_OBJECT
-#else  // QT_GUI_LIB
-class VDataChange : public QList<VDataChangeItem>, public VXmlable, public VOptionable
-{
-#endif // QT_GUI_LIB
 
 public:
   VDataChange();
