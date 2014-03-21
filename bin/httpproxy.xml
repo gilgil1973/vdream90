@@ -1,0 +1,45 @@
+<httpproxy>
+  <log _class="VLogList" level="0" showDateTime="Time" showThreadID="true">
+    <log _class="VLogUdp" level="0" host="127.0.0.1" showDateTime="None" port="8908" showThreadID="true"/>
+    <log closeOnWrite="true" _class="VLogFile" folder="log\" level="0" fileName="%04d%02d%02d.log" showDateTime="DateTime" showThreadID="true"/>
+  </log>
+  <MainWindow showMsg="false">
+    <HttpProxy tcpEnabled="true" sslEnabled="false">
+      <outPolicy method="2" host="" port="0"/>
+      <tcpServer _class="VTcpServer" localHost="" onceWriteSize="0" port="80"/>
+      <sslServer _class="VSslServer" localHost="" onceWriteSize="0" processConnectMessage="false" defaultKeyCrtFileName="default.pem" certificatePath="certificate/" methodType="4" port="4433"/>
+      <inboundDataChange/>
+      <outboundDataChange>
+        <item enabled="true" log="true" replace="Accept-Encoding:             " syntax="2" cs="1" pattern="Accept-Encoding: gzip,deflate" minimal="false"/>
+        <item enabled="true" log="true" replace="Accept-Encoding:              " syntax="2" cs="1" pattern="Accept-Encoding: gzip, deflate" minimal="false"/>
+        <item enabled="true" log="true" replace="Host: a" syntax="2" cs="1" pattern="Host: a." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: b" syntax="2" cs="1" pattern="Host: b." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: c" syntax="2" cs="1" pattern="Host: c." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: d" syntax="2" cs="1" pattern="Host: d." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: e" syntax="2" cs="1" pattern="Host: e." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: f" syntax="2" cs="1" pattern="Host: f." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: g" syntax="2" cs="1" pattern="Host: g." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: h" syntax="2" cs="1" pattern="Host: h." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: i" syntax="2" cs="1" pattern="Host: i." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: j" syntax="2" cs="1" pattern="Host: j." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: k" syntax="2" cs="1" pattern="Host: k." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: l" syntax="2" cs="1" pattern="Host: l." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: m" syntax="2" cs="1" pattern="Host: m." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: n" syntax="2" cs="1" pattern="Host: n." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: o" syntax="2" cs="1" pattern="Host: o." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: p" syntax="2" cs="1" pattern="Host: p." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: q" syntax="2" cs="1" pattern="Host: q." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: r" syntax="2" cs="1" pattern="Host: r." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: s" syntax="2" cs="1" pattern="Host: s." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: t" syntax="2" cs="1" pattern="Host: t." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: u" syntax="2" cs="1" pattern="Host: u." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: v" syntax="2" cs="1" pattern="Host: v." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: w" syntax="2" cs="1" pattern="Host: w." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: x" syntax="2" cs="1" pattern="Host: x." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: y" syntax="2" cs="1" pattern="Host: y." minimal="false"/>
+        <item enabled="true" log="true" replace="Host: z" syntax="2" cs="1" pattern="Host: z." minimal="false"/>
+      </outboundDataChange>
+    </HttpProxy>
+    <coord width="633" left="4" top="24" height="479"/>
+  </MainWindow>
+</httpproxy>
