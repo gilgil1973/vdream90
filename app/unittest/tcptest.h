@@ -1,4 +1,4 @@
-#include "main.h"
+#include <gtest/gtest.h>
 #include <VObject>
 #include <VTcpClient>
 #include <VTcpServer>
