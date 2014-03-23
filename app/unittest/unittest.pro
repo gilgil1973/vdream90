@@ -14,6 +14,7 @@ CONFIG   -= app_bundle
 TEMPLATE  = app
 DESTDIR   = ../../bin
 DEFINES  +=_VARIADIC_MAX=10
+DEFINES  +=GTEST
 
 #-------------------------------------------------
 # gtest
@@ -48,24 +49,23 @@ win32:contains(QMAKE_TARGET.arch, x86_64) {
 unix:LIBS += -L$${GTEST_PATH} -lgtest
 
 SOURCES += \
-    xmltest.cpp \
-    ticktest.cpp \
-    threadtest.cpp \
-    tcptest.cpp \
-    systemtest.cpp \
-    stringtest.cpp \
-    nettest.cpp \
-    metaclasstest.cpp \
     main.cpp \
-    logtest.cpp \
-    inttest.cpp \
-    filetest.cpp \
-    exceptiontest.cpp \
-    errortest.cpp \
-    designtest.cpp \
-    commontest.cpp \
-    apptest.cpp
+    ../../include/common/vapp.cpp \
+    ../../include/common/vcommon.cpp \
+    ../../include/other/vint.cpp \
+    ../../include/log/vlog.cpp \
+    ../../include/common/vtick.cpp \
+    ../../include/common/vdesign.cpp \
+    ../../include/common/verror.cpp \
+    ../../include/common/vexception.cpp \
+    ../../include/common/vmetaclass.cpp \
+    ../../include/common/vfile.cpp \
+    ../../include/common/vthread.cpp \
+    ../../include/net/vnet.cpp \
+    ../../include/common/vstring.cpp \
+    ../../include/common/vsystem.cpp \
+    tcptest.cpp
 
 HEADERS += \
-    tcptest.h \
-    main.h
+    main.h \
+    tcptest.h

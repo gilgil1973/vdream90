@@ -18,11 +18,13 @@ SOURCES += \
     ../include/common/vapp.cpp \
     ../include/common/vcommon.cpp \
     ../include/common/vdebugnew.cpp \
+    ../include/common/vdesign.cpp \
     ../include/common/verror.cpp \
     ../include/common/veventhandler.cpp \
     ../include/common/vexception.cpp \
     ../include/common/vfile.cpp \
     ../include/common/vmemoryleak.cpp \
+    ../include/common/vmetaclass.cpp \
     ../include/common/vobject.cpp \
     ../include/common/vobjectwidget.cpp \
     ../include/common/vperformance.cpp \
@@ -69,6 +71,7 @@ SOURCES += \
     ../include/other/vdatachange.cpp \
     ../include/other/vdatafind.cpp \
     ../include/other/vdatafindwidget.cpp \
+    ../include/other/vint.cpp \
     ../include/other/vmyobject.cpp \
     ../include/net/vhttpproxywidget.cpp
 
@@ -132,10 +135,10 @@ HEADERS += \
     ../include/net/vudpclient.h \
     ../include/net/vudpserver.h \
     ../include/net/vudpsession.h \
-    ../include/other/vint.h \
     ../include/other/vdatachange.h \
     ../include/other/vdatafind.h \
     ../include/other/vdatafindwidget.h \
+    ../include/other/vint.h \
     ../include/other/vmyobject.h \
     ../include/net/vhttpproxywidget.h
 

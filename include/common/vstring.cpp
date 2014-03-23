@@ -108,3 +108,22 @@ std::string wcs_to_mbs(const std::wstring ws)
   delete[] s;
   return res;
 }
+
+#ifdef GTEST
+#include <gtest/gtest.h>
+
+TEST( String, ss_to_vs )
+{
+  std::string ss = "std::string";
+  QString     qs = ss.c_str();
+  printf("%s\n", qPrintable(qs));
+}
+
+TEST( String, vs_to_ss )
+{
+  QString qs = "test";
+  std::string ss = qs.toLatin1().data();
+  printf("%s\n", ss.c_str());
+}
+
+#endif // GTEST
