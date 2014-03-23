@@ -80,7 +80,7 @@ protected:
         return;
       }
     }
-    LOG_DEBUG("stt"); // gilgil temp 2013.10.19
+    // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
     while (true)
     {
       QByteArray msg;
@@ -92,9 +92,9 @@ protected:
       int writeLen = inSession->write(msg);
       if (writeLen == VERR_FAIL) break;
      }
-    inSession->close();
     outClient->close();
-    LOG_DEBUG("end"); // gilgil temp 2013.10.19
+    inSession->close();
+    // LOG_DEBUG("end"); // gilgil temp 2014.03.14
   }
 };
 
@@ -164,7 +164,7 @@ void VHttpProxy::sslRun(VSslSession* sslSession)
 
 void VHttpProxy::run(VNetSession* inSession)
 {
-  LOG_DEBUG("stt inSession=%p", inSession); // gilgil temp 2013.10.19
+  // LOG_DEBUG("stt inSession=%p", inSession); // gilgil temp 2014.03.14
 
   VNetClient* outClient = NULL;
   int defaultOutPort;
@@ -266,7 +266,7 @@ void VHttpProxy::run(VNetSession* inSession)
     outClient->write(request.toByteArray());
     totalMsg = "";
   }
-  LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2013.10.19
+  // LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2014.03.14
   inSession->close();
   outClient->close();
   if (thread != NULL) delete thread;

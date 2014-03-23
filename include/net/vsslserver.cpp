@@ -27,27 +27,27 @@ bool VSslServerSession::doClose()
 
 bool VSslServerSession::setup(QString fileName)
 {
-  LOG_DEBUG("------------------------------------------");
+  // LOG_DEBUG("------------------------------------------"); // gilgil temp 2014.03.14
   LOG_DEBUG("fileName=%s", qPrintable(fileName));
-  LOG_DEBUG("------------------------------------------");
+  // LOG_DEBUG("------------------------------------------"); // gilgil temp 2014.03.14
 
-  threadTag = 200;
+  // threadTag = 200; // gilgil temp 2014.03.14
   EVP_PKEY* key = VSslServer::loadKey(error, fileName);
   if (key == NULL) return false;
 
-  threadTag = 300;
+  // threadTag = 300; // gilgil temp 2014.03.14
   X509* crt = VSslServer::loadCrt(error, fileName);
   if (crt == NULL) return false;
 
-  threadTag = 400;
+  // threadTag = 400; // gilgil temp 2014.03.14
   bool res = VSslServer::setKeyCrtStuff(error, con, key, crt);
   if (!res) return false;
 
-  threadTag = 500;
+  // threadTag = 500; // gilgil temp 2014.03.14
   EVP_PKEY_free(key);
   X509_free(crt);
 
-  threadTag = 600;
+  // threadTag = 600; // gilgil temp 2014.03.14
   return true;
 }
 
@@ -171,6 +171,8 @@ int VSslServer::doWrite(char* buf, int size)
   return size;
 }
 
+// ----- gilgil temp 2014.03.24 -----
+/*
 int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg) // gilgil temp 2014.03.07
 {
   int debug = 0;
@@ -184,22 +186,25 @@ int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg) // gilgil temp 2
   }
   return res;
 }
+*/
+// ----------------------------------
 
-int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug)
+// int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug) // gilgil temp 2014.03.14
+int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg)
 {
   Q_UNUSED(ad)
 
   const char* serverName = SSL_get_servername(con, TLSEXT_NAMETYPE_host_name);
-  *debug = 1000;
+  // *debug = 1000; // gilgil temp 2014.03.14
 
   if (serverName == NULL)
   {
     LOG_DEBUG("serverName is null");
     return SSL_TLSEXT_ERR_NOACK;
   }
-  *debug = 2500;
-  LOG_DEBUG("serverName=%p %s", serverName, serverName);
-  *debug = 3000;
+  // *debug = 2500; // gilgil temp 2014.03.14
+  // LOG_DEBUG("serverName=%p %s", serverName, serverName); // gilgil temp 2014.03.14
+  // *debug = 3000; // gilgil temp 2014.03.14
 
   VSslServer* server  = (VSslServer*)(arg);
   LOG_ASSERT(server != NULL);
@@ -207,21 +212,21 @@ int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug
   VSslServerSession* session = (VSslServerSession*)SSL_get_ex_data(con, VSslSession::VSSL_SESSION_IDENTIFY_INDEX);
   LOG_ASSERT(session->con == con);
 
-  *debug = 500;
-  LOG_DEBUG("server=%p session=%p", server, session); // gilgil temp 2014.03.06
+  // *debug = 500; // gilgil temp 2014.03.14
+  // LOG_DEBUG("server=%p session=%p", server, session); // gilgil temp 2014.03.14
 
   QString fileName = server->certificatePath + serverName + ".pem";
-  *debug = 4000;
+  // *debug = 4000; // gilgil temp 2014.03.14
 
   {
     VLock lock(server->certificateCs); // protect file create critical section
-    *debug = 5000;
+    // *debug = 5000; // gilgil temp 2014.03.14
     if (!QFile::exists(fileName))
     {
       QProcess process;
 
       QString path = server->certificatePath;
-      LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.01
+      // LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.14
       QFileInfo fi(path);
       if (!fi.isAbsolute())
       {
@@ -236,25 +241,28 @@ int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug
       process.start(command);
       LOG_DEBUG("pid=%p", process.pid());
 
-      *debug = 6000;
+      // *debug = 6000; // gilgil temp 2014.03.14
       if(!process.waitForStarted())
       {
         LOG_FATAL("process.waitForStarted(%s) return false", qPrintable(command));
       }
-      *debug = 700;
+      // *debug = 700; // gilgil temp 2014.03.14
       while(process.waitForReadyRead())
       {
         QByteArray ba = process.readAll();
         LOG_INFO("ba.size=%d", ba.size())
         LOG_INFO("ba.datas=%s", ba.data());
       }
-      *debug = 8000;
+      // *debug = 8000; // gilgil temp 2014.03.14
     }
-    *debug = 9000;
-    LOG_DEBUG("con=%p", con); // gilgil temp 2014.03.07
-    *debug = 9100;
-    session->setup(fileName);
-    *debug = 9500;
+    // *debug = 9000; // gilgil temp 2014.03.14
+    // LOG_DEBUG("con=%p", con); // gilgil temp 2014.03.14
+    // *debug = 9100; // gilgil temp 2014.03.14
+    if (!session->setup(fileName))
+    {
+      LOG_ERROR("session->setup(%s) return false", qPrintable(fileName));
+    }
+    // *debug = 9500; // gilgil temp 2014.03.14
   }
 
   return SSL_TLSEXT_ERR_NOACK;
@@ -262,9 +270,9 @@ int VSslServer::ssl_servername_cb_debug(SSL *con, int *ad, void *arg, int* debug
 
 bool VSslServer::setup(QString fileName)
 {
-  LOG_DEBUG("------------------------------------------");
+  // LOG_DEBUG("------------------------------------------"); // gilgil temp 2014.03.14
   LOG_DEBUG("fileName=%s", qPrintable(fileName));
-  LOG_DEBUG("------------------------------------------");
+  // LOG_DEBUG("------------------------------------------"); // gilgil temp 2014.03.14
 
   EVP_PKEY* key = VSslServer::loadKey(error, fileName);
   if (key == NULL) return false;
@@ -389,7 +397,7 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cr
   LOG_ASSERT(key != NULL);
   LOG_ASSERT(crt != NULL);
 
-  LOG_DEBUG("con=%p key=%p crt=%p", con, key, crt); // gilgil temp 2014.03.06
+  // LOG_DEBUG("con=%p key=%p crt=%p", con, key, crt); // gilgil temp 2014.03.14
   int res = SSL_use_certificate(con, crt);
   if (res <= 0)
   {
@@ -414,23 +422,22 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cr
   return true;
 }
 
-static VCS sslAccept; // gilgil temp 2014.03.24
+// static VCS sslAccept; // gilgil temp 2014.03.24
 void VSslServer::myRun(VTcpSession* tcpSession)
 {
   VSslServerSession *sslSession = new VSslServerSession;
   {
     //VLock lock(sslAccept); // gilgil temp 2014.03.24
-    threadTag = 10000;
-    threadTag = 11000;
+    // threadTag = 11000; // gilgil temp 2014.03.14
     sslSession->owner       = this;
     sslSession->tcpSession  = tcpSession;
     sslSession->handle      = tcpSession->handle;
     sslSession->ctx         = m_ctx;
-    threadTag = 12000;
+    // threadTag = 12000; // gilgil temp 2014.03.14
     if (!sslSession->open()) goto _end;
-    threadTag = 13000;
-    LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
-    threadTag = 20000;
+    // threadTag = 13000; // gilgil temp 2014.03.14
+    // LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
+    // threadTag = 20000; // gilgil temp 2014.03.14
 
     if (processConnectMessage)
     {
@@ -439,59 +446,57 @@ void VSslServer::myRun(VTcpSession* tcpSession)
       if (readLen == VERR_FAIL) goto _end;
       tcpSession->write("HTTP/1.0 200 Connection established\r\n\r\n");
     }
-    threadTag = 30000;
+    // threadTag = 30000; // gilgil temp 2014.03.14
 
     SSL_set_accept_state(sslSession->con);
-    threadTag = 31000;
+    // threadTag = 31000; // gilgil temp 2014.03.14
     while (true)
     {
-      threadTag = 32000;
+      // threadTag = 32000; // gilgil temp 2014.03.14
       if (SSL_is_init_finished(sslSession->con)) break;
-      threadTag = 33000;
+      // threadTag = 33000; // gilgil temp 2014.03.14
       int res = 0;
       {
         //VLock lock(sslAccept); // gilgil temp 2014.03.24
         res = SSL_accept(sslSession->con);
       }
-      threadTag = 34000;
+      // threadTag = 34000; // gilgil temp 2014.03.14
       if (res < 0)
       {
         LOG_DEBUG("[VDSSLServer.cpp] VDSSLSessionList::add SSL_accept return %d error=%d", res, SSL_get_error(sslSession->con, res));
-        threadTag = 35000;
+        // threadTag = 35000; // gilgil temp 2014.03.14
         goto _end;
       }
       else if (res == 0) // may be the TLS/SSL handshake was not successful
       {
-        LOG_WARN("OOPS SSL_accept return 0");
-        msleep(1);
-        // continue;
+        LOG_DEBUG("SSL_accept return zero");
         goto _end;
       } else // res > 0
       {
         break;
       }
     }
-    threadTag = 40000;
+    // threadTag = 40000; // gilgil temp 2014.03.14
   }
 
   sslSessionList.lock();
   sslSessionList.push_back(sslSession);
   sslSessionList.unlock();
-  threadTag = 50000;
+  // threadTag = 50000; // gilgil temp 2014.03.14
 
   emit runned(sslSession);
-  threadTag = 60000;
+  // threadTag = 60000; // gilgil temp 2014.03.14
 
   sslSessionList.lock();
   sslSessionList.removeOne(sslSession);
   sslSessionList.unlock();
-  threadTag = 70000;
+  // threadTag = 70000; // gilgil temp 2014.03.14
 
 _end:
-  LOG_DEBUG("end sslSession=%p con=%p", sslSession, sslSession->con);  // gilgil temp 2014.03.07
-  threadTag = 80000;
+  // LOG_DEBUG("end sslSession=%p con=%p", sslSession, sslSession->con);  // gilgil temp 2014.03.14
+  // threadTag = 80000; // gilgil temp 2014.03.14
   delete sslSession;
-  threadTag = 90000;
+  // threadTag = 90000; // gilgil temp 2014.03.14
 }
 
 void VSslServer::load(VXml xml)

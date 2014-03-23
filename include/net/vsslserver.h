@@ -76,8 +76,8 @@ public:
   SSL_CTX*        m_ctx;
 
 protected:
-  static int ssl_servername_cb(SSL *s, int *ad, void *arg);
-  static int ssl_servername_cb_debug(SSL *s, int *ad, void *arg, int* debug);
+  static int ssl_servername_cb(SSL *con, int *ad, void *arg);
+  // static int ssl_servername_cb_debug(SSL *s, int *ad, void *arg, int* debug); // gilgil temp 2014.03.14
 
 protected:
   bool             setup(QString fileName);
