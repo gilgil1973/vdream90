@@ -1,19 +1,73 @@
 #include <VSslCommon>
+#include <VThread>
 
 // ----------------------------------------------------------------------------
 // VSslCommon
 // ----------------------------------------------------------------------------
-bool VSslCommon::initialize()
+VSslCommon::VSslCommon()
 {
-  static bool initialized = false;
-  if (initialized) return true;
-  initialized = true;
+  numLock = 0;
+  lockCs  = NULL;
+
   int res = SSL_library_init();
   if (res != 1)
   {
    LOG_FATAL("SSL_library_init return %d", res);
+   return;
   }
-  return res == 1;
+
+  numLock = CRYPTO_num_locks();
+  LOG_DEBUG("CRYPTO_num_locks()=%d", numLock);
+  lockCs = new VCS[numLock];
+
+  CRYPTO_set_id_callback(threadIdCallback);
+  CRYPTO_set_locking_callback(lockingCallback);
+}
+
+VSslCommon::~VSslCommon()
+{
+  if (numLock != 0)
+  {
+    numLock = 0;
+  }
+  if (lockCs != NULL)
+  {
+    delete[] lockCs;
+    lockCs = NULL;
+  }
+}
+
+unsigned long VSslCommon::threadIdCallback(void)
+{
+  unsigned long res;
+  res = (unsigned long)QThread::currentThreadId();
+  return res;
+}
+
+void VSslCommon::lockingCallback(int mode, int type, const char* file, int line)
+{
+  Q_UNUSED(file)
+  Q_UNUSED(line)
+
+  // LOG_DEBUG("type=%d", type); // gilgil temp 2014.03.24
+
+  VSslCommon& sc = VSslCommon::instance();
+  LOG_ASSERT(type < sc.numLock);
+
+  if (mode & CRYPTO_LOCK)
+  {
+    sc.lockCs[type].lock();
+  }
+  else
+  {
+    sc.lockCs[type].unlock();
+  }
+}
+
+VSslCommon& VSslCommon::instance()
+{
+  static VSslCommon _instance;
+  return _instance;
 }
 
 // ----------------------------------------------------------------------------

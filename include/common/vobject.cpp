@@ -127,11 +127,15 @@ QMetaMethod VObject::findMethod(QObject* object, QString methodName)
 
 bool VObject::open()
 {
+  // ----- gilgil temp 2014.03.24 -----
+  /*
   if (m_state != VState::Closed)
   {
     SET_ERROR(VError, qformat("not closed state(%s) %s %s", qPrintable(m_state.str()), qPrintable(className()), qPrintable(name)), VERR_NOT_CLOSED_STATE);
     return false;
   }
+  */
+  // ----------------------------------
   if (name == "") name = className();
   m_state = VState::Opening;
   tag     = 0;
@@ -158,10 +162,14 @@ bool VObject::open()
 
 bool VObject::close()
 {
+  // ----- gilgil temp 2014.03.24 -----
+  /*
   if (m_state != VState::Opened)
   {
     return false; // no action
   }
+  */
+  // ----------------------------------
 
   m_state = VState::Closing;
 

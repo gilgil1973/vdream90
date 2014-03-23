@@ -32,8 +32,20 @@ public:
   static const int DEFAULT_SSL_PORT        = 443;
   static const int DEFAULT_SSL_PROXY_PORT  = 4433;
 
+private: // singleton
+  VSslCommon();
+  virtual ~VSslCommon();
+
+protected:
+  int numLock;
+  VCS *lockCs;
+
+protected:
+  static unsigned long threadIdCallback(void);
+  static void lockingCallback(int mode, int type, const char* file, int line);
+
 public:
-  static bool initialize();
+  static VSslCommon& instance();
 };
 
 // ----------------------------------------------------------------------------

@@ -5,7 +5,8 @@
 // ----------------------------------------------------------------------------
 VSslClient::VSslClient(void* owner) : VTcpClient(owner)
 {
-  VSslCommon::initialize();
+  VSslCommon::instance();
+
   sslSession = new VSslSession(this);
   sslSession->tcpSession = tcpSession;
   methodType = VSslMethodType::mtTLSV1;

@@ -56,7 +56,8 @@ bool VSslServerSession::setup(QString fileName)
 // ----------------------------------------------------------------------------
 VSslServer::VSslServer(void* owner) : VTcpServer(owner)
 {
-  VSslCommon::initialize();
+  VSslCommon::instance();
+
   methodType             = VSslMethodType::mtTLSV1;
   certificatePath        = "certificate/";
   defaultKeyCrtFileName  = "default.pem";
@@ -128,6 +129,8 @@ bool VSslServer::doClose()
   }
   sslSessionList.unlock();
 
+  VTcpServer::doClose();
+
   //
   // m_meth and m_ctx
   //
@@ -140,8 +143,6 @@ bool VSslServer::doClose()
     SSL_CTX_free(m_ctx);
     m_ctx = NULL;
   }
-
-  VTcpServer::doClose();
 
   return true;
 }
@@ -413,55 +414,65 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cr
   return true;
 }
 
+static VCS sslAccept; // gilgil temp 2014.03.24
 void VSslServer::myRun(VTcpSession* tcpSession)
 {
-  threadTag = 10000;
   VSslServerSession *sslSession = new VSslServerSession;
-  threadTag = 11000;
-  sslSession->owner       = this;
-  sslSession->tcpSession  = tcpSession;
-  sslSession->handle      = tcpSession->handle;
-  sslSession->ctx         = m_ctx;
-  threadTag = 12000;
-  if (!sslSession->open()) goto _end;
-  threadTag = 13000;
-  LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
-  threadTag = 20000;
-
-  if (processConnectMessage)
   {
-    QByteArray ba;
-    int readLen = tcpSession->read(ba);
-    if (readLen == VERR_FAIL) goto _end;
-    tcpSession->write("HTTP/1.0 200 Connection established\r\n\r\n");
-  }
-  threadTag = 30000;
+    //VLock lock(sslAccept); // gilgil temp 2014.03.24
+    threadTag = 10000;
+    threadTag = 11000;
+    sslSession->owner       = this;
+    sslSession->tcpSession  = tcpSession;
+    sslSession->handle      = tcpSession->handle;
+    sslSession->ctx         = m_ctx;
+    threadTag = 12000;
+    if (!sslSession->open()) goto _end;
+    threadTag = 13000;
+    LOG_DEBUG("beg sslSession=%p con=%p", sslSession, sslSession->con); // gilgil temp 2014.03.07
+    threadTag = 20000;
 
-  SSL_set_accept_state(sslSession->con);
-  threadTag = 31000;
-  while (true)
-  {
-    threadTag = 32000;
-    if (SSL_is_init_finished(sslSession->con)) break;
-    threadTag = 33000;
-    int res = SSL_accept(sslSession->con);
-    threadTag = 34000;
-    if (res < 0)
+    if (processConnectMessage)
     {
-      LOG_DEBUG("[VDSSLServer.cpp] VDSSLSessionList::add SSL_accept return %d error=%d", res, SSL_get_error(sslSession->con, res));
-      threadTag = 35000;
-      goto _end;
+      QByteArray ba;
+      int readLen = tcpSession->read(ba);
+      if (readLen == VERR_FAIL) goto _end;
+      tcpSession->write("HTTP/1.0 200 Connection established\r\n\r\n");
     }
-    else if (res == 0) // may be the TLS/SSL handshake was not successful
+    threadTag = 30000;
+
+    SSL_set_accept_state(sslSession->con);
+    threadTag = 31000;
+    while (true)
     {
-      msleep(1);
-      continue;
-    } else // res > 0
-    {
-      break;
+      threadTag = 32000;
+      if (SSL_is_init_finished(sslSession->con)) break;
+      threadTag = 33000;
+      int res = 0;
+      {
+        //VLock lock(sslAccept); // gilgil temp 2014.03.24
+        res = SSL_accept(sslSession->con);
+      }
+      threadTag = 34000;
+      if (res < 0)
+      {
+        LOG_DEBUG("[VDSSLServer.cpp] VDSSLSessionList::add SSL_accept return %d error=%d", res, SSL_get_error(sslSession->con, res));
+        threadTag = 35000;
+        goto _end;
+      }
+      else if (res == 0) // may be the TLS/SSL handshake was not successful
+      {
+        LOG_WARN("OOPS SSL_accept return 0");
+        msleep(1);
+        // continue;
+        goto _end;
+      } else // res > 0
+      {
+        break;
+      }
     }
+    threadTag = 40000;
   }
-  threadTag = 40000;
 
   sslSessionList.lock();
   sslSessionList.push_back(sslSession);

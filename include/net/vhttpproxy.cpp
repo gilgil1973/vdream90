@@ -267,6 +267,7 @@ void VHttpProxy::run(VNetSession* inSession)
     totalMsg = "";
   }
   LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2013.10.19
+  inSession->close();
   outClient->close();
   if (thread != NULL) delete thread;
   delete outClient;

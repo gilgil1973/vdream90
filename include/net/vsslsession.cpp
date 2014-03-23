@@ -136,7 +136,7 @@ bool VSslSession::doClose()
   if (con != NULL)
   {
     SSL_shutdown(con);
-    SSL_clear(con);
+    // SSL_clear(con); // gilgil temp 2014.03.24
   }
   if (sbio != NULL)
   {
