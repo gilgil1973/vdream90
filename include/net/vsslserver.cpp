@@ -236,7 +236,7 @@ int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg)
       LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
 
       QString command = qformat("%s_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
-      LOG_DEBUG("command=%s", qPrintable(command));
+      LOG_INFO("command=%s", qPrintable(command));
 
       process.start(command);
       LOG_DEBUG("pid=%p", process.pid());
@@ -250,8 +250,8 @@ int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg)
       while(process.waitForReadyRead())
       {
         QByteArray ba = process.readAll();
-        LOG_INFO("ba.size=%d", ba.size())
-        LOG_INFO("ba.datas=%s", ba.data());
+        LOG_DEBUG("ba.size=%d", ba.size())
+        LOG_DEBUG("ba.datas=%s", ba.data());
       }
       // *debug = 8000; // gilgil temp 2014.03.14
     }
