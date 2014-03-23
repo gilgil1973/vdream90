@@ -50,21 +50,22 @@ unix:LIBS += -L$${GTEST_PATH} -lgtest
 
 SOURCES += \
     main.cpp \
+    tcptest.cpp \
     ../../include/common/vapp.cpp \
     ../../include/common/vcommon.cpp \
-    ../../include/other/vint.cpp \
-    ../../include/log/vlog.cpp \
-    ../../include/common/vtick.cpp \
     ../../include/common/vdesign.cpp \
     ../../include/common/verror.cpp \
     ../../include/common/vexception.cpp \
-    ../../include/common/vmetaclass.cpp \
     ../../include/common/vfile.cpp \
-    ../../include/common/vthread.cpp \
-    ../../include/net/vnet.cpp \
+    ../../include/common/vmetaclass.cpp \
     ../../include/common/vstring.cpp \
     ../../include/common/vsystem.cpp \
-    tcptest.cpp
+    ../../include/common/vthread.cpp \
+    ../../include/common/vtick.cpp \
+    ../../include/common/vxmldoc.cpp \
+    ../../include/log/vlog.cpp \
+    ../../include/net/vnet.cpp \
+    ../../include/other/vint.cpp
 
 HEADERS += \
     main.h \
