@@ -25,6 +25,7 @@ class VRegExp : public VXmlable
 {
 public:
   VRegExp();
+  virtual ~VRegExp();
 
 public:
   QString                pattern;
@@ -33,6 +34,7 @@ public:
   bool                   minimal;
 
 public:
+  VCS*    pCs;
   QRegExp rx;
   bool prepare(VError& error);
 

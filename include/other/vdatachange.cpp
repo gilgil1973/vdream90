@@ -14,6 +14,7 @@ int VDataChangeItem::change(QByteArray& ba, int offset)
 {
   QString text = QString::fromLatin1(ba);
 
+  VLock lock(*pCs);
   int index = rx.indexIn(text, offset);
   if (index == -1) return -1;
 

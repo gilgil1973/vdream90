@@ -1,4 +1,4 @@
-#include "vdatafind.h"
+#include <VDataFind>
 
 // ----------------------------------------------------------------------------
 // VRegExp
@@ -9,6 +9,12 @@ VRegExp::VRegExp()
   syntax   = QRegExp::FixedString;
   cs       = Qt::CaseSensitive;
   minimal  = false;
+  pCs      = new VCS;
+}
+
+VRegExp::~VRegExp()
+{
+  SAFE_DELETE(pCs);
 }
 
 bool VRegExp::prepare(VError& error)
