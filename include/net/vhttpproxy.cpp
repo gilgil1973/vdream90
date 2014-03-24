@@ -1,6 +1,8 @@
 #include <VHttpProxy>
 #include <VDebugNew>
 
+REGISTER_METACLASS(VHttpProxy, VNet)
+
 // ----------------------------------------------------------------------------
 // VHttpProxyOutPolicy
 // ---------------------------------------------------------------------------

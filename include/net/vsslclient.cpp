@@ -1,4 +1,7 @@
 #include <VSslClient>
+#include <VDebugNew>
+
+REGISTER_METACLASS(VSslClient, VNet)
 
 // ----------------------------------------------------------------------------
 // VSslClient
