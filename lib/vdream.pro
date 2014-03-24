@@ -73,7 +73,8 @@ SOURCES += \
     ../include/other/vdatafindwidget.cpp \
     ../include/other/vint.cpp \
     ../include/other/vmyobject.cpp \
-    ../include/net/vhttpproxywidget.cpp
+    ../include/net/vhttpproxywidget.cpp \
+    ../include/other/vlistwidget.cpp
 
 HEADERS += \
     ../include/common/vapp.h \
@@ -140,8 +141,10 @@ HEADERS += \
     ../include/other/vdatafindwidget.h \
     ../include/other/vint.h \
     ../include/other/vmyobject.h \
-    ../include/net/vhttpproxywidget.h
+    ../include/net/vhttpproxywidget.h \
+    ../include/other/vlistwidget.h
 
 FORMS += \
     ../include/net/vhttpproxywidget.ui \
-    ../include/other/vdatafindwidget.ui
+    ../include/other/vdatafindwidget.ui \
+    ../include/other/vlistwidget.ui

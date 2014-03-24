@@ -16,6 +16,7 @@
 #ifdef QT_GUI_LIB
 #include <QTreeWidget>
 #include <QHeaderView>
+#include "vlistwidget.h"
 #endif // QT_GUI_LIB
 
 // ----------------------------------------------------------------------------
@@ -94,7 +95,7 @@ void operator << (VDataFindItem& item, QTreeWidgetItem& treeWidgetItem);
 // ----------------------------------------------------------------------------
 // VDataFind
 // ----------------------------------------------------------------------------
-class VDataFind : public QObject, public QList<VDataFindItem>, public VXmlable, public VOptionable
+class VDataFind : public QObject, public QList<VDataFindItem>, public VXmlable, public VOptionable, public VListItemtWidgetAccessible
 {
   Q_OBJECT
 
@@ -111,19 +112,19 @@ public:
   virtual void save(VXml xml);
 
 #ifdef QT_GUI_LIB
-protected slots:
-  void __on_pbAdd_clicked();
-  void __on_pbDel_clicked();
-
-public:
+public: // VOptionable
   virtual void optionAddWidget(QLayout* layout);
   virtual void optionSaveDlg(QDialog* dialog);
+
+public: // VListItemtWidgetAccessible
+  virtual void  widgetClear()                                                             { clear();                                  }
+  virtual int   widgetCount()                                                             { return count();                           }
+  virtual void* widgetAt(int i)                                                           { return  (void*)&at(i);                    }
+  virtual void  widgetPushBack(void* item)                                                { push_back(*(const VDataFindItem*)item);   }
+  virtual void* widgetCeateItem()                                                         { return new VDataFindItem;                 }
+  virtual void  widgetItemIntoTreeWidgetItem(void* item, QTreeWidgetItem* treeWidgetItem) { *treeWidgetItem << *(VDataFindItem*)item; }
+  virtual void  widgetTreeWidgetItemIntoItem(QTreeWidgetItem* treeWidgetItem, void* item) { *(VDataFindItem*)item << *treeWidgetItem; }
 #endif // QT_GUI_LIB
 };
-
-#ifdef QT_GUI_LIB
-void operator << (QTreeWidget& treeWidget, VDataFind& dataFind);
-void operator << (VDataFind& dataFind, QTreeWidget& treeWidget);
-#endif // QT_GUI_LIB
 
 #endif // __V_DATA_FIND_H__

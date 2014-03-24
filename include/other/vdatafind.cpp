@@ -62,11 +62,6 @@ void VRegExp::save(VXml xml)
 #ifdef QT_GUI_LIB
 void VRegExp::initialize(QTreeWidget* treeWidget)
 {
-  treeWidget->setIndentation(0);
-  treeWidget->setItemsExpandable(false);
-  treeWidget->setMinimumWidth(600);
-  treeWidget->header()->setStretchLastSection(false);
-
   QStringList headerLables;
   headerLables << "Pattern" << "Syntax" << "Case" << "Minimal";
   treeWidget->setHeaderLabels(headerLables);
@@ -246,80 +241,21 @@ void VDataFind::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-#include "vdatafindwidget.h"
-#include "ui_vdatafindwidget.h"
-void VDataFind::__on_pbAdd_clicked()
-{
-  QPushButton* pbAdd = dynamic_cast<QPushButton*>(this->sender());
-  LOG_ASSERT(pbAdd != NULL);
-  VDataFindWidget* widget = dynamic_cast<VDataFindWidget*>(pbAdd->parent());
-  LOG_ASSERT(widget != NULL);
-  QTreeWidget* treeWidget = widget->ui->treeWidget;
-
-  QTreeWidgetItem* treeWidgetItem = new QTreeWidgetItem(treeWidget);
-  VDataFindItem newItem;
-  *treeWidgetItem << newItem;
-  int count = treeWidget->topLevelItemCount();
-  treeWidget->insertTopLevelItem(count, treeWidgetItem);
-}
-
-void VDataFind::__on_pbDel_clicked()
-{
-  QPushButton* pbDel = dynamic_cast<QPushButton*>(this->sender());
-  LOG_ASSERT(pbDel != NULL);
-  VDataFindWidget* widget = dynamic_cast<VDataFindWidget*>(pbDel->parent());
-  LOG_ASSERT(widget != NULL);
-  QTreeWidget* treeWidget = widget->ui->treeWidget;
-
-  QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-  foreach (QTreeWidgetItem* item, items)
-  {
-    delete item;
-  }
-}
-
+#include "vlistwidget.h"
+#include "ui_vlistwidget.h"
 void VDataFind::optionAddWidget(QLayout* layout)
 {
-  VDataFindWidget* widget = new VDataFindWidget(layout->parentWidget());
+  VLisItemtWidget* widget = new VLisItemtWidget(layout->parentWidget(), this);
   VDataFindItem::initialize(widget->ui->treeWidget);
   widget->setObjectName("dataFindWidget");
-  *(widget->ui->treeWidget) << *this;
+  widget->itemsIntoTreeWidget();
   layout->addWidget(widget);
-  VObject::connect(widget->ui->pbAdd, SIGNAL(clicked()), this, SLOT(__on_pbAdd_clicked()));
-  VObject::connect(widget->ui->pbDel, SIGNAL(clicked()), this, SLOT(__on_pbDel_clicked()));
 }
 
 void VDataFind::optionSaveDlg(QDialog* dialog)
 {
-  VDataFindWidget* widget = dialog->findChild<VDataFindWidget*>("dataFindWidget");
+  VLisItemtWidget* widget = dialog->findChild<VLisItemtWidget*>("dataFindWidget");
   LOG_ASSERT(widget != NULL);
-  *this << *(widget->ui->treeWidget);
-}
-
-void operator << (QTreeWidget& treeWidget, VDataFind& dataFind)
-{
-  treeWidget.clear();
-  QList<QTreeWidgetItem*> treeWidgetItems;
-  for (int i = 0; i < dataFind.count(); i++)
-  {
-    VDataFindItem& item = (VDataFindItem&)dataFind.at(i);
-    QTreeWidgetItem* newWidgetItem = new QTreeWidgetItem(&treeWidget);
-    *newWidgetItem << item;
-    treeWidgetItems.push_back(newWidgetItem);
-  }
-  treeWidget.insertTopLevelItems(0, treeWidgetItems);
-}
-
-void operator << (VDataFind& dataFind, QTreeWidget& treeWidget)
-{
-  dataFind.clear();
-  int count = treeWidget.topLevelItemCount();
-  for (int i = 0; i < count; i++)
-  {
-    QTreeWidgetItem* treeWidgetItem = treeWidget.topLevelItem(i);
-    VDataFindItem newItem;
-    newItem << *treeWidgetItem;
-    dataFind.push_back(newItem);
-  }
+  widget->treeWidgetIntoItems();
 }
 #endif // QT_GUI_LIB
