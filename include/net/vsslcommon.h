@@ -37,8 +37,8 @@ private: // singleton
   virtual ~VSslCommon();
 
 protected:
-  int numLock;
-  VCS *lockCs;
+  static int numLock;
+  static VCS *lockCs;
 
 protected:
   static unsigned long threadIdCallback(void);

@@ -4,6 +4,9 @@
 // ----------------------------------------------------------------------------
 // VSslCommon
 // ----------------------------------------------------------------------------
+int VSslCommon::numLock = 0;
+VCS *VSslCommon::lockCs = NULL;
+
 VSslCommon::VSslCommon()
 {
   numLock = 0;
@@ -51,16 +54,15 @@ void VSslCommon::lockingCallback(int mode, int type, const char* file, int line)
 
   // LOG_DEBUG("type=%d", type); // gilgil temp 2014.03.24
 
-  VSslCommon& sc = VSslCommon::instance();
-  LOG_ASSERT(type < sc.numLock);
+  LOG_ASSERT(type < numLock);
 
   if (mode & CRYPTO_LOCK)
   {
-    sc.lockCs[type].lock();
+    lockCs[type].lock();
   }
   else
   {
-    sc.lockCs[type].unlock();
+    lockCs[type].unlock();
   }
 }
 
