@@ -245,7 +245,7 @@ void VDataFind::save(VXml xml)
 #include "ui_vlistwidget.h"
 void VDataFind::optionAddWidget(QLayout* layout)
 {
-  VLisItemtWidget* widget = new VLisItemtWidget(layout->parentWidget(), this);
+  VListWidget* widget = new VListWidget(layout->parentWidget(), this);
   VDataFindItem::initialize(widget->ui->treeWidget);
   widget->setObjectName("dataFindWidget");
   widget->itemsIntoTreeWidget();
@@ -254,7 +254,7 @@ void VDataFind::optionAddWidget(QLayout* layout)
 
 void VDataFind::optionSaveDlg(QDialog* dialog)
 {
-  VLisItemtWidget* widget = dialog->findChild<VLisItemtWidget*>("dataFindWidget");
+  VListWidget* widget = dialog->findChild<VListWidget*>("dataFindWidget");
   LOG_ASSERT(widget != NULL);
   widget->treeWidgetIntoItems();
 }

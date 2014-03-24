@@ -95,7 +95,7 @@ void operator << (VDataFindItem& item, QTreeWidgetItem& treeWidgetItem);
 // ----------------------------------------------------------------------------
 // VDataFind
 // ----------------------------------------------------------------------------
-class VDataFind : public QObject, public QList<VDataFindItem>, public VXmlable, public VOptionable, public VListItemtWidgetAccessible
+class VDataFind : public QObject, public QList<VDataFindItem>, public VXmlable, public VOptionable, public VListWidgetAccessible
 {
   Q_OBJECT
 
@@ -116,7 +116,7 @@ public: // VOptionable
   virtual void optionAddWidget(QLayout* layout);
   virtual void optionSaveDlg(QDialog* dialog);
 
-public: // VListItemtWidgetAccessible
+public: // VListWidgetAccessible
   virtual void  widgetClear()                                                             { clear();                                  }
   virtual int   widgetCount()                                                             { return count();                           }
   virtual void* widgetAt(int i)                                                           { return  (void*)&at(i);                    }

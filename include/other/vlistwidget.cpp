@@ -4,23 +4,12 @@
 // ----------------------------------------------------------------------------
 // VListWidget
 // ----------------------------------------------------------------------------
-VListWidget::VListWidget(QWidget *parent) :
+VListWidget::VListWidget(QWidget *parent, VListWidgetAccessible* accessible) :
   QWidget(parent),
   ui(new Ui::VListWidget)
 {
   ui->setupUi(this);
-}
 
-VListWidget::~VListWidget()
-{
-  delete ui;
-}
-
-// ----------------------------------------------------------------------------
-// VLisItemtWidget
-// ----------------------------------------------------------------------------
-VLisItemtWidget::VLisItemtWidget(QWidget *parent, VListItemtWidgetAccessible* accessible) : VListWidget(parent)
-{
   ui->treeWidget->setIndentation(0);
   ui->treeWidget->setItemsExpandable(false);
   ui->treeWidget->setMinimumWidth(600);
@@ -31,11 +20,12 @@ VLisItemtWidget::VLisItemtWidget(QWidget *parent, VListItemtWidgetAccessible* ac
   VObject::connect(ui->pbDel, SIGNAL(clicked()), this, SLOT(__on_pbDel_clicked()));
 }
 
-VLisItemtWidget::~VLisItemtWidget()
+VListWidget::~VListWidget()
 {
+  delete ui;
 }
 
-void VLisItemtWidget::itemsIntoTreeWidget()
+void VListWidget::itemsIntoTreeWidget()
 {
   ui->treeWidget->clear();
   QList<QTreeWidgetItem*> treeWidgetItems;
@@ -49,7 +39,7 @@ void VLisItemtWidget::itemsIntoTreeWidget()
   ui->treeWidget->insertTopLevelItems(0, treeWidgetItems);
 }
 
-void VLisItemtWidget::treeWidgetIntoItems()
+void VListWidget::treeWidgetIntoItems()
 {
   accessible->widgetClear();
   int count = ui->treeWidget->topLevelItemCount();
@@ -62,7 +52,7 @@ void VLisItemtWidget::treeWidgetIntoItems()
   }
 }
 
-void VLisItemtWidget::__on_pbAdd_clicked()
+void VListWidget::__on_pbAdd_clicked()
 {
   QTreeWidgetItem* treeWidgetItem = new QTreeWidgetItem(ui->treeWidget);
   void* item = accessible->widgetCeateItem();
@@ -71,7 +61,7 @@ void VLisItemtWidget::__on_pbAdd_clicked()
   ui->treeWidget->insertTopLevelItem(count, treeWidgetItem);
 }
 
-void VLisItemtWidget::__on_pbDel_clicked()
+void VListWidget::__on_pbDel_clicked()
 {
   QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
   foreach (QTreeWidgetItem* treeWidgetItem, items)

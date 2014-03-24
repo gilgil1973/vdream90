@@ -7,28 +7,9 @@
 #include <VObject>
 
 // ----------------------------------------------------------------------------
-// VListWidget
+// VListWidgetAccessible
 // ----------------------------------------------------------------------------
-namespace Ui {
-  class VListWidget;
-}
-
-class VListWidget : public QWidget
-{
-  Q_OBJECT
-
-public:
-  explicit VListWidget(QWidget *parent = 0);
-  ~VListWidget();
-
-public:
-  Ui::VListWidget *ui;
-};
-
-// ----------------------------------------------------------------------------
-// VListItemtWidgetAccessible
-// ----------------------------------------------------------------------------
-class VListItemtWidgetAccessible
+class VListWidgetAccessible
 {
 public:
   virtual void  widgetClear()                                                             = 0;
@@ -41,18 +22,22 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// VLisItemtWidget
+// VListWidget
 // ----------------------------------------------------------------------------
-class VLisItemtWidget : public VListWidget
+namespace Ui {
+  class VListWidget;
+}
+
+class VListWidget : public QWidget
 {
   Q_OBJECT
 
 protected:
-  VListItemtWidgetAccessible* accessible;
+  VListWidgetAccessible* accessible;
 
 public:
-  explicit VLisItemtWidget(QWidget *parent, VListItemtWidgetAccessible* accessible);
-  virtual ~VLisItemtWidget();
+  explicit VListWidget(QWidget *parent, VListWidgetAccessible* accessible);
+  ~VListWidget();
 
 public:
   void itemsIntoTreeWidget();
@@ -61,6 +46,9 @@ public:
 protected slots:
   void __on_pbAdd_clicked();
   void __on_pbDel_clicked();
+
+public:
+  Ui::VListWidget *ui;
 };
 
 #endif // VLISTWIDGET_H
