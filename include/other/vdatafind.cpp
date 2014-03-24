@@ -12,6 +12,15 @@ VRegExp::VRegExp()
   pCs      = new VCS;
 }
 
+VRegExp::VRegExp(const VRegExp& b)
+{
+  this->pattern  = b.pattern;
+  this->syntax   = b.syntax;
+  this->cs       = b.cs;
+  this->minimal  = b.minimal;
+  this->pCs      = new VCS;
+}
+
 VRegExp::~VRegExp()
 {
   SAFE_DELETE(pCs);

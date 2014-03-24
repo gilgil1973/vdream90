@@ -25,6 +25,7 @@ class VRegExp : public VXmlable
 {
 public:
   VRegExp();
+  VRegExp(const VRegExp& b);
   virtual ~VRegExp();
 
 public:
