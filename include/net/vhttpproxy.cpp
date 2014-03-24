@@ -93,7 +93,7 @@ protected:
       if (writeLen == VERR_FAIL) break;
      }
     outClient->close();
-    // inSession->close(); // gilgil temp 2014.03.14
+    inSession->close(); // gilgil temp 2014.03.14
     // LOG_DEBUG("end"); // gilgil temp 2014.03.14
   }
 };
