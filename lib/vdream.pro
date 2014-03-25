@@ -52,6 +52,7 @@ SOURCES += \
     ../include/log/vlogudp.cpp \
     ../include/net/vhttpheader.cpp \
     ../include/net/vhttpproxy.cpp \
+    ../include/net/vhttpproxywidget.cpp \
     ../include/net/vhttprequest.cpp \
     ../include/net/vhttpresponse.cpp \
     ../include/net/vnet.cpp \
@@ -70,11 +71,9 @@ SOURCES += \
     ../include/net/vudpsession.cpp \
     ../include/other/vdatachange.cpp \
     ../include/other/vdatafind.cpp \
-    ../include/other/vdatafindwidget.cpp \
     ../include/other/vint.cpp \
-    ../include/other/vmyobject.cpp \
-    ../include/net/vhttpproxywidget.cpp \
-    ../include/other/vlistwidget.cpp
+    ../include/other/vlistwidget.cpp \
+    ../include/other/vmyobject.cpp
 
 HEADERS += \
     ../include/common/vapp.h \
@@ -119,6 +118,7 @@ HEADERS += \
     ../include/net/vhttpcommon.h \
     ../include/net/vhttpheader.h \
     ../include/net/vhttpproxy.h \
+    ../include/net/vhttpproxywidget.h \
     ../include/net/vhttprequest.h \
     ../include/net/vhttpresponse.h \
     ../include/net/vnet.h \
@@ -138,13 +138,10 @@ HEADERS += \
     ../include/net/vudpsession.h \
     ../include/other/vdatachange.h \
     ../include/other/vdatafind.h \
-    ../include/other/vdatafindwidget.h \
     ../include/other/vint.h \
-    ../include/other/vmyobject.h \
-    ../include/net/vhttpproxywidget.h \
-    ../include/other/vlistwidget.h
+    ../include/other/vlistwidget.h \
+    ../include/other/vmyobject.h
 
 FORMS += \
     ../include/net/vhttpproxywidget.ui \
-    ../include/other/vdatafindwidget.ui \
     ../include/other/vlistwidget.ui

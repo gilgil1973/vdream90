@@ -21,6 +21,8 @@ REGISTER_METACLASS(VCC, VC)
 // ----------------------------------------------------------------------------
 void VMyObject::explicitLink()
 {
+  // ----- by gilgil 2014.03.25 -----
+  /*
   VAA aa;
   VAB ab;
   VAC ac;
@@ -30,6 +32,8 @@ void VMyObject::explicitLink()
   VCA ca;
   VCB cb;
   VCC cc;
+  */
+  // --------------------------------
 }
 
 void VMyObject::foo(int i)

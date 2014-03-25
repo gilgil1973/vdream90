@@ -22,9 +22,9 @@ public:
   VDataChangeItem();
 
 public:
-  bool                   enabled;
-  bool                   log;
-  QByteArray             replace;
+  bool       enabled;
+  bool       log;
+  QByteArray replace;
 
 public:
   int change(QByteArray& ba, int offset = 0);
@@ -52,7 +52,7 @@ void operator << (VDataChangeItem& item, QTreeWidgetItem& treeWidgetItem);
 // ----------------------------------------------------------------------------
 // VDataChange
 // ----------------------------------------------------------------------------
-class VDataChange : public QObject, public QList<VDataChangeItem>, public VXmlable, public VOptionable
+class VDataChange : public QObject, public QList<VDataChangeItem>, public VXmlable, public VOptionable, public VListWidgetAccessible
 {
   Q_OBJECT
 
@@ -69,19 +69,19 @@ public:
   virtual void save(VXml xml);
 
 #ifdef QT_GUI_LIB
-protected slots:
-  void __on_pbAdd_clicked();
-  void __on_pbDel_clicked();
-
-public:
+public: // VOptionable
   virtual void optionAddWidget(QLayout* layout);
   virtual void optionSaveDlg(QDialog* dialog);
+
+public: // VListWidgetAccessible
+  virtual void  widgetClear()                                                             { clear();                                    }
+  virtual int   widgetCount()                                                             { return count();                             }
+  virtual void* widgetAt(int i)                                                           { return  (void*)&at(i);                      }
+  virtual void  widgetPushBack(void* item)                                                { push_back(*(const VDataChangeItem*)item);   }
+  virtual void* widgetCeateItem()                                                         { return new VDataChangeItem;                 }
+  virtual void  widgetItemIntoTreeWidgetItem(void* item, QTreeWidgetItem* treeWidgetItem) { *treeWidgetItem << *(VDataChangeItem*)item; }
+  virtual void  widgetTreeWidgetItemIntoItem(QTreeWidgetItem* treeWidgetItem, void* item) { *(VDataChangeItem*)item << *treeWidgetItem; }
 #endif // QT_GUI_LIB
 };
-
-#ifdef QT_GUI_LIB
-void operator << (QTreeWidget& treeWidget, VDataChange& dataChange);
-void operator << (VDataChange& dataChange, QTreeWidget& treeWidget);
-#endif // QT_GUI_LIB
 
 #endif // __V_DATA_CHANGE_H__
