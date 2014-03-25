@@ -77,15 +77,6 @@ void VRegExp::initialize(QTreeWidget* treeWidget)
   treeWidget->header()->setSectionResizeMode(MINIMAL_IDX,   QHeaderView::Interactive);
 }
 
-void operator << (VRegExp& regexp, QTreeWidgetItem& treeWidgetItem)
-{
-  regexp.pattern  = treeWidgetItem.text(VRegExp::PATTERN_IDX);
-  QComboBox* syntaxComboBox = dynamic_cast<QComboBox*>(treeWidgetItem.treeWidget()->itemWidget(&treeWidgetItem, VRegExp::SYNTAX_IDX));
-  regexp.syntax   = (QRegExp::PatternSyntax)(syntaxComboBox->currentIndex());
-  regexp.cs       = treeWidgetItem.checkState(VRegExp::CS_IDX) == Qt::Checked ? Qt::CaseSensitive : Qt::CaseInsensitive;
-  regexp.minimal  = treeWidgetItem.checkState(VRegExp::MINIMAL_IDX) == Qt::Checked;
-}
-
 void operator << (QTreeWidgetItem& treeWidgetItem, VRegExp& regexp)
 {
   treeWidgetItem.setText(VRegExp::PATTERN_IDX, regexp.pattern);
@@ -98,6 +89,15 @@ void operator << (QTreeWidgetItem& treeWidgetItem, VRegExp& regexp)
   treeWidgetItem.setCheckState(VRegExp::MINIMAL_IDX, regexp.minimal ? Qt::Checked : Qt::Unchecked);
 
   treeWidgetItem.setFlags(treeWidgetItem.flags() | Qt::ItemIsEditable);
+}
+
+void operator << (VRegExp& regexp, QTreeWidgetItem& treeWidgetItem)
+{
+  regexp.pattern  = treeWidgetItem.text(VRegExp::PATTERN_IDX);
+  QComboBox* syntaxComboBox = dynamic_cast<QComboBox*>(treeWidgetItem.treeWidget()->itemWidget(&treeWidgetItem, VRegExp::SYNTAX_IDX));
+  regexp.syntax   = (QRegExp::PatternSyntax)(syntaxComboBox->currentIndex());
+  regexp.cs       = treeWidgetItem.checkState(VRegExp::CS_IDX) == Qt::Checked ? Qt::CaseSensitive : Qt::CaseInsensitive;
+  regexp.minimal  = treeWidgetItem.checkState(VRegExp::MINIMAL_IDX) == Qt::Checked;
 }
 #endif // QT_GUI_LIB
 
@@ -241,7 +241,6 @@ void VDataFind::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-#include "vlistwidget.h"
 #include "ui_vlistwidget.h"
 void VDataFind::optionAddWidget(QLayout* layout)
 {

@@ -153,7 +153,6 @@ void VDataChange::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-#include "vlistwidget.h"
 #include "ui_vlistwidget.h"
 void VDataChange::optionAddWidget(QLayout* layout)
 {

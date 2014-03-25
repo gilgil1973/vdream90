@@ -16,7 +16,7 @@
 #ifdef QT_GUI_LIB
 #include <QTreeWidget>
 #include <QHeaderView>
-#include "vlistwidget.h"
+#include <VListWidget>
 #endif // QT_GUI_LIB
 
 // ----------------------------------------------------------------------------
