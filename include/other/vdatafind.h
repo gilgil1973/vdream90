@@ -13,10 +13,10 @@
 
 #include <VObjectWidget>
 #include <QRegExp>
+#include <VListWidget>
 #ifdef QT_GUI_LIB
 #include <QTreeWidget>
 #include <QHeaderView>
-#include <VListWidget>
 #endif // QT_GUI_LIB
 
 // ----------------------------------------------------------------------------

@@ -1,6 +1,8 @@
 #ifndef VLISTWIDGET_H
 #define VLISTWIDGET_H
 
+#ifdef QT_GUI_LIB
+
 #include <QWidget>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -50,5 +52,8 @@ protected slots:
 public:
   Ui::VListWidget *ui;
 };
+#else // QT_GUI_LIB
+class VListWidgetAccessible {};
+#endif // QT_GUI_LIB
 
 #endif // VLISTWIDGET_H

@@ -1,3 +1,5 @@
+#ifdef QT_GUI_LIB
+
 #include "vlistwidget.h"
 #include "ui_vlistwidget.h"
 
@@ -69,3 +71,5 @@ void VListWidget::__on_pbDel_clicked()
     delete treeWidgetItem;
   }
 };
+
+#endif // QT_GUI_LIB

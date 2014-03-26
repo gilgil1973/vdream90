@@ -277,6 +277,8 @@ void VHttpProxy::run(VNetSession* inSession)
 
 void VHttpProxy::load(VXml xml)
 {
+  VObject::load(xml);
+
   tcpEnabled = xml.getBool("tcpEnabled", tcpEnabled);
   sslEnabled = xml.getBool("sslEnabled", sslEnabled);
   outPolicy.load(xml.gotoChild("outPolicy"));
@@ -288,6 +290,8 @@ void VHttpProxy::load(VXml xml)
 
 void VHttpProxy::save(VXml xml)
 {
+  VObject::save(xml);
+
   xml.setBool("tcpEnabled", tcpEnabled);
   xml.setBool("sslEnabled", sslEnabled);
   outPolicy.save(xml.gotoChild("outPolicy"));
