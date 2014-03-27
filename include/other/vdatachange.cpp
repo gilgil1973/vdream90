@@ -37,7 +37,7 @@ void VDataChangeItem::load(VXml xml)
 
   enabled  = xml.getBool("enabled", enabled);
   log      = xml.getBool("log", log);
-  replace  = qPrintable(xml.getStr("replace", QString(replace)));
+  replace  = xml.getArr("replace", replace);
 }
 
 void VDataChangeItem::save(VXml xml)
@@ -46,7 +46,7 @@ void VDataChangeItem::save(VXml xml)
 
   xml.setBool("enabled", enabled);
   xml.setBool("log",     log);
-  xml.setStr("replace",  QString(replace));
+  xml.setArr("replace",  replace);
 }
 
 #ifdef QT_GUI_LIB
