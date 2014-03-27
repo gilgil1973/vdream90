@@ -212,6 +212,6 @@ VDECLARE_ERROR_CLASS(VThreadError);
 // ThreadError Code
 // ----------------------------------------------------------------------------
 static const int VERROR_IN_WAIT_OPEN        = VERR_CATEGORY_THREAD + 0;
-//static const int THREAD_ALREADY_TERMINATED = VERR_CATEGORY_THREAD + 1; // gilgil temp 2012.05.28
+static const int VERR_CAN_NOT_OPEN_THREAD   = VERR_CATEGORY_THREAD + 1;
 
 #endif // __V_THREAD_H__
