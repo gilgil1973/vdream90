@@ -70,20 +70,24 @@ public:
   //
   // Attributes
   //
-  int        getInt    (const QString name,  int        def = 0);
-  void       setInt    (const QString name,  int        val);
-  int        getInt64  (const QString name,  qint64     def = 0);
-  void       setInt64  (const QString name,  qint64     val);
-  QChar      getChr    (const QString name,  QChar      def = '\0');
-  void       setChr    (const QString name,  QChar      val);
-  bool       getBool   (const QString name,  bool       def = false);
-  void       setBool   (const QString name,  bool       val);
-  double     getDouble (const QString name,  double     def = 0.);
-  void       setDouble (const QString name,  double     val);
-  QString    getStr    (const QString name,  QString    def = "");
-  void       setStr    (const QString name,  QString    val);
-  QByteArray getArr    (const QString name,  QByteArray def = "");
-  void       setArr    (const QString name,  QByteArray val);
+  int        getInt    (const QString name,  int           def = 0);
+  void       setInt    (const QString name,  int           val);
+  int        getLong   (const QString name,  long          def = 0);
+  void       setLong   (const QString name,  long          val);
+  int        getULong  (const QString name,  unsigned long def = 0);
+  void       setULong  (const QString name,  unsigned long val);
+  int        getInt64  (const QString name,  qint64        def = 0);
+  void       setInt64  (const QString name,  qint64        val);
+  QChar      getChr    (const QString name,  QChar         def = '\0');
+  void       setChr    (const QString name,  QChar         val);
+  bool       getBool   (const QString name,  bool          def = false);
+  void       setBool   (const QString name,  bool          val);
+  double     getDouble (const QString name,  double        def = 0.);
+  void       setDouble (const QString name,  double        val);
+  QString    getStr    (const QString name,  QString       def = "");
+  void       setStr    (const QString name,  QString       val);
+  QByteArray getArr    (const QString name,  QByteArray    def = "");
+  void       setArr    (const QString name,  QByteArray    val);
 
   void    removeAttr(const QString name);
 };

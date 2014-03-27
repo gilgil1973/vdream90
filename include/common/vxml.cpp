@@ -105,6 +105,32 @@ void VXml::setInt(const QString name, int val)
   this->setAttribute(name, val);
 }
 
+int VXml::getLong(const QString name, long def)
+{
+  if (!this->attributes().contains(name)) return def;
+  QString s = this->attribute(name, s);
+  if (s == "") return def;
+  return this->attribute(name, s).toLong();
+}
+
+void VXml::setLong(const QString name, long val)
+{
+  this->setAttribute(name, val);
+}
+
+int VXml::getULong(const QString name, unsigned long def)
+{
+  if (!this->attributes().contains(name)) return def;
+  QString s = this->attribute(name, s);
+  if (s == "") return def;
+  return this->attribute(name, s).toULong();
+}
+
+void VXml::setULong(const QString name, unsigned long val)
+{
+  this->setAttribute(name, (qulonglong)val);
+}
+
 int VXml::getInt64(const QString name, qint64 def)
 {
   if (!this->attributes().contains(name)) return def;
