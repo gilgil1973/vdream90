@@ -34,7 +34,8 @@ win32:contains(QMAKE_TARGET.arch, x86_64) {
   OPENSSL_PATH = C:/OpenSSL-Win32
 }
 INCLUDEPATH   += $${OPENSSL_PATH}/include
-LIBS          += -L$${OPENSSL_PATH}/lib -llibeay32 -lssleay32
+LIBS          += -L$${OPENSSL_PATH}/lib
+LIBS          += -llibeay32 -lssleay32
 
 #-------------------------------------------------
 # vdream
