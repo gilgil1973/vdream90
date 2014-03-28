@@ -102,7 +102,7 @@ int VUdpSession::doRead(char* buf, int size)
 
 int VUdpSession::doWrite(char* buf, int size)
 {
-  LOG_DEBUG("log test"); // gilgil temp 2012.11.01
+  // LOG_DEBUG("log test"); // gilgil temp 2012.11.01
 
   VLock lock(stateWriteCs); // gilgil temp 2014.03.14
 
