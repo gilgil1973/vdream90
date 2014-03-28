@@ -41,6 +41,7 @@ LIBS          += -L$${OPENSSL_PATH}/lib -llibeay32 -lssleay32
 #-------------------------------------------------
 VDREAM_PATH            =   $$PWD/..
 INCLUDEPATH           +=   $${VDREAM_PATH}/include
+INCLUDEPATH           +=   $${VDREAM_PATH}/lib
 DEPENDPATH            +=   $${VDREAM_PATH}
 LIBS                  += -L$${VDREAM_PATH}/lib -l$${VDREAM_LIB_NAME}
 CONFIG(VDREAM_LIB_BUILD) {
