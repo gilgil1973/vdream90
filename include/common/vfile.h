@@ -59,6 +59,7 @@ static const int VERR_ERROR_IN_WRITE_FILE    = VERR_CATEGORY_FILE + 3;
 static const int VERR_FILE_NOT_EXIST         = VERR_CATEGORY_FILE + 4;
 static const int VERR_ERROR_IN_FILESEEK      = VERR_CATEGORY_FILE + 5;
 static const int VERR_FILENAME_NOT_SPECIFIED = VERR_CATEGORY_FILE + 6;
+static const int VERR_INVALID_FILENAME       = VERR_CATEGORY_FILE + 7;
 
 #endif // __V_FILE_H__
 
