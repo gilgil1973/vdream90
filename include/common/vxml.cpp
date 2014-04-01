@@ -105,6 +105,19 @@ void VXml::setInt(const QString name, int val)
   this->setAttribute(name, val);
 }
 
+unsigned int VXml::getUint(const QString name, unsigned int def)
+{
+  if (!this->attributes().contains(name)) return def;
+  QString s = this->attribute(name, s);
+  if (s == "") return def;
+  return this->attribute(name, s).toUInt();
+}
+
+void VXml::setUint(const QString name,  unsigned int val)
+{
+  this->setAttribute(name, val);
+}
+
 int VXml::getLong(const QString name, long def)
 {
   if (!this->attributes().contains(name)) return def;
