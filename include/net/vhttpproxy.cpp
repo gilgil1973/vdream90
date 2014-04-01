@@ -156,7 +156,7 @@ protected:
         {
           httpProxy->inboundDataChange.change(buffer);
           emit httpProxy->onHttpResponseBody(&response, &buffer, outClient, inSession);
-          if (outClient->write(buffer) == VERR_FAIL) break;
+          if (inSession->write(buffer) == VERR_FAIL) break;
           buffer = "";
         }
       }
@@ -269,10 +269,11 @@ bool VHttpProxy::flushHttpRequestHeaderAndBody(VHttpRequest& request, QByteArray
   int newBodyLen = body.length();
 
   int contentLength = request.header.value("Content-Length").toInt();
-  if (contentLength != 0)
+  if (contentLength != 0 && newBodyLen != oldBodyLen)
   {
     contentLength += newBodyLen - oldBodyLen;
     request.header.setValue("Content-Length", QByteArray::number(contentLength));
+    LOG_DEBUG("content length change from %d > %d", oldBodyLen, newBodyLen);
   }
 
   if (outClient->write(request.toByteArray() + body) == VERR_FAIL) return false;
@@ -295,10 +296,11 @@ bool VHttpProxy::flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteAr
   int newBodyLen = body.length();
 
   int contentLength = response.header.value("Content-Length").toInt();
-  if (contentLength != 0)
+  if (contentLength != 0 && newBodyLen != oldBodyLen)
   {
     contentLength += newBodyLen - oldBodyLen;
     response.header.setValue("Content-Length", QByteArray::number(contentLength));
+    LOG_DEBUG("content length change from %d > %d", oldBodyLen, newBodyLen);
   }
 
   if (inSession->write(response.toByteArray() + body) == VERR_FAIL) return false;
