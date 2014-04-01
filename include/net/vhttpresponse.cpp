@@ -53,10 +53,9 @@ void VHttpResponse::clear()
 {
   statusLine.clear();
   header.clear();
-  body.clear();
 }
 
-bool VHttpResponse::parse(QByteArray data)
+bool VHttpResponse::parse(QByteArray data, QByteArray* body)
 {
   if (!data.startsWith("HTTP/1")) return false;
 
@@ -64,7 +63,8 @@ bool VHttpResponse::parse(QByteArray data)
   if (pos == -1) return false;
 
   QByteArray baHeader = data.left(pos + 2);
-  body = data.mid(pos + 4);
+  if (body != NULL)
+    *body = data.mid(pos + 4);
 
   pos = baHeader.indexOf("\r\n");
   QByteArray baStatusLine = baHeader.left(pos);
@@ -78,5 +78,5 @@ bool VHttpResponse::parse(QByteArray data)
 
 QByteArray VHttpResponse::toByteArray()
 {
-  return statusLine.toByteArray() + header.toByteArray() + "\r\n" + body;
+  return statusLine.toByteArray() + header.toByteArray() + "\r\n";
 }

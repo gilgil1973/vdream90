@@ -17,11 +17,12 @@
 #include <VSslServer>
 #include <VSslClient>
 #include <VHttpRequest>
+#include <VHttpResponse>
 #include <VDataChange>
 
 // ----------------------------------------------------------------------------
 // VHttpProxyOutPolicy
-// ---------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 class VHttpProxyOutPolicy : public VXmlable, public VOptionable
 {
 public:
@@ -52,11 +53,23 @@ public: // for VOptionable
 };
 
 // ----------------------------------------------------------------------------
+// VHttpProxyRecvStatus
+// ----------------------------------------------------------------------------
+typedef enum
+{
+  HeaderCaching,
+  BodyCaching,
+  BodyStreaming
+} VHttpProxyRecvStatus;
+
+// ----------------------------------------------------------------------------
 // VHttpProxy
 // ----------------------------------------------------------------------------
 class VHttpProxy : public VObject, public VOptionable
 {
   Q_OBJECT
+
+  friend class VHttpProxyOutInThread;
 
 public:
   VHttpProxy(void* owner = NULL);
@@ -75,6 +88,7 @@ public:
 public:
   bool                tcpEnabled;
   bool                sslEnabled;
+  int                 maxContentCacheSize;
   VHttpProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
@@ -86,12 +100,20 @@ public slots:
   void sslRun(VSslSession* sslSession);
 
 protected:
+  bool determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port);
+  bool flushHttpRequestHeaderAndBody (VHttpRequest&  request, QByteArray& body, VNetSession* inSession, VNetClient* outClient);
+  bool flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteArray& body, VNetClient*  outClient, VNetSession* inSession);
   void run(VNetSession* inSession);
 
 signals:
-  void beforeMsg(QByteArray msg, VNetSession* session);
-  void beforeRequest(VHttpRequest& request, VNetSession* inSession, VNetClient* outClient);
-  void beforeResponse(QByteArray& msg, VNetClient* outClient, VNetSession* inSession);
+  // void beforeMsg(QByteArray msg, VNetSession* session); // gilgil temp 2014.04.041
+  // void beforeRequest(VHttpRequest& request, VNetSession* inSession, VNetClient* outClient); // gilgil temp 2014.04.041
+  // void beforeResponse(QByteArray& msg, VNetClient* outClient, VNetSession* inSession); // gilgil temp 2014.04.041
+
+  void onHttpRequestHeader (VHttpRequest*  header,                   VNetSession* inSession, VNetClient*  outClient);
+  void onHttpRequestBody   (VHttpRequest*  header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient);
+  void onHttpResponseHeader(VHttpResponse* header,                   VNetClient*  outClient, VNetSession* inSession);
+  void onHttpResponseBody  (VHttpResponse* header, QByteArray* body, VNetClient*  outClient, VNetSession* inSession);
 
 public:
   virtual void load(VXml xml);

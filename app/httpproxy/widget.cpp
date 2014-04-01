@@ -19,7 +19,20 @@ Widget::~Widget()
 void Widget::initializeControl()
 {
   move(0, 0); resize(640, 480);
-  VObject::connect(&proxy, SIGNAL(beforeMsg(QByteArray,VNetSession*)), this, SLOT(showMessage(QByteArray,VNetSession*)));
+  VObject::connect(
+    &proxy, SIGNAL(onHttpRequestHeader(VHttpRequest*,VNetSession*,VNetClient*)),
+    this, SLOT(httpRequestHeader(VHttpRequest*,VNetSession*,VNetClient*)), Qt::BlockingQueuedConnection);
+  VObject::connect(
+    &proxy, SIGNAL(onHttpRequestBody(VHttpRequest*,QByteArray*,VNetSession*,VNetClient*)),
+    this, SLOT(httpRequestBody(VHttpRequest*,QByteArray*,VNetSession*,VNetClient*)),
+    Qt::BlockingQueuedConnection);
+  VObject::connect(
+    &proxy, SIGNAL(onHttpResponseHeader(VHttpResponse*,VNetClient*,VNetSession*)),
+    this, SLOT(httpResponseHeader(VHttpResponse*,VNetClient*,VNetSession*)),
+    Qt::BlockingQueuedConnection);
+  VObject::connect(&proxy, SIGNAL(onHttpResponseBody(VHttpResponse*,QByteArray*,VNetClient*,VNetSession*)),
+    this, SLOT(httpResponseBody(VHttpResponse*,QByteArray*,VNetClient*,VNetSession*)),
+    Qt::BlockingQueuedConnection);
 }
 
 void Widget::finalizeControl()
@@ -64,11 +77,45 @@ void Widget::showMessage(QString msg)
   ui->pteMsg->ensureCursorVisible();
 }
 
-void Widget::showMessage(QByteArray msg, VNetSession* fromSession)
+void Widget::httpRequestHeader(VHttpRequest* header, VNetSession* inSession, VNetClient*  outClient)
 {
-  Q_UNUSED(fromSession)
+  Q_UNUSED(inSession)
+  Q_UNUSED(outClient)
+
   if (ui->chkShowMsg->checkState() != Qt::Checked) return;
-  ui->pteMsg->insertPlainText(msg);
+  ui->pteMsg->insertPlainText(header->toByteArray());
+  ui->pteMsg->ensureCursorVisible();
+}
+
+void Widget::httpRequestBody(VHttpRequest* header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient)
+{
+  Q_UNUSED(header)
+  Q_UNUSED(outClient)
+  Q_UNUSED(inSession)
+
+  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
+  ui->pteMsg->insertPlainText(*body);
+  ui->pteMsg->ensureCursorVisible();
+}
+
+void Widget::httpResponseHeader(VHttpResponse* header, VNetClient*  outClient, VNetSession* inSession)
+{
+  Q_UNUSED(inSession)
+  Q_UNUSED(outClient)
+
+  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
+  ui->pteMsg->insertPlainText(header->toByteArray());
+  ui->pteMsg->ensureCursorVisible();
+}
+
+void Widget::httpResponseBody(VHttpResponse* header, QByteArray* body, VNetClient* outClient, VNetSession* inSession)
+{
+  Q_UNUSED(header)
+  Q_UNUSED(outClient)
+  Q_UNUSED(inSession)
+
+  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
+  ui->pteMsg->insertPlainText(*body);
   ui->pteMsg->ensureCursorVisible();
 }
 

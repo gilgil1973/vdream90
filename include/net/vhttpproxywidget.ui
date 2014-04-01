@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tabInternal">
       <attribute name="title">
@@ -108,7 +108,7 @@
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget3">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tabInbound">
            <attribute name="title">
@@ -145,6 +145,22 @@
          </widget>
         </item>
        </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tabOther">
+      <attribute name="title">
+       <string>Other</string>
+      </attribute>
+      <widget class="QWidget" name="gridLayoutWidget_8">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>160</width>
+         <height>80</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="glOther"/>
       </widget>
      </widget>
     </widget>

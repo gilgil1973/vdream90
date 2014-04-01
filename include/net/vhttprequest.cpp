@@ -47,10 +47,9 @@ void VHttpRequest::clear()
 {
   requestLine.clear();
   header.clear();
-  body.clear();
 }
 
-bool VHttpRequest::parse(QByteArray data)
+bool VHttpRequest::parse(QByteArray data, QByteArray* body)
 {
   if (!data.startsWith("GET ") && !data.startsWith("POST ")) return false;
 
@@ -58,7 +57,8 @@ bool VHttpRequest::parse(QByteArray data)
   if (pos == -1) return false;
 
   QByteArray baHeader = data.left(pos + 2);
-  body = data.mid(pos + 4);
+  if (body != NULL)
+    *body = data.mid(pos + 4);
 
   pos = baHeader.indexOf("\r\n");
   QByteArray baRequestLine = baHeader.left(pos);
@@ -72,7 +72,7 @@ bool VHttpRequest::parse(QByteArray data)
 
 QByteArray VHttpRequest::toByteArray()
 {
-  return requestLine.toByteArray() + header.toByteArray() + "\r\n" + body;
+  return requestLine.toByteArray() + header.toByteArray() + "\r\n";
 }
 
 bool VHttpRequest::findHost(QString& host, int& port)

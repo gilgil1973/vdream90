@@ -50,12 +50,14 @@ void VHttpProxyOutPolicy::optionSaveDlg(QDialog* dialog)
 class VHttpProxyOutInThread : public VThread
 {
 protected:
+  VHttpProxy*  httpProxy;
   VNetClient*  outClient;
   VNetSession* inSession;
 
 public:
   VHttpProxyOutInThread(VNetClient* outClient, VNetSession* inSession, void* owner) : VThread(owner)
   {
+    this->httpProxy = (VHttpProxy*)owner;
     this->outClient = outClient;
     this->inSession = inSession;
   }
@@ -67,7 +69,6 @@ public:
 protected:
   virtual void run()
   {
-    VHttpProxy* proxy = (VHttpProxy*)owner;
     VNetSession* outSession;
     {
       VTcpClient* tcpClient = dynamic_cast<VTcpClient*>(outClient);
@@ -83,19 +84,86 @@ protected:
       }
     }
     // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
+
+    QByteArray             buffer;
+    VHttpProxyRecvStatus   status = HeaderCaching;
+    VHttpResponse          response;
+    QByteArray             body;
+    int                    contentLength   = 0;
+
     while (true)
     {
-      QByteArray msg;
-      int readLen = outClient->read(msg);
+      //
+      // read oneBuffer from inSession
+      //
+      QByteArray oneBuffer;
+      int readLen = outClient->read(oneBuffer);
       if (readLen == VERR_FAIL) break;
-      proxy->inboundDataChange.change(msg);
-      emit proxy->beforeMsg(msg, outSession);
-      emit proxy->beforeResponse(msg, outClient, inSession);
-      int writeLen = inSession->write(msg);
-      if (writeLen == VERR_FAIL) break;
-     }
+
+      buffer += oneBuffer;
+
+      //
+      // HeaderCaching
+      //
+      if (status == HeaderCaching)
+      {
+        if (response.parse(buffer, &body)) // header parsing completed
+        {
+          buffer        = body;
+          contentLength = response.header.value("Content-Length").toInt();
+          if (contentLength > 0)
+          {
+            status = BodyCaching;
+          } else
+          {
+            QByteArray headerData = response.toByteArray();
+            httpProxy->inboundDataChange.change(headerData);
+            response.parse(headerData, NULL);
+            emit httpProxy->onHttpResponseHeader(&response, outClient, inSession);
+            if (inSession->write(response.toByteArray()) == VERR_FAIL) break;
+            status = BodyStreaming;
+          }
+        }
+      }
+
+      //
+      // BodyCaching
+      //
+      if (status == BodyCaching)
+      {
+        int length = buffer.length();
+        if (length != 0)
+        {
+          if (length == contentLength) // body completed
+          {
+            if (!httpProxy->flushHttpResponseHeaderAndBody(response, body, outClient, inSession)) break;
+            status = HeaderCaching;
+          } else
+          if (length > contentLength)
+          {
+            LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
+            status = BodyStreaming;
+          }
+        }
+      }
+
+      //
+      // BodyStreaming
+      //
+      if (status == BodyStreaming)
+      {
+        if (buffer != "")
+        {
+          httpProxy->inboundDataChange.change(buffer);
+          emit httpProxy->onHttpResponseBody(&response, &buffer, outClient, inSession);
+          if (outClient->write(buffer) == VERR_FAIL) break;
+          buffer = "";
+        }
+      }
+    }
+
     outClient->close();
-    inSession->close(); // gilgil temp 2014.03.14
+    inSession->close();
     // LOG_DEBUG("end"); // gilgil temp 2014.03.14
   }
 };
@@ -105,11 +173,11 @@ protected:
 // ----------------------------------------------------------------------------
 VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
 {
-  tcpEnabled     = true;
-  sslEnabled     = true;
-
-  tcpServer.port = HTTP_PROXY_PORT;
-  sslServer.port = SSL_PROXY_PORT;
+  tcpEnabled          = true;
+  sslEnabled          = true;
+  maxContentCacheSize = 10485756; // 1MByte
+  tcpServer.port      = HTTP_PROXY_PORT;
+  sslServer.port      = SSL_PROXY_PORT;
 
   VObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(tcpRun(VTcpSession*)), Qt::DirectConnection);
   VObject::connect(&sslServer, SIGNAL(runned(VSslSession*)), this, SLOT(sslRun(VSslSession*)), Qt::DirectConnection);
@@ -164,24 +232,104 @@ void VHttpProxy::sslRun(VSslSession* sslSession)
   run(sslSession);
 }
 
+bool VHttpProxy::determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port)
+{
+  QUrl url = request.requestLine.path;
+  if (!url.isRelative())
+  {
+    host = url.host();
+    port = url.port();
+
+    QByteArray newPath = url.path().toUtf8();
+    if (url.hasQuery())
+      newPath += "?" + url.query(QUrl::FullyEncoded).toLatin1();
+    request.requestLine.path = newPath;
+  } else
+  if (!request.findHost(host, port))
+  {
+    LOG_ERROR("can not find host:%s", request.toByteArray().data());
+    return false;
+  }
+  if (port == -1) port = defaultPort;
+  if (outPolicy.host != "") host = outPolicy.host;
+  if (outPolicy.port != 0)  port = outPolicy.port;
+  return true;
+}
+
+bool VHttpProxy::flushHttpRequestHeaderAndBody(VHttpRequest& request, QByteArray& body, VNetSession* inSession, VNetClient* outClient)
+{
+  QByteArray headerData = request.toByteArray();
+  outboundDataChange.change(headerData);
+  emit onHttpRequestHeader(&request, inSession, outClient);
+  request.parse(headerData, NULL);
+
+  int oldBodyLen = body.length();
+  outboundDataChange.change(body);
+  emit onHttpRequestBody(&request, &body, inSession, outClient);
+  int newBodyLen = body.length();
+
+  int contentLength = request.header.value("Content-Length").toInt();
+  if (contentLength != 0)
+  {
+    contentLength += newBodyLen - oldBodyLen;
+    request.header.setValue("Content-Length", QByteArray::number(contentLength));
+  }
+
+  if (outClient->write(request.toByteArray() + body) == VERR_FAIL) return false;
+
+  body = "";
+
+  return true;
+}
+
+bool VHttpProxy::flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteArray& body, VNetClient* outClient, VNetSession* inSession)
+{
+  QByteArray headerData = response.toByteArray();
+  inboundDataChange.change(headerData);
+  emit onHttpResponseHeader(&response, outClient, inSession);
+  response.parse(headerData, NULL);
+
+  int oldBodyLen = body.length();
+  inboundDataChange.change(body);
+  emit onHttpResponseBody(&response, &body, outClient, inSession);
+  int newBodyLen = body.length();
+
+  int contentLength = response.header.value("Content-Length").toInt();
+  if (contentLength != 0)
+  {
+    contentLength += newBodyLen - oldBodyLen;
+    response.header.setValue("Content-Length", QByteArray::number(contentLength));
+  }
+
+  if (inSession->write(response.toByteArray() + body) == VERR_FAIL) return false;
+
+  body = "";
+
+  return true;
+}
+
 void VHttpProxy::run(VNetSession* inSession)
 {
   // LOG_DEBUG("stt inSession=%p", inSession); // gilgil temp 2014.03.14
 
   VNetClient* outClient = NULL;
-  int defaultOutPort;
+  int defaultPort;
+
+  //
+  // determine outClient and defaultPort
+  //
   switch (outPolicy.method)
   {
     case VHttpProxyOutPolicy::Auto:
       if (dynamic_cast<VTcpSession*>(inSession) != NULL)
       {
-        outClient      = new VTcpClient;
-        defaultOutPort = DEFAULT_HTTP_PORT;
+        outClient   = new VTcpClient;
+        defaultPort = DEFAULT_HTTP_PORT;
       } else
       if (dynamic_cast<VSslSession*>(inSession) != NULL)
       {
-        outClient      = new VSslClient;
-        defaultOutPort = DEFAULT_SSL_PORT;
+        outClient   = new VSslClient;
+        defaultPort = DEFAULT_SSL_PORT;
       } else
       {
         LOG_FATAL("invalid inSession type(%s)", qPrintable(inSession->className()));
@@ -189,84 +337,116 @@ void VHttpProxy::run(VNetSession* inSession)
       }
       break;
     case VHttpProxyOutPolicy::Tcp:
-      outClient      = new VTcpClient;
-      defaultOutPort = DEFAULT_HTTP_PORT;
+      outClient   = new VTcpClient;
+      defaultPort = DEFAULT_HTTP_PORT;
       break;
     case VHttpProxyOutPolicy::Ssl:
-      outClient      = new VSslClient;
-      defaultOutPort = DEFAULT_SSL_PORT;
+      outClient   = new VSslClient;
+      defaultPort = DEFAULT_SSL_PORT;
       break;
     default:
       LOG_FATAL("invalid method value(%d)", (int)outPolicy.method);
       return;
   }
 
-  VHttpRequest           request;
+  QByteArray           buffer;
+  VHttpProxyRecvStatus status          = HeaderCaching;
+  VHttpRequest         request;
+  QByteArray           body;
+  int                  contentLength   = 0;
   VHttpProxyOutInThread* thread = NULL;
 
-  QByteArray totalMsg;
   while (true)
   {
-    QByteArray msg;
-    int readLen = inSession->read(msg);
+    //
+    // read oneBuffer from inSession
+    //
+    QByteArray oneBuffer;
+    int readLen = inSession->read(oneBuffer);
     if (readLen == VERR_FAIL) break;
-    outboundDataChange.change(msg);
-    emit beforeMsg(msg, inSession);
-    // LOG_DEBUG("%s", packet.data()); // gilgil temp
 
-    totalMsg += msg;
-    if (!request.parse(totalMsg))
+    buffer += oneBuffer;
+
+    //
+    // HeaderCaching
+    //
+    if (status == HeaderCaching)
     {
-      if (outClient->active())
+      if (request.parse(buffer, &body)) // header parsing completed
       {
-        outClient->write(totalMsg);
-        totalMsg = "";
+        QString host;
+        int port;
+        if (!determineHostAndPort(request, defaultPort, host, port))
+        {
+          LOG_ERROR("can not determine host and port %s", qPrintable(buffer));
+          break;
+        }
+        if (outClient->host != host || outClient->port != port)
+        {
+          outClient->close();
+          if (thread != NULL) delete thread;
+          outClient->host = host;
+          outClient->port = port;
+          LOG_DEBUG("opening %s:%d", qPrintable(host), port);
+          if (!outClient->open())
+          {
+            LOG_ERROR("%s", outClient->error.msg);
+            break;
+          }
+          thread = new VHttpProxyOutInThread(outClient, inSession, this);
+          thread->open();
+        }
+        buffer        = body;
+        contentLength = request.header.value("Content-Length").toInt();
+        if (contentLength > 0)
+        {
+          status = BodyCaching;
+        } else
+        {
+          QByteArray headerData = request.toByteArray();
+          outboundDataChange.change(headerData);
+          request.parse(headerData, NULL);
+          emit onHttpRequestHeader(&request, inSession, outClient);
+          outClient->write(request.toByteArray());
+          status = BodyStreaming;
+        }
       }
-      continue;
     }
 
-    QString host;
-    int port;
-    QUrl url = request.requestLine.path;
-    if (!url.isRelative())
+    //
+    // BodyCaching
+    //
+    if (status == BodyCaching)
     {
-      host = url.host();
-      port = url.port();
-
-      QByteArray newPath = url.path().toUtf8();
-      if (url.hasQuery())
-        newPath += "?" + url.query(QUrl::FullyEncoded).toLatin1();
-      request.requestLine.path = newPath;
-    } else
-    if (!request.findHost(host, port))
-    {
-      LOG_ERROR("can not find host:%s", totalMsg.data());
-      break;
-    }
-    if (port == -1) port = defaultOutPort;
-    if (outPolicy.host != "") host = outPolicy.host;
-    if (outPolicy.port != 0)  port = outPolicy.port;
-
-    if (outClient->host != host || outClient->port != port)
-    {
-      outClient->close();
-      if (thread != NULL) delete thread;
-
-      outClient->host = host;
-      outClient->port = port;
-      LOG_DEBUG("opening %s:%d", qPrintable(host), port);
-      if (!outClient->open())
+      int length = buffer.length();
+      if (length != 0)
       {
-        LOG_ERROR("%s", outClient->error.msg);
-        break;
+        if (length == contentLength) // body completed
+        {
+          if (!flushHttpRequestHeaderAndBody(request, body, inSession, outClient)) break;
+          status = HeaderCaching;
+        } else
+        if (length > contentLength)
+        {
+          LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
+          status = BodyStreaming;
+        }
       }
-      thread = new VHttpProxyOutInThread(outClient, inSession, this);
-      thread->open();
     }
 
-    emit beforeRequest(request, inSession, outClient);
-    outClient->write(request.toByteArray());
-    totalMsg = "";
+    //
+    // BodyStreaming
+    //
+    if (status == BodyStreaming)
+    {
+      if (buffer != "")
+      {
+        outboundDataChange.change(buffer);
+        emit onHttpRequestBody(&request, &buffer, inSession, outClient);
+        outClient->write(buffer);
+        buffer = "";
+      }
+    }
   }
   // LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2014.03.14
   inSession->close();
@@ -279,8 +459,9 @@ void VHttpProxy::load(VXml xml)
 {
   VObject::load(xml);
 
-  tcpEnabled = xml.getBool("tcpEnabled", tcpEnabled);
-  sslEnabled = xml.getBool("sslEnabled", sslEnabled);
+  tcpEnabled          = xml.getBool("tcpEnabled", tcpEnabled);
+  sslEnabled          = xml.getBool("sslEnabled", sslEnabled);
+  maxContentCacheSize = xml.getInt("maxContentCacheSize", maxContentCacheSize);
   outPolicy.load(xml.gotoChild("outPolicy"));
   tcpServer.load(xml.gotoChild("tcpServer"));
   sslServer.load(xml.gotoChild("sslServer"));
@@ -294,6 +475,7 @@ void VHttpProxy::save(VXml xml)
 
   xml.setBool("tcpEnabled", tcpEnabled);
   xml.setBool("sslEnabled", sslEnabled);
+  xml.setInt("maxContentCacheSize", maxContentCacheSize);
   outPolicy.save(xml.gotoChild("outPolicy"));
   tcpServer.save(xml.gotoChild("tcpServer"));
   sslServer.save(xml.gotoChild("sslServer"));
@@ -311,6 +493,7 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
 
   VOptionable::addCheckBox(widget->ui->glTcpServer, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
   VOptionable::addCheckBox(widget->ui->glSslServer, "chkSslEnabled", "SSL Enabled", sslEnabled);
+  VOptionable::addLineEdit(widget->ui->glOther,     "leMaxContentCacheSize", "Max Content Cache Size", QString::number(maxContentCacheSize));
 
   outPolicy.optionAddWidget(widget->ui->glExternal);
   tcpServer.optionAddWidget(widget->ui->glTcpServer);
@@ -328,6 +511,7 @@ void VHttpProxy::optionSaveDlg(QDialog* dialog)
 
   tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;
   sslEnabled = widget->findChild<QCheckBox*>("chkSslEnabled")->checkState() == Qt::Checked;
+  maxContentCacheSize = widget->findChild<QLineEdit*>("leMaxContentCacheSize")->text().toInt();
 
   outPolicy.optionSaveDlg((QDialog*)widget->ui->tabExternal);
   tcpServer.optionSaveDlg((QDialog*)widget->ui->tabTcpServer);

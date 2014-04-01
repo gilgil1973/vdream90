@@ -32,7 +32,10 @@ protected:
 
 public slots:
   void showMessage(QString msg);
-  void showMessage(QByteArray msg, VNetSession* fromSession);
+  void httpRequestHeader (VHttpRequest*  header,                   VNetSession* inSession, VNetClient*  outClient);
+  void httpRequestBody   (VHttpRequest*  header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient);
+  void httpResponseHeader(VHttpResponse* header,                   VNetClient*  outClient, VNetSession* inSession);
+  void httpResponseBody  (VHttpResponse* header, QByteArray* body, VNetClient*  outClient, VNetSession* inSession);
 
 public:
   virtual void load(VXml xml);

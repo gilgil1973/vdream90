@@ -15,6 +15,7 @@ VHttpProxyWidget::VHttpProxyWidget(QWidget *parent) :
   ui->glSslServer->setMargin(8);
   ui->glInbound->setMargin(8);
   ui->glOutbound->setMargin(8);
+  ui->glOther->setMargin(8);
 
   ui->tabInternal->setLayout(ui->glInternal);
   ui->tabExternal->setLayout(ui->glExternal);
@@ -23,6 +24,7 @@ VHttpProxyWidget::VHttpProxyWidget(QWidget *parent) :
   ui->tabDataChange->setLayout(ui->glDataChange);
   ui->tabInbound->setLayout(ui->glInbound);
   ui->tabOutbound->setLayout(ui->glOutbound);
+  ui->tabOther->setLayout(ui->glOther);
 }
 
 VHttpProxyWidget::~VHttpProxyWidget()

@@ -43,11 +43,10 @@ public:
 public:
   VHttpRequestLine requestLine;
   VHttpHeader      header;
-  QByteArray      body;
 
 public:
   void clear();
-  bool parse(QByteArray data);
+  bool parse(QByteArray data, QByteArray* body);
   QByteArray toByteArray();
 
 public:
