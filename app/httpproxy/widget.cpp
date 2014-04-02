@@ -162,7 +162,7 @@ void Widget::on_pbOpen_clicked()
   if (!proxy.open())
   {
     QString msg = proxy.error.msg;
-    emit showMessage(msg);
+    showMessage(msg);
   }
   setControl();
 }

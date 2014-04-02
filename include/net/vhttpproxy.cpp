@@ -90,7 +90,6 @@ protected:
     VHttpResponse          response;
     int                    contentLength   = 0;
 
-    int totalLen = 0; // gilgil temp 2014.04.02
     while (true)
     {
       //
@@ -99,10 +98,6 @@ protected:
       QByteArray oneBuffer;
       int readLen = outClient->read(oneBuffer);
       if (readLen == VERR_FAIL) break;
-      {
-        totalLen += readLen;
-        //LOG_DEBUG("status=%d readLen=%d totalLen=%d", (int)status, readLen, totalLen); // gilgil temp 2014.04.02
-      }
 
       buffer += oneBuffer;
 
@@ -137,7 +132,7 @@ protected:
       if (status == BodyCaching)
       {
         int length = buffer.length();
-        //LOG_DEBUG("length=%d contentLength=%d", length, contentLength); // gilgil temp 2014.04.02
+        // LOG_DEBUG("length=%d contentLength=%d", length, contentLength); // gilgil temp 2014.04.02
         if (length != 0)
         {
           if (length == contentLength) // body completed
@@ -364,7 +359,6 @@ void VHttpProxy::run(VNetSession* inSession)
   int                  contentLength = 0;
   VHttpProxyOutInThread* thread      = NULL;
 
-  int totalLen = 0; // gilgil temp 2014.04.02
   while (true)
   {
     //
@@ -373,10 +367,6 @@ void VHttpProxy::run(VNetSession* inSession)
     QByteArray oneBuffer;
     int readLen = inSession->read(oneBuffer);
     if (readLen == VERR_FAIL) break;
-    { // gilgil temp 2014.04.02
-      totalLen += readLen;
-      LOG_DEBUG("status=%d readLen=%d totalLen=%d", status, readLen, totalLen);
-    }
 
     buffer += oneBuffer;
 
@@ -395,7 +385,7 @@ void VHttpProxy::run(VNetSession* inSession)
           LOG_ERROR("can not determine host and port %s", qPrintable(buffer));
           break;
         }
-        LOG_DEBUG("host=%s port=%d", qPrintable(host), port); // gilgil temp 2014.04.02
+        // LOG_DEBUG("host=%s port=%d", qPrintable(host), port); // gilgil temp 2014.04.02
         if (outClient->host != host || outClient->port != port)
         {
           outClient->close();
