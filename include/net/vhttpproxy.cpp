@@ -88,9 +88,9 @@ protected:
     QByteArray             buffer;
     VHttpProxyRecvStatus   status = HeaderCaching;
     VHttpResponse          response;
-    QByteArray             body;
     int                    contentLength   = 0;
 
+    int totalLen = 0; // gilgil temp 2014.04.02
     while (true)
     {
       //
@@ -99,6 +99,10 @@ protected:
       QByteArray oneBuffer;
       int readLen = outClient->read(oneBuffer);
       if (readLen == VERR_FAIL) break;
+      {
+        totalLen += readLen;
+        //LOG_DEBUG("status=%d readLen=%d totalLen=%d", (int)status, readLen, totalLen); // gilgil temp 2014.04.02
+      }
 
       buffer += oneBuffer;
 
@@ -107,6 +111,7 @@ protected:
       //
       if (status == HeaderCaching)
       {
+        QByteArray body;
         if (response.parse(buffer, &body)) // header parsing completed
         {
           buffer        = body;
@@ -132,11 +137,12 @@ protected:
       if (status == BodyCaching)
       {
         int length = buffer.length();
+        //LOG_DEBUG("length=%d contentLength=%d", length, contentLength); // gilgil temp 2014.04.02
         if (length != 0)
         {
           if (length == contentLength) // body completed
           {
-            if (!httpProxy->flushHttpResponseHeaderAndBody(response, body, outClient, inSession)) break;
+            if (!httpProxy->flushHttpResponseHeaderAndBody(response, buffer, outClient, inSession)) break;
             status = HeaderCaching;
           } else
           if (length > contentLength)
@@ -162,6 +168,7 @@ protected:
       }
     }
 
+    // sleep(5); // gilgil temp 2014.04.02
     outClient->close();
     inSession->close();
     // LOG_DEBUG("end"); // gilgil temp 2014.03.14
@@ -352,12 +359,12 @@ void VHttpProxy::run(VNetSession* inSession)
   }
 
   QByteArray           buffer;
-  VHttpProxyRecvStatus status          = HeaderCaching;
+  VHttpProxyRecvStatus status        = HeaderCaching;
   VHttpRequest         request;
-  QByteArray           body;
-  int                  contentLength   = 0;
-  VHttpProxyOutInThread* thread = NULL;
+  int                  contentLength = 0;
+  VHttpProxyOutInThread* thread      = NULL;
 
+  int totalLen = 0; // gilgil temp 2014.04.02
   while (true)
   {
     //
@@ -366,6 +373,10 @@ void VHttpProxy::run(VNetSession* inSession)
     QByteArray oneBuffer;
     int readLen = inSession->read(oneBuffer);
     if (readLen == VERR_FAIL) break;
+    { // gilgil temp 2014.04.02
+      totalLen += readLen;
+      LOG_DEBUG("status=%d readLen=%d totalLen=%d", status, readLen, totalLen);
+    }
 
     buffer += oneBuffer;
 
@@ -374,6 +385,7 @@ void VHttpProxy::run(VNetSession* inSession)
     //
     if (status == HeaderCaching)
     {
+      QByteArray body;
       if (request.parse(buffer, &body)) // header parsing completed
       {
         QString host;
@@ -383,6 +395,7 @@ void VHttpProxy::run(VNetSession* inSession)
           LOG_ERROR("can not determine host and port %s", qPrintable(buffer));
           break;
         }
+        LOG_DEBUG("host=%s port=%d", qPrintable(host), port); // gilgil temp 2014.04.02
         if (outClient->host != host || outClient->port != port)
         {
           outClient->close();
@@ -410,7 +423,7 @@ void VHttpProxy::run(VNetSession* inSession)
           request.parse(headerData, NULL);
           emit onHttpRequestHeader(&request, inSession, outClient);
           outClient->write(request.toByteArray());
-          status = BodyStreaming;
+          status = HeaderCaching;
         }
       }
     }
@@ -425,7 +438,7 @@ void VHttpProxy::run(VNetSession* inSession)
       {
         if (length == contentLength) // body completed
         {
-          if (!flushHttpRequestHeaderAndBody(request, body, inSession, outClient)) break;
+          if (!flushHttpRequestHeaderAndBody(request, buffer, inSession, outClient)) break;
           status = HeaderCaching;
         } else
         if (length > contentLength)
