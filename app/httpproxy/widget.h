@@ -2,9 +2,22 @@
 #define WIDGET_H
 
 #include <QWidget>
-
 #include <VHttpProxy>
 
+// ----------------------------------------------------------------------------
+// MsgEvent
+// ----------------------------------------------------------------------------
+class MsgEvent : public QEvent
+{
+public:
+  QString msg;
+public:
+  MsgEvent(QString msg) : QEvent(None) { this->msg = msg; }
+};
+
+// ----------------------------------------------------------------------------
+// Widget
+// ----------------------------------------------------------------------------
 namespace Ui {
   class Widget;
 }
@@ -25,10 +38,12 @@ public:
   void setControl(VState state = VState::None);
 
 public:
+  bool       showMsg;
   VHttpProxy proxy;
 
 protected:
   virtual void showEvent(QShowEvent* showEvent);
+  virtual bool event(QEvent* event);
 
 public slots:
   void showMessage(QString msg);
@@ -49,6 +64,8 @@ private slots:
   void on_pbClear_clicked();
 
   void on_pbOption_clicked();
+  void on_chkShowMsg_clicked();
+
 private:
   Ui::Widget *ui;
 };

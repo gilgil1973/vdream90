@@ -18,21 +18,23 @@ Widget::~Widget()
 
 void Widget::initializeControl()
 {
+  showMsg = true;
   move(0, 0); resize(640, 480);
   VObject::connect(
     &proxy, SIGNAL(onHttpRequestHeader(VHttpRequest*,VNetSession*,VNetClient*)),
-    this, SLOT(httpRequestHeader(VHttpRequest*,VNetSession*,VNetClient*)), Qt::BlockingQueuedConnection);
+    this, SLOT(httpRequestHeader(VHttpRequest*,VNetSession*,VNetClient*)),
+    Qt::DirectConnection);
   VObject::connect(
     &proxy, SIGNAL(onHttpRequestBody(VHttpRequest*,QByteArray*,VNetSession*,VNetClient*)),
     this, SLOT(httpRequestBody(VHttpRequest*,QByteArray*,VNetSession*,VNetClient*)),
-    Qt::BlockingQueuedConnection);
+    Qt::DirectConnection);
   VObject::connect(
     &proxy, SIGNAL(onHttpResponseHeader(VHttpResponse*,VNetClient*,VNetSession*)),
     this, SLOT(httpResponseHeader(VHttpResponse*,VNetClient*,VNetSession*)),
-    Qt::BlockingQueuedConnection);
+    Qt::DirectConnection);
   VObject::connect(&proxy, SIGNAL(onHttpResponseBody(VHttpResponse*,QByteArray*,VNetClient*,VNetSession*)),
     this, SLOT(httpResponseBody(VHttpResponse*,QByteArray*,VNetClient*,VNetSession*)),
-    Qt::BlockingQueuedConnection);
+    Qt::DirectConnection);
 }
 
 void Widget::finalizeControl()
@@ -70,10 +72,20 @@ void Widget::showEvent(QShowEvent* showEvent)
   QWidget::showEvent(showEvent);
 }
 
+bool Widget::event(QEvent* event)
+{
+  MsgEvent* msgEvent = dynamic_cast<MsgEvent*>(event);
+  if (msgEvent != NULL)
+  {
+    showMessage(msgEvent->msg);
+    return true;
+  }
+  return QWidget::event(event);
+}
+
 void Widget::showMessage(QString msg)
 {
-  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
-  ui->pteMsg->insertPlainText(msg + "\r\n");
+  ui->pteMsg->insertPlainText(msg);
   ui->pteMsg->ensureCursorVisible();
 }
 
@@ -82,9 +94,8 @@ void Widget::httpRequestHeader(VHttpRequest* header, VNetSession* inSession, VNe
   Q_UNUSED(inSession)
   Q_UNUSED(outClient)
 
-  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
-  ui->pteMsg->insertPlainText(header->toByteArray());
-  ui->pteMsg->ensureCursorVisible();
+  if (!showMsg) return;
+  QApplication::postEvent(this, new MsgEvent(header->toByteArray()));
 }
 
 void Widget::httpRequestBody(VHttpRequest* header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient)
@@ -93,9 +104,8 @@ void Widget::httpRequestBody(VHttpRequest* header, QByteArray* body, VNetSession
   Q_UNUSED(outClient)
   Q_UNUSED(inSession)
 
-  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
-  ui->pteMsg->insertPlainText(*body);
-  ui->pteMsg->ensureCursorVisible();
+  if (!showMsg) return;
+  QApplication::postEvent(this, new MsgEvent(*body));
 }
 
 void Widget::httpResponseHeader(VHttpResponse* header, VNetClient*  outClient, VNetSession* inSession)
@@ -103,9 +113,8 @@ void Widget::httpResponseHeader(VHttpResponse* header, VNetClient*  outClient, V
   Q_UNUSED(inSession)
   Q_UNUSED(outClient)
 
-  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
-  ui->pteMsg->insertPlainText(header->toByteArray());
-  ui->pteMsg->ensureCursorVisible();
+  if (!showMsg) return;
+  QApplication::postEvent(this, new MsgEvent(header->toByteArray()));
 }
 
 void Widget::httpResponseBody(VHttpResponse* header, QByteArray* body, VNetClient* outClient, VNetSession* inSession)
@@ -114,9 +123,8 @@ void Widget::httpResponseBody(VHttpResponse* header, QByteArray* body, VNetClien
   Q_UNUSED(outClient)
   Q_UNUSED(inSession)
 
-  if (ui->chkShowMsg->checkState() != Qt::Checked) return;
-  ui->pteMsg->insertPlainText(*body);
-  ui->pteMsg->ensureCursorVisible();
+  if (!showMsg) return;
+  QApplication::postEvent(this, new MsgEvent(*body));
 }
 
 void Widget::load(VXml xml)
@@ -134,9 +142,8 @@ void Widget::load(VXml xml)
     }
   }
 
-  bool checked = ui->chkShowMsg->checkState() == Qt::Checked;
-  checked = xml.getBool("showMsg", checked);
-  ui->chkShowMsg->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+  showMsg = xml.getBool("showMsg", showMsg);
+  ui->chkShowMsg->setCheckState(showMsg ? Qt::Checked : Qt::Unchecked);
 
   proxy.load(xml.gotoChild("HttpProxy"));
 }
@@ -152,7 +159,7 @@ void Widget::save(VXml xml)
     coordXml.setInt("height", rect.height());
   }
 
-  xml.setBool("showMsg", ui->chkShowMsg->checkState() == Qt::Checked);
+  xml.setBool("showMsg", showMsg);
 
   proxy.save(xml.gotoChild("HttpProxy"));
 }
@@ -181,4 +188,9 @@ void Widget::on_pbClear_clicked()
 void Widget::on_pbOption_clicked()
 {
   proxy.optionDoAll(this);
+}
+
+void Widget::on_chkShowMsg_clicked()
+{
+  showMsg = ui->chkShowMsg->checkState() == Qt::Checked;
 }
