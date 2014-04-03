@@ -19,6 +19,8 @@
 // ----------------------------------------------------------------------------
 class VSslSession : public VNetSession, protected VStateLockable
 {
+  friend class VSslClient;
+
 public:
   VSslSession(void* owner = NULL);
   virtual ~VSslSession();
