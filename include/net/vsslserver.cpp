@@ -123,6 +123,8 @@ bool VSslServer::doClose()
 {
   VLock lock(stateCloseCs); // gilgil temp 2014.03.14
 
+  VTcpServer::doClose();
+
   sslSessionList.lock();
   for (int i = 0; i < sslSessionList.count(); i++)
   {
@@ -130,8 +132,6 @@ bool VSslServer::doClose()
     session->close();
   }
   sslSessionList.unlock();
-
-  VTcpServer::doClose();
 
   //
   // m_meth and m_ctx
@@ -433,7 +433,7 @@ void VSslServer::myRun(VTcpSession* tcpSession)
     // threadTag = 11000; // gilgil temp 2014.03.14
     sslSession->owner       = this;
     sslSession->tcpSession  = tcpSession;
-    sslSession->handle      = tcpSession->handle;
+    // sslSession->handle      = tcpSession->handle; // gilgil temp 2014.04.03
     sslSession->ctx         = m_ctx;
     // threadTag = 12000; // gilgil temp 2014.03.14
     if (!sslSession->open()) goto _end;

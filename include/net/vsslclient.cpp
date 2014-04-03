@@ -50,7 +50,7 @@ bool VSslClient::doOpen()
   //
   // set sock and con
   //
-  sslSession->handle = tcpSession->handle;
+  // sslSession->handle = tcpSession->handle; // gilgil temp 2014.04.03
   sslSession->ctx    = m_ctx;
   if (!sslSession->open())
   {

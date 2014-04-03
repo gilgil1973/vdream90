@@ -7,9 +7,9 @@ VSslSession::VSslSession(void* owner) : VNetSession(owner)
 {
   con        = NULL;
   sbio       = NULL;
-  handle     = INVALID_SOCKET;
-  ctx        = NULL;
+  // handle     = INVALID_SOCKET; // gilgil temp 2014.04.03
   tcpSession = NULL;
+  ctx        = NULL;
 }
 
 VSslSession::~VSslSession()
@@ -65,6 +65,8 @@ bool VSslSession::doOpen()
 {
   VLock lock(stateOpenCs); // gilgil temp 2014.03.14
 
+  // ----- gilgil temp 2014.03.03 -----
+  /*
   // --------------------------------------------------------------------------
   // check sock(must be set in other place)
   // --------------------------------------------------------------------------
@@ -73,6 +75,13 @@ bool VSslSession::doOpen()
     SET_ERROR(VSslError, "INVALID_SOCKET", VERR_HANDLE_IS_ZERO);
     return false;
   }
+  */
+  if (!tcpSession->active())
+  {
+    SET_ERROR(VSslError, "not opened state", VERR_NOT_OPENED_STATE);
+    return false;
+  }
+  // ----------------------------------
 
   // --------------------------------------------------------------------------
   // check ctx(must be set in other place)
@@ -100,7 +109,7 @@ bool VSslSession::doOpen()
   {
     // BIO_free(sbio); // do not call BIO_free // by gilgil 2014.02.28
   }
-  sbio = BIO_new_socket((int)handle, BIO_NOCLOSE);
+  sbio = BIO_new_socket((int)(tcpSession->handle), BIO_NOCLOSE);
   SSL_set_bio(con, sbio, sbio);
 
   // --------------------------------------------------------------------------
@@ -132,7 +141,10 @@ bool VSslSession::doClose()
 {
   VLock lock(stateCloseCs); // gilgil temp 2014.03.14
 
+  tcpSession->close();
+
   ctx = NULL;
+
   if (con != NULL)
   {
     SSL_shutdown(con);
@@ -151,7 +163,6 @@ bool VSslSession::doClose()
 #endif // WIN32
 */
 // ----------------------------------
-  handle = INVALID_SOCKET;
   return true;
 }
 

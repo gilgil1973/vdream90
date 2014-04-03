@@ -34,9 +34,9 @@ public:
   BIO* sbio;
 
 public:
-  SOCKET       handle;     // reference, used in open // gilgil temp 2014.02.25
-  SSL_CTX*     ctx;        // reference, used in open
+  // SOCKET       handle;     // reference, used in open // gilgil temp 2014.04.03
   VTcpSession* tcpSession; // reference
+  SSL_CTX*     ctx;        // reference
 
 protected:
   static const int VSSL_SESSION_IDENTIFY_INDEX = 0;
