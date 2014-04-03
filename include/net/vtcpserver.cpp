@@ -27,7 +27,7 @@ void VTcpSessionThread::run()
   emit tcpServer->runned(tcpSession);
   tag = 20100; // gilgil temp 2014.04.04
 
-  sleep(1); // gilgil temp 2014.04.04
+  // sleep(1); // gilgil temp 2014.04.04
   tag = 20200; // gilgil temp 2014.04.04
   VTcpSessionThreadList& threadList = tcpServer->threadList;
   tag = 20300; // gilgil temp 2014.04.04
