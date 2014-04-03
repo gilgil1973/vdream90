@@ -465,7 +465,7 @@ void VSslServer::myRun(VTcpSession* tcpSession)
       // threadTag = 34000; // gilgil temp 2014.03.14
       if (res < 0)
       {
-        LOG_DEBUG("[VDSSLServer.cpp] VDSSLSessionList::add SSL_accept return %d error=%d", res, SSL_get_error(sslSession->con, res));
+        LOG_DEBUG("SSL_accept return %d error=%d", res, SSL_get_error(sslSession->con, res));
         // threadTag = 35000; // gilgil temp 2014.03.14
         goto _end;
       }
