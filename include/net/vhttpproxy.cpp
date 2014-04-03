@@ -218,6 +218,14 @@ bool VHttpProxy::doOpen()
 
 bool VHttpProxy::doClose()
 {
+  outClients.lock();
+  for (VHttpProxyOutClients::iterator it = outClients.begin(); it != outClients.end(); it++)
+  {
+    VNetClient* outClient = *it;
+    outClient->close();
+  }
+  outClients.unlock();
+
   tcpServer.close();
   sslServer.close();
 
@@ -352,6 +360,9 @@ void VHttpProxy::run(VNetSession* inSession)
       LOG_FATAL("invalid method value(%d)", (int)outPolicy.method);
       return;
   }
+  outClients.lock();
+  outClients.push_back(outClient);
+  outClients.unlock();
 
   QByteArray           buffer;
   VHttpProxyRecvStatus status        = HeaderCaching;
@@ -457,6 +468,11 @@ void VHttpProxy::run(VNetSession* inSession)
   inSession->close();
   outClient->close();
   if (thread != NULL) delete thread;
+
+  outClients.lock();
+  outClients.removeAt(outClients.indexOf(outClient));
+  outClients.unlock();
+
   delete outClient;
 }
 

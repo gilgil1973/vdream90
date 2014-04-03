@@ -63,6 +63,13 @@ typedef enum
 } VHttpProxyRecvStatus;
 
 // ----------------------------------------------------------------------------
+// VHttpProxyOutClientList
+// ----------------------------------------------------------------------------
+class VHttpProxyOutClients : public QList<VNetClient*>, public VLockable
+{
+};
+
+// ----------------------------------------------------------------------------
 // VHttpProxy
 // ----------------------------------------------------------------------------
 class VHttpProxy : public VObject, public VOptionable
@@ -94,6 +101,9 @@ public:
   VSslServer          sslServer;
   VDataChange         inboundDataChange;
   VDataChange         outboundDataChange;
+
+protected:
+  VHttpProxyOutClients outClients;
 
 public slots:
   void tcpRun(VTcpSession* tcpSession);
