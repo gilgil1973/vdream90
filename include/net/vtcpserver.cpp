@@ -251,7 +251,7 @@ VTcpSession* VTcpServer::accept()
   newHandle = ::accept(acceptSession->handle, (SOCKADDR*)&sockAddr, &size);
   if (newHandle == INVALID_SOCKET)
   {
-    SET_ERROR(VNetError, "error in accept", WSAGetLastError());
+    SET_DEBUG_ERROR(VNetError, "error in accept", WSAGetLastError());
     goto _error;
   }
 
