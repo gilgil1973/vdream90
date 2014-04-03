@@ -23,6 +23,16 @@ VSslClient::~VSslClient()
   SAFE_DELETE(sslSession);
 }
 
+bool VSslClient::close()
+{
+  //
+  // Hang might be occurred when calling open in one thread and calling close in other thread.
+  // So call tcpSession->doClose forcibly preventing hang.
+  //
+  sslSession->doClose();
+  return VTcpClient::close();
+}
+
 bool VSslClient::doOpen()
 {
   VLock lock(stateOpenCs); // gilgil temp 2014.03.14

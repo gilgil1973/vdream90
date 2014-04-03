@@ -23,6 +23,9 @@ public:
   VSslClient(void* owner = NULL);
   virtual ~VSslClient();
 
+public:
+  virtual bool close();
+
 protected:
   virtual bool doOpen();
   virtual bool doClose();
