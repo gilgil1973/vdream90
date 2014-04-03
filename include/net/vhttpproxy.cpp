@@ -45,6 +45,61 @@ void VHttpProxyOutPolicy::optionSaveDlg(QDialog* dialog)
 #endif // QT_GUI_LIB
 
 // ----------------------------------------------------------------------------
+// VHttpProxyConnection
+// ----------------------------------------------------------------------------
+VHttpProxyConnection::VHttpProxyConnection(VNetSession* inSession, VNetClient* outClient)
+{
+  this->inSession      = inSession;
+  this->outClient      = outClient;
+  this->lastAccessTick = tick();
+}
+
+bool VHttpProxyConnection::operator==(const VHttpProxyConnection& rhs)
+{
+  if (this->inSession != rhs.inSession) return false;
+  if (this->outClient != rhs.outClient) return false;
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+// VHttpProxyKeepAliveThread
+// ----------------------------------------------------------------------------
+VHttpProxyKeepAliveThread::VHttpProxyKeepAliveThread(void* owner) : VThread(owner)
+{
+  event.resetEvent();
+}
+
+VHttpProxyKeepAliveThread::~VHttpProxyKeepAliveThread()
+{
+  event.setEvent();
+  close();
+}
+
+void VHttpProxyKeepAliveThread::run()
+{
+  VHttpProxy* httpProxy = (VHttpProxy*)owner;
+  LOG_ASSERT(httpProxy != NULL);
+
+  while (true)
+  {
+    bool res = event.wait(10000); // 10 sec
+    if (res) break;
+    VTick nowTick = tick();
+    httpProxy->connections.lock();
+    for (VHttpProxyConnections::iterator it = httpProxy->connections.begin(); it != httpProxy->connections.end(); it++)
+    {
+      VHttpProxyConnection& connection = *it;
+      if (connection.lastAccessTick + httpProxy->keepAliveTimeout < nowTick)
+      {
+        connection.inSession->close();
+        connection.outClient->close();
+      }
+    }
+    httpProxy->connections.unlock();
+  }
+}
+
+// ----------------------------------------------------------------------------
 // VHttpProxyOutInThread
 // ----------------------------------------------------------------------------
 class VHttpProxyOutInThread : public VThread
@@ -200,9 +255,12 @@ VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
 {
   tcpEnabled          = true;
   sslEnabled          = true;
-  maxContentCacheSize = 10485756; // 1MByte
   tcpServer.port      = HTTP_PROXY_PORT;
   sslServer.port      = SSL_PROXY_PORT;
+  maxContentCacheSize = 10485756; // 1MByte
+  keepAliveTimeout    = 60000; // 60 sec
+
+  keepAliveThread     = NULL;
 
   VObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(tcpRun(VTcpSession*)), Qt::DirectConnection);
   VObject::connect(&sslServer, SIGNAL(runned(VSslSession*)), this, SLOT(sslRun(VSslSession*)), Qt::DirectConnection);
@@ -233,6 +291,9 @@ bool VHttpProxy::doOpen()
     }
   }
 
+  keepAliveThread = new VHttpProxyKeepAliveThread(this);
+  keepAliveThread->open();
+
   if (!inboundDataChange.prepare(error)) return false;
   if (!outboundDataChange.prepare(error)) return false;
 
@@ -241,16 +302,19 @@ bool VHttpProxy::doOpen()
 
 bool VHttpProxy::doClose()
 {
-  outClients.lock();
-  for (VHttpProxyOutClients::iterator it = outClients.begin(); it != outClients.end(); it++)
+  connections.lock();
+  for (VHttpProxyConnections::iterator it = connections.begin(); it != connections.end(); it++)
   {
-    VNetClient* outClient = *it;
-    outClient->close();
+    VHttpProxyConnection& connection = *it;
+    connection.inSession->close();
+    connection.outClient->close();
   }
-  outClients.unlock();
+  connections.unlock();
 
   tcpServer.close();
   sslServer.close();
+
+  SAFE_DELETE(keepAliveThread);
 
   return true;
 }
@@ -383,9 +447,10 @@ void VHttpProxy::run(VNetSession* inSession)
       LOG_FATAL("invalid method value(%d)", (int)outPolicy.method);
       return;
   }
-  outClients.lock();
-  outClients.push_back(outClient);
-  outClients.unlock();
+  connections.lock();
+  VHttpProxyConnection connection(inSession, outClient);
+  connections.push_back(connection);
+  connections.unlock();
 
   QByteArray           buffer;
   VHttpProxyRecvStatus status        = HeaderCaching;
@@ -492,9 +557,9 @@ void VHttpProxy::run(VNetSession* inSession)
   outClient->close();
   if (thread != NULL) delete thread;
 
-  outClients.lock();
-  outClients.removeAt(outClients.indexOf(outClient));
-  outClients.unlock();
+  connections.lock();
+  connections.removeAt(connections.indexOf(connection));
+  connections.unlock();
 
   delete outClient;
 }
@@ -505,10 +570,11 @@ void VHttpProxy::load(VXml xml)
 
   tcpEnabled          = xml.getBool("tcpEnabled", tcpEnabled);
   sslEnabled          = xml.getBool("sslEnabled", sslEnabled);
-  maxContentCacheSize = xml.getInt("maxContentCacheSize", maxContentCacheSize);
   outPolicy.load(xml.gotoChild("outPolicy"));
   tcpServer.load(xml.gotoChild("tcpServer"));
   sslServer.load(xml.gotoChild("sslServer"));
+  maxContentCacheSize = xml.getInt("maxContentCacheSize", maxContentCacheSize);
+  keepAliveTimeout    = xml.getULong("keepAliveTimeout", keepAliveTimeout);
   inboundDataChange.load(xml.gotoChild("inboundDataChange"));
   outboundDataChange.load(xml.gotoChild("outboundDataChange"));
 }
@@ -519,10 +585,11 @@ void VHttpProxy::save(VXml xml)
 
   xml.setBool("tcpEnabled", tcpEnabled);
   xml.setBool("sslEnabled", sslEnabled);
-  xml.setInt("maxContentCacheSize", maxContentCacheSize);
   outPolicy.save(xml.gotoChild("outPolicy"));
   tcpServer.save(xml.gotoChild("tcpServer"));
   sslServer.save(xml.gotoChild("sslServer"));
+  xml.setInt("maxContentCacheSize", maxContentCacheSize);
+  xml.setULong("keepAliveTimeout", keepAliveTimeout);
   inboundDataChange.save(xml.gotoChild("inboundDataChange"));
   outboundDataChange.save(xml.gotoChild("outboundDataChange"));
 }
@@ -537,11 +604,14 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
 
   VOptionable::addCheckBox(widget->ui->glTcpServer, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
   VOptionable::addCheckBox(widget->ui->glSslServer, "chkSslEnabled", "SSL Enabled", sslEnabled);
-  VOptionable::addLineEdit(widget->ui->glOther,     "leMaxContentCacheSize", "Max Content Cache Size", QString::number(maxContentCacheSize));
 
   outPolicy.optionAddWidget(widget->ui->glExternal);
   tcpServer.optionAddWidget(widget->ui->glTcpServer);
   sslServer.optionAddWidget(widget->ui->glSslServer);
+
+  VOptionable::addLineEdit(widget->ui->glOther,     "leMaxContentCacheSize", "Max Content Cache Size", QString::number(maxContentCacheSize));
+  VOptionable::addLineEdit(widget->ui->glOther,     "leKeepAliveTimeout",    "KeepAlive Timeout",      QString::number(keepAliveTimeout));
+
   inboundDataChange.optionAddWidget(widget->ui->glInbound);
   outboundDataChange.optionAddWidget(widget->ui->glOutbound);
 
@@ -555,11 +625,15 @@ void VHttpProxy::optionSaveDlg(QDialog* dialog)
 
   tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;
   sslEnabled = widget->findChild<QCheckBox*>("chkSslEnabled")->checkState() == Qt::Checked;
-  maxContentCacheSize = widget->findChild<QLineEdit*>("leMaxContentCacheSize")->text().toInt();
+
 
   outPolicy.optionSaveDlg((QDialog*)widget->ui->tabExternal);
   tcpServer.optionSaveDlg((QDialog*)widget->ui->tabTcpServer);
   sslServer.optionSaveDlg((QDialog*)widget->ui->tabSslServer);
+
+  maxContentCacheSize = widget->findChild<QLineEdit*>("leMaxContentCacheSize")->text().toInt();
+  keepAliveTimeout    = widget->findChild<QLineEdit*>("leKeepAliveTimeout")->text().toInt();
+
   inboundDataChange.optionSaveDlg((QDialog*)widget->ui->tabInbound);
   outboundDataChange.optionSaveDlg((QDialog*)widget->ui->tabOutbound);
 }

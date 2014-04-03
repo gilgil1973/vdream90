@@ -16,6 +16,7 @@
 #include <VTcpClient>
 #include <VSslServer>
 #include <VSslClient>
+#include <VTick>
 #include <VHttpRequest>
 #include <VHttpResponse>
 #include <VDataChange>
@@ -63,10 +64,43 @@ typedef enum
 } VHttpProxyRecvStatus;
 
 // ----------------------------------------------------------------------------
-// VHttpProxyOutClientList
+// VHttpProxyConnection
 // ----------------------------------------------------------------------------
-class VHttpProxyOutClients : public QList<VNetClient*>, public VLockable
+class VHttpProxyConnection
 {
+public:
+  VHttpProxyConnection(VNetSession* inSession, VNetClient* outClient);
+
+public:
+  bool operator==(const VHttpProxyConnection& rhs);
+
+public:
+  VNetSession* inSession;
+  VNetClient*  outClient;
+  VTick        lastAccessTick;
+};
+
+// ----------------------------------------------------------------------------
+// VHttpProxyConnections
+// ----------------------------------------------------------------------------
+class VHttpProxyConnections : public QList<VHttpProxyConnection>, public VLockable
+{
+};
+
+// ----------------------------------------------------------------------------
+// VHttpProxyKeepAliveThread
+// ----------------------------------------------------------------------------
+class VHttpProxyKeepAliveThread : public VThread
+{
+public:
+  VHttpProxyKeepAliveThread(void* owner);
+  ~VHttpProxyKeepAliveThread();
+
+protected:
+  VEvent event;
+
+protected:
+  virtual void run();
 };
 
 // ----------------------------------------------------------------------------
@@ -77,6 +111,7 @@ class VHttpProxy : public VObject, public VOptionable
   Q_OBJECT
 
   friend class VHttpProxyOutInThread;
+  friend class VHttpProxyKeepAliveThread;
 
 public:
   VHttpProxy(void* owner = NULL);
@@ -95,15 +130,19 @@ public:
 public:
   bool                tcpEnabled;
   bool                sslEnabled;
-  int                 maxContentCacheSize;
   VHttpProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
+  int                 maxContentCacheSize;
+  VTimeout            keepAliveTimeout;
   VDataChange         inboundDataChange;
   VDataChange         outboundDataChange;
 
+public:
+  VHttpProxyConnections connections;
+
 protected:
-  VHttpProxyOutClients outClients;
+  VHttpProxyKeepAliveThread* keepAliveThread;
 
 public slots:
   void tcpRun(VTcpSession* tcpSession);
