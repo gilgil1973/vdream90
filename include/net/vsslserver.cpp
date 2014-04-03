@@ -121,9 +121,8 @@ bool VSslServer::doOpen()
 
 bool VSslServer::doClose()
 {
+  threadTag = 1000; // gilgil temp 2014.04.04
   VLock lock(stateCloseCs); // gilgil temp 2014.03.14
-
-  VTcpServer::doClose();
 
   sslSessionList.lock();
   for (int i = 0; i < sslSessionList.count(); i++)
@@ -132,6 +131,11 @@ bool VSslServer::doClose()
     session->close();
   }
   sslSessionList.unlock();
+  threadTag = 1032; // gilgil temp 2014.04.04
+
+  threadTag = 1010; // gilgil temp 2014.04.04
+  VTcpServer::doClose();
+  threadTag = 1031; // gilgil temp 2014.04.
 
   //
   // m_meth and m_ctx
@@ -140,11 +144,13 @@ bool VSslServer::doClose()
   {
     m_meth = NULL;
   }
+  threadTag = 1040; // gilgil temp 2014.04.04
   if (m_ctx != NULL)
   {
     SSL_CTX_free(m_ctx);
     m_ctx = NULL;
   }
+  threadTag = 1050; // gilgil temp 2014.04.04
 
   return true;
 }
@@ -427,6 +433,8 @@ bool VSslServer::setKeyCrtStuff(VError& error, SSL* con, EVP_PKEY* key, X509* cr
 // static VCS sslAccept; // gilgil temp 2014.03.24
 void VSslServer::myRun(VTcpSession* tcpSession)
 {
+  tag = 3000; // gilgil temp 2014.04.04
+  threadTag = 3000;
   VSslServerSession *sslSession = new VSslServerSession;
   {
     //VLock lock(sslAccept); // gilgil temp 2014.03.24
@@ -499,6 +507,8 @@ _end:
   // threadTag = 80000; // gilgil temp 2014.03.14
   delete sslSession;
   // threadTag = 90000; // gilgil temp 2014.03.14
+  tag = 4000; // gilgil temp 2014.04.04
+  threadTag = 4000;
 }
 
 void VSslServer::load(VXml xml)
