@@ -23,15 +23,20 @@ VTcpSessionThread::~VTcpSessionThread()
 
 void VTcpSessionThread::run()
 {
+  tag = 20000; // gilgil temp 2014.04.04
   emit tcpServer->runned(tcpSession);
+  tag = 20100; // gilgil temp 2014.04.04
 
-  if (freeOnTerminate)
-  {
-    VTcpSessionThreadList& threadList = tcpServer->threadList;
-    threadList.lock();
-    threadList.removeAt(threadList.indexOf(this));
-    threadList.unlock();
-  }
+  sleep(1); // gilgil temp 2014.04.04
+  tag = 20200; // gilgil temp 2014.04.04
+  VTcpSessionThreadList& threadList = tcpServer->threadList;
+  tag = 20300; // gilgil temp 2014.04.04
+  threadList.lock();
+  tag = 20400; // gilgil temp 2014.04.04
+  threadList.removeAt(threadList.indexOf(this));
+  tag = 20500; // gilgil temp 2014.04.04
+  threadList.unlock();
+  tag = 20600; // gilgil temp 2014.04.04
 }
 
 // ----------------------------------------------------------------------------
@@ -125,30 +130,18 @@ bool VTcpServer::doOpen()
 
 bool VTcpServer::doClose()
 {
+  threadTag = 1011; // gilgil temp 2014.04.04
   VLock lock(stateCloseCs); // gilgil temp 2014.03.14
-
-  if (acceptSession->handle == INVALID_SOCKET) return true;
-
-  // ------------------------------------------------------------------------
-  // closesocket
-  // ------------------------------------------------------------------------
-  int res = ::closesocket(acceptSession->handle);
-  if (res == SOCKET_ERROR)
-  {
-    SET_ERROR(VSocketError, "error in closesocket", WSAGetLastError());
-  }
+  threadTag = 1012; // gilgil temp 2014.04.04
 
   // ------------------------------------------------------------------------
-  // shutdown
+  // Close acceptSession and thread
   // ------------------------------------------------------------------------
-  res = ::shutdown(acceptSession->handle, SD_BOTH);
-  if (res == SOCKET_ERROR)
-  {
-    SET_DEBUG_ERROR(VSocketError, "error in shutdown", WSAGetLastError());
-  }
+  acceptSession->close();
+  runThread().close();
 
-  acceptSession->handle = INVALID_SOCKET;
 
+  threadTag = 1016; // gilgil temp 2014.04.04
   threadList.lock();
   // ------------------------------------------------------------------------
   // Close all connected socket
@@ -159,36 +152,57 @@ bool VTcpServer::doClose()
     // ----- by gilgil 2012.12.07 -----
     // When TcpServer is active, session thread is deleted automatically,
     // while, when TcpServer is closing state, session thread is deleted manually.
-    thread->freeOnTerminate = false; // gilgil temp 2012.12.07
+    // thread->freeOnTerminate = false; // gilgil temp 2012.12.07 // gilgil temp 2014.04.04
     // --------------------------------
     VTcpSession* tcpSession = thread->tcpSession;
     tcpSession->close();
   }
+  threadList.unlock();
+  threadTag = 1018; // gilgil temp 2014.04.04
 
   // ------------------------------------------------------------------------
   // Wait until all connection is disconnected
   // ------------------------------------------------------------------------
   VTick beg = tick();
-  for (VTcpSessionThreadList::iterator it = threadList.begin(); it != threadList.end(); it++)
+  while (true)
   {
-    VTcpSessionThread* thread = *it;
-    thread->wait();
-    delete thread;
+    msleep(1);
+    threadList.lock();
+    int count = threadList.count();
+    threadList.unlock();
+    if (count == 0) break;
     VTick now = tick();
-    if (now - beg > vd::DEFAULT_TIMEOUT)
+    if (now - beg > vd::DEFAULT_TIMEOUT * 2) // gilgil temp 2014.04.04
     {
       LOG_FATAL("timeout session count=%d", threadList.count());
       // break; // gilgil temp 2012.11.27
     }
   }
+  /*
+  threadList.lock();
+  int count = threadList.count();
+  threaddList.un
+  for (VTcpSessionThreadList::iterator it = threadList.begin(); it != threadList.end(); it++)
+  {
+    threadTag = 1020; // gilgil temp 2014.04.04
+    VTcpSessionThread* thread = *it;
+    threadTag = 1022; // gilgil temp 2014.04.04
+    thread->wait(vd::DEFAULT_TIMEOUT + 2000); // gilgil temp 2014.04.04
+    threadTag = 1023; // gilgil temp 2014.04.04
+    delete thread;
+    threadTag = 1024; // gilgil temp 2014.04.04
+    VTick now = tick();
+    if (now - beg > vd::DEFAULT_TIMEOUT * 2) // gilgil temp 2014.04.04
+    {
+      LOG_FATAL("timeout session count=%d", threadList.count());
+      // break; // gilgil temp 2012.11.27
+    }
+    threadTag = 1025; // gilgil temp 2014.04.04
+  }
   threadList.clear();
   threadList.unlock();
-
-  // ------------------------------------------------------------------------
-  // Wait and delete acceptThread
-  // ------------------------------------------------------------------------
-  runThread().close();
-  acceptSession->close();
+  threadTag = 1026; // gilgil temp 2014.04.04
+  */
 
   return true;
 }
