@@ -210,7 +210,7 @@ bool VThread::wait(VTimeout timeout)
     if (calling_id == closing_id)
     {
       LOG_WARN("*******************************************************************");
-      LOG_WARN("self wait? id=0x%08X tag=%d state=%d", calling_id, tag, (int)m_state);
+      LOG_WARN("self wait? id=0x%08X tag=%d state=%d threadTag=%d", calling_id, tag, (int)m_state, threadTag);
       LOG_WARN("*******************************************************************");
     }
   }
@@ -222,9 +222,9 @@ bool VThread::wait(VTimeout timeout)
     res = m_qthread->wait(timeout);
     if (!res)
     {
-      LOG_ERROR("*******************************************************************************");
-      SET_ERROR(VThreadError, qformat("thread(%s) timeout id=0x%08X tag=%d", qPrintable(name), id(), tag), VERR_TIMEOUT);
-      LOG_ERROR("*******************************************************************************");
+      LOG_ERROR("**********************************************************************");
+      SET_ERROR(VThreadError, qformat("thread(%s) timeout id=0x%08X tag=%d threadTag=%d", qPrintable(name), id(), tag, threadTag), VERR_TIMEOUT);
+      LOG_ERROR("**********************************************************************");
       return false;
     }
     SAFE_DELETE(m_qthread);
