@@ -77,12 +77,14 @@ VSslCommon& VSslCommon::instance()
 // ----------------------------------------------------------------------------
 VSslMethodType::VSslMethodType(const QString s)
 {
-  if (s == "mtNone")   value = mtNone;
-  if (s == "mtSSLV2")  value = mtSSLV2;
-  if (s == "mtSSLV3")  value = mtSSLV3;
-  if (s == "mtSSLV23") value = mtSSLV23;
-  if (s == "mtTLSV1")  value = mtTLSV1;
-  if (s == "mtDTLSV1") value = mtDTLSV1;
+  if (s == "mtNone")         value = mtNone;
+  else if (s == "mtSSLv2")   value = mtSSLv2;
+  else if (s == "mtSSLv3")   value = mtSSLv3;
+  else if (s == "mtSSLv23")  value = mtSSLv23;
+  else if (s == "mtTLSv1")   value = mtTLSv1;
+  else if (s == "mtTLSv1_1") value = mtTLSv1_1;
+  else if (s == "mtTLSv1_2") value = mtTLSv1_2;
+  else if (s == "mtDTLSv1")  value = mtDTLSv1;
   else value = mtNone;
 }
 
@@ -91,13 +93,15 @@ QString VSslMethodType::str() const
   QString res;
   switch (value)
   {
-    case mtNone   : res = "mtNone";   break;
-    case mtSSLV2  : res = "mtSSLV2";  break;
-    case mtSSLV3  : res = "mtSSLV3";  break;
-    case mtSSLV23 : res = "mtSSLV23"; break;
-    case mtTLSV1  : res = "mtTLSV1";  break;
-    case mtDTLSV1 : res = "mtDTLSV1"; break;
-    default       : res = "mtNone";   break;
+    case mtNone    : res = "mtNone";    break;
+    case mtSSLv2   : res = "mtSSLv2";   break;
+    case mtSSLv3   : res = "mtSSLv3";   break;
+    case mtSSLv23  : res = "mtSSLv23";  break;
+    case mtTLSv1   : res = "mtTLSv1";   break;
+    case mtTLSv1_1 : res = "mtTLSv1_1"; break;
+    case mtTLSv1_2 : res = "mtTLSv1_2"; break;
+    case mtDTLSv1  : res = "mtDTLSV1";  break;
+    default        : res = "mtNone";    break;
   }
   return res;
 }

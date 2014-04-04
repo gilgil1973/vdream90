@@ -12,7 +12,7 @@ VSslClient::VSslClient(void* owner) : VTcpClient(owner)
 
   sslSession = new VSslSession(this);
   sslSession->tcpSession = tcpSession;
-  methodType = VSslMethodType::mtTLSV1;
+  methodType = VSslMethodType::mtTLSv1;
   m_meth     = NULL;
   m_ctx      = NULL;
 }
@@ -45,16 +45,19 @@ bool VSslClient::doOpen()
   LOG_DEBUG("method=%s", qPrintable(methodType.str()));
   switch (methodType)
   {
-    case VSslMethodType::mtSSLV2  : m_meth = (SSL_METHOD*)SSLv2_client_method();  break;
-    case VSslMethodType::mtSSLV3  : m_meth = (SSL_METHOD*)SSLv3_client_method();  break;
-    case VSslMethodType::mtSSLV23 : m_meth = (SSL_METHOD*)SSLv23_client_method(); break;
-    case VSslMethodType::mtTLSV1  : m_meth = (SSL_METHOD*)TLSv1_client_method();  break;
-    case VSslMethodType::mtDTLSV1 : m_meth = (SSL_METHOD*)DTLSv1_client_method(); break;
-    case VSslMethodType::mtNone   :
-    default       :
+    case VSslMethodType::mtSSLv2   : m_meth = (SSL_METHOD*)SSLv2_client_method();   break;
+    case VSslMethodType::mtSSLv3   : m_meth = (SSL_METHOD*)SSLv3_client_method();   break;
+    case VSslMethodType::mtSSLv23  : m_meth = (SSL_METHOD*)SSLv23_client_method();  break;
+    case VSslMethodType::mtTLSv1   : m_meth = (SSL_METHOD*)TLSv1_client_method();   break;
+    case VSslMethodType::mtTLSv1_1 : m_meth = (SSL_METHOD*)TLSv1_1_client_method(); break;
+    case VSslMethodType::mtTLSv1_2 : m_meth = (SSL_METHOD*)TLSv1_2_client_method(); break;
+    case VSslMethodType::mtDTLSv1  : m_meth = (SSL_METHOD*)DTLSv1_client_method();  break;
+    case VSslMethodType::mtNone    :
+    default                        :
       SET_ERROR(VSslError, qformat("client method error(%s)", qPrintable(methodType.str())), VERR_SSL_METHOD);
       return false;
   }
+
   m_ctx = SSL_CTX_new(m_meth);
 
   //
@@ -135,7 +138,7 @@ void VSslClient::optionAddWidget(QLayout* layout)
 {
   VTcpClient::optionAddWidget(layout);
 
-  QStringList methodTypes; methodTypes << "mtNone" << "mtSSLV2" << "mtSSLV3" << "mtSSLV23" << "mtTLSV1" << "mtDTLSV1";
+  QStringList methodTypes; methodTypes << "mtNone" << "mtSSLv2" << "mtSSLv3" << "mtSSLv23" << "mtTLSv1" << "mtTLSv1_1" << "mtTLSv1_2" << "mtDTLSv1";
   VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
 }
 

@@ -56,12 +56,14 @@ class VSslMethodType
 public:
   enum _VSslMethodType
   {
-    mtNone,   // 0
-    mtSSLV2,  // 1
-    mtSSLV3,  // 2
-    mtSSLV23, // 3
-    mtTLSV1,  // 4
-    mtDTLSV1  // 5
+    mtNone,    // 0
+    mtSSLv2,   // 1
+    mtSSLv3,   // 2
+    mtSSLv23,  // 3
+    mtTLSv1,   // 4
+    mtTLSv1_1, // 5
+    mtTLSv1_2, // 6
+    mtDTLSv1   // 7
   };
 
 protected:

@@ -60,7 +60,7 @@ VSslServer::VSslServer(void* owner) : VTcpServer(owner)
 {
   VSslCommon::instance();
 
-  methodType             = VSslMethodType::mtTLSV1;
+  methodType             = VSslMethodType::mtTLSv1;
   certificatePath        = "certificate/";
   defaultKeyCrtFileName  = "default.pem";
   processConnectMessage  = false;
@@ -85,13 +85,15 @@ bool VSslServer::doOpen()
   LOG_DEBUG("method=%s", qPrintable(methodType.str()));
   switch (methodType)
   {
-    case VSslMethodType::mtSSLV2  : m_meth = (SSL_METHOD*)SSLv2_server_method();  break;
-    case VSslMethodType::mtSSLV3  : m_meth = (SSL_METHOD*)SSLv3_server_method();  break;
-    case VSslMethodType::mtSSLV23 : m_meth = (SSL_METHOD*)SSLv23_server_method(); break;
-    case VSslMethodType::mtTLSV1  : m_meth = (SSL_METHOD*)TLSv1_server_method();  break;
-    case VSslMethodType::mtDTLSV1 : m_meth = (SSL_METHOD*)DTLSv1_server_method(); break;
-    case VSslMethodType::mtNone   :
-    default       :
+    case VSslMethodType::mtSSLv2   : m_meth = (SSL_METHOD*)SSLv2_server_method();   break;
+    case VSslMethodType::mtSSLv3   : m_meth = (SSL_METHOD*)SSLv3_server_method();   break;
+    case VSslMethodType::mtSSLv23  : m_meth = (SSL_METHOD*)SSLv23_server_method();  break;
+    case VSslMethodType::mtTLSv1   : m_meth = (SSL_METHOD*)TLSv1_server_method();   break;
+    case VSslMethodType::mtTLSv1_1 : m_meth = (SSL_METHOD*)TLSv1_1_server_method(); break;
+    case VSslMethodType::mtTLSv1_2 : m_meth = (SSL_METHOD*)TLSv1_2_server_method(); break;
+    case VSslMethodType::mtDTLSv1  : m_meth = (SSL_METHOD*)DTLSv1_server_method();  break;
+    case VSslMethodType::mtNone    :
+    default                        :
       SET_ERROR(VSslError, qformat("client method error(%s)", qPrintable(methodType.str())), VERR_SSL_METHOD);
       return false;
   }
@@ -536,7 +538,7 @@ void VSslServer::optionAddWidget(QLayout* layout)
 {
   VTcpServer::optionAddWidget(layout);
 
-  QStringList methodTypes; methodTypes << "mtNone" << "mtSSLV2" << "mtSSLV3" << "mtSSLV23" << "mtTLSV1" << "mtDTLSV1";
+  QStringList methodTypes; methodTypes << "mtNone" << "mtSSLv2" << "mtSSLv3" << "mtSSLv23" << "mtTLSv1" << "mtTLSv1_1" << "mtTLSv1_2" << "mtDTLSv1";
   VOptionable::addComboBox(layout, "cbxMethodType", "Method Type", methodTypes, (int)methodType, methodType.str());
   VOptionable::addLineEdit(layout, "leCertificatePath", "Certificate Path", certificatePath);
   VOptionable::addLineEdit(layout, "leDefaultKeyCrtFileName", "Default KeyCrtFileName", defaultKeyCrtFileName);
