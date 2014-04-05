@@ -85,7 +85,7 @@ bool Widget::event(QEvent* event)
 
 void Widget::showMessage(QString msg)
 {
-  ui->pteMsg->insertPlainText(msg);
+  ui->pteMsg->insertPlainText(msg + "\r\n");
   ui->pteMsg->ensureCursorVisible();
 }
 
