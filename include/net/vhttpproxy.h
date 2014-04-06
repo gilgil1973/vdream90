@@ -130,11 +130,12 @@ public:
 public:
   bool                tcpEnabled;
   bool                sslEnabled;
+  int                 maxContentCacheSize;
+  bool                disableLoopbackConnection;
+  VTimeout            keepAliveTimeout;
   VHttpProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
-  int                 maxContentCacheSize;
-  VTimeout            keepAliveTimeout;
   VDataChange         inboundDataChange;
   VDataChange         outboundDataChange;
 
