@@ -496,7 +496,7 @@ void VHttpProxy::run(VNetSession* inSession)
 
           if (disableLoopbackConnection)
           {
-            Ip ip = host;
+            Ip ip = VNet::resolve(host);
             if (ip.isLocalHost())
             {
               LOG_DEBUG("loopback(%s) connection refused", qPrintable(ip.str()));
