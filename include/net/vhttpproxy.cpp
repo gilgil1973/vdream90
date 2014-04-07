@@ -258,6 +258,7 @@ VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
   maxContentCacheSize       = 10485756; // 1MByte
   disableLoopbackConnection = true;
   keepAliveTimeout          = 60000; // 60 sec
+  outInThreadTimeout        = 30000; // 30 sec
   tcpServer.port            = HTTP_PROXY_PORT;
   sslServer.port            = SSL_PROXY_PORT;
 
@@ -566,7 +567,11 @@ void VHttpProxy::run(VNetSession* inSession)
   // LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2014.03.14
   inSession->close();
   outClient->close();
-  if (thread != NULL) delete thread;
+  if (thread != NULL)
+  {
+    thread->close(true, outInThreadTimeout);
+    delete thread;
+  }
 
   connections.lock();
   connections.removeAt(connections.indexOf(connection));
@@ -579,11 +584,12 @@ void VHttpProxy::load(VXml xml)
 {
   VObject::load(xml);
 
-  tcpEnabled                = xml.getBool("tcpEnabled", tcpEnabled);
-  sslEnabled                = xml.getBool("sslEnabled", sslEnabled);
-  maxContentCacheSize       = xml.getInt("maxContentCacheSize", maxContentCacheSize);
-  keepAliveTimeout          = xml.getULong("keepAliveTimeout", keepAliveTimeout);
+  tcpEnabled                = xml.getBool("tcpEnabled",                tcpEnabled);
+  sslEnabled                = xml.getBool("sslEnabled",                sslEnabled);
+  maxContentCacheSize       = xml.getInt("maxContentCacheSize",        maxContentCacheSize);
   disableLoopbackConnection = xml.getBool("disableLoopbackConnection", disableLoopbackConnection);
+  keepAliveTimeout          = xml.getULong("keepAliveTimeout",         keepAliveTimeout);
+  outInThreadTimeout        = xml.getULong("outInThreadTimeout",       outInThreadTimeout);
   outPolicy.load(xml.gotoChild("outPolicy"));
   tcpServer.load(xml.gotoChild("tcpServer"));
   sslServer.load(xml.gotoChild("sslServer"));
@@ -595,11 +601,12 @@ void VHttpProxy::save(VXml xml)
 {
   VObject::save(xml);
 
-  xml.setBool("tcpEnabled", tcpEnabled);
-  xml.setBool("sslEnabled", sslEnabled);
-  xml.setInt("maxContentCacheSize", maxContentCacheSize);
+  xml.setBool("tcpEnabled",                tcpEnabled);
+  xml.setBool("sslEnabled",                sslEnabled);
+  xml.setInt("maxContentCacheSize",        maxContentCacheSize);
   xml.setBool("disableLoopbackConnection", disableLoopbackConnection);
-  xml.setULong("keepAliveTimeout", keepAliveTimeout);
+  xml.setULong("keepAliveTimeout",         keepAliveTimeout);
+  xml.setULong("outInThreadTimeout",       outInThreadTimeout);
   outPolicy.save(xml.gotoChild("outPolicy"));
   tcpServer.save(xml.gotoChild("tcpServer"));
   sslServer.save(xml.gotoChild("sslServer"));
@@ -613,7 +620,7 @@ void VHttpProxy::save(VXml xml)
 void VHttpProxy::optionAddWidget(QLayout* layout)
 {
   VHttpProxyWidget* widget = new VHttpProxyWidget(layout->parentWidget());
-  widget->setObjectName("httpProcyWidget");
+  widget->setObjectName("httpProxyWidget");
 
   VOptionable::addCheckBox(widget->ui->glTcpServer, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
   VOptionable::addCheckBox(widget->ui->glSslServer, "chkSslEnabled", "SSL Enabled", sslEnabled);
@@ -625,6 +632,7 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
   VOptionable::addLineEdit(widget->ui->glOther,     "leMaxContentCacheSize",        "Max Content Cache Size",      QString::number(maxContentCacheSize));
   VOptionable::addCheckBox(widget->ui->glOther,     "chkDisableLoopbackConnection", "Disable Loopback Connection", disableLoopbackConnection);
   VOptionable::addLineEdit(widget->ui->glOther,     "leKeepAliveTimeout",           "KeepAlive Timeout",           QString::number(keepAliveTimeout));
+  VOptionable::addLineEdit(widget->ui->glOther,     "leOutInThreadTimeout",         "OutIn Thread Timeout",        QString::number(outInThreadTimeout));
 
   inboundDataChange.optionAddWidget(widget->ui->glInbound);
   outboundDataChange.optionAddWidget(widget->ui->glOutbound);
@@ -634,7 +642,7 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
 
 void VHttpProxy::optionSaveDlg(QDialog* dialog)
 {
-  VHttpProxyWidget* widget = dialog->findChild<VHttpProxyWidget*>("httpProcyWidget");
+  VHttpProxyWidget* widget = dialog->findChild<VHttpProxyWidget*>("httpProxyWidget");
   LOG_ASSERT(widget != NULL);
 
   tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;
@@ -648,6 +656,7 @@ void VHttpProxy::optionSaveDlg(QDialog* dialog)
   maxContentCacheSize       = widget->findChild<QLineEdit*>("leMaxContentCacheSize")->text().toInt();
   disableLoopbackConnection = widget->findChild<QCheckBox*>("chkDisableLoopbackConnection")->checkState() == Qt::Checked;
   keepAliveTimeout          = widget->findChild<QLineEdit*>("leKeepAliveTimeout")->text().toInt();
+  outInThreadTimeout        = widget->findChild<QLineEdit*>("leOutInThreadTimeout")->text().toInt();
 
   inboundDataChange.optionSaveDlg((QDialog*)widget->ui->tabInbound);
   outboundDataChange.optionSaveDlg((QDialog*)widget->ui->tabOutbound);

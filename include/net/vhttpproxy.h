@@ -133,6 +133,7 @@ public:
   int                 maxContentCacheSize;
   bool                disableLoopbackConnection;
   VTimeout            keepAliveTimeout;
+  VTimeout            outInThreadTimeout;
   VHttpProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
