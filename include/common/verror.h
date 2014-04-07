@@ -86,6 +86,7 @@ static const int VERR_VIRTUAL_FUNCTION_CALL = VERR_CATEGORY_COMMON + 19;
 static const int VERR_QCONNECT_FAIL         = VERR_CATEGORY_COMMON + 20;
 static const int VERR_RUN_PROCESS           = VERR_CATEGORY_COMMON + 21;
 static const int VERR_LOAD_FAIL             = VERR_CATEGORY_COMMON + 22;
+static const int VERR_CAN_NOT_FIND_OBJECT   = VERR_CATEGORY_COMMON + 23;
 
 // ----------------------------------------------------------------------------
 // VError
