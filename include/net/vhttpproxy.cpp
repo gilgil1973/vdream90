@@ -262,6 +262,16 @@ VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
   tcpServer.port            = HTTP_PROXY_PORT;
   sslServer.port            = SSL_PROXY_PORT;
 
+  VDataChangeItem changeItem;
+  changeItem.pattern = "Accept-Encoding: gzip,";
+  changeItem.syntax  = QRegExp::FixedString;
+  changeItem.cs      = Qt::CaseSensitive;
+  changeItem.minimal = false;
+  changeItem.enabled = true;
+  changeItem.log     = false;
+  changeItem.replace = "Accept-Encoding:      ";
+  outboundDataChange.push_back(changeItem);
+
   keepAliveThread     = NULL;
 
   VObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(tcpRun(VTcpSession*)), Qt::DirectConnection);
@@ -593,8 +603,8 @@ void VHttpProxy::load(VXml xml)
   outPolicy.load(xml.gotoChild("outPolicy"));
   tcpServer.load(xml.gotoChild("tcpServer"));
   sslServer.load(xml.gotoChild("sslServer"));
-  inboundDataChange.load(xml.gotoChild("inboundDataChange"));
-  outboundDataChange.load(xml.gotoChild("outboundDataChange"));
+  if (!(xml.findChild("inboundDataChange").isNull()))  inboundDataChange.load(xml.gotoChild("inboundDataChange"));
+  if (!(xml.findChild("outboundDataChange").isNull())) outboundDataChange.load(xml.gotoChild("outboundDataChange"));
 }
 
 void VHttpProxy::save(VXml xml)
