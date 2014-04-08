@@ -16,7 +16,7 @@ void VHttpRequestLine::clear()
   version = "";
 }
 
-bool VHttpRequestLine::parse(QByteArray data)
+bool VHttpRequestLine::parse(QByteArray& data)
 {
   QList<QByteArray> bal = data.split(' ');
   if (bal.size() != 3)

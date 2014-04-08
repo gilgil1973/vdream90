@@ -16,7 +16,7 @@ void VHttpStatusLine::clear()
   text    = "";
 }
 
-bool VHttpStatusLine::parse(QByteArray data)
+bool VHttpStatusLine::parse(QByteArray& data)
 {
   QList<QByteArray> bal = data.split(' ');
   if (bal.size() < 3)

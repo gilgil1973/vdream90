@@ -39,7 +39,7 @@ void VHttpHeader::clear()
   items.clear();
 }
 
-bool VHttpHeader::parse(QByteArray data)
+bool VHttpHeader::parse(QByteArray& data)
 {
   clear();
   while (true)
