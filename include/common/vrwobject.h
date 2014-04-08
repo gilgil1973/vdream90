@@ -31,7 +31,7 @@ public:
   int        write(const char* buf);
   int        write(const char* buf, int size);
   int        write(QString& s);
-  int        write(QByteArray ba);
+  int        write(QByteArray& ba);
 
 protected:
   virtual int doRead(char* buf,  int size) = 0;

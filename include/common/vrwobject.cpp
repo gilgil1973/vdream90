@@ -74,7 +74,7 @@ int VRwObject::write(QString& s)
   return write(qPrintable(s), s.size());
 }
 
-int VRwObject::write(QByteArray ba)
+int VRwObject::write(QByteArray& ba)
 {
   return write(ba.data(), ba.size());
 }
