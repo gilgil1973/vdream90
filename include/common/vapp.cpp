@@ -57,7 +57,10 @@ QString VApp::filePath()
 
 QString VApp::currentPath()
 {
-  return (QString)QDir::currentPath();
+  QString res = QDir::currentPath();
+  if (!res.endsWith('/') && !res.endsWith('\\'))
+    res += QDir::separator();
+  return res;
 }
 
 bool VApp::setCurrentPath(QString path)
