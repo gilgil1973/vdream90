@@ -123,20 +123,6 @@ void VHttpProxyOutInThread::run()
   VNetClient* outClient  = connection->outClient;
   VNetSession* inSession = connection->inSession;
 
-  VNetSession* outSession;
-  {
-   VTcpClient* tcpClient = dynamic_cast<VTcpClient*>(outClient);
-   if (tcpClient != NULL) outSession = tcpClient->tcpSession;
-
-   VSslClient* sslClient = dynamic_cast<VSslClient*>(outClient);
-   if (sslClient != NULL) outSession = sslClient->tcpSession;
-
-   if (outSession == NULL)
-   {
-     LOG_FATAL("outSession is NULL");
-     return;
-   }
-  }
   // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
   tag = 2010; // gilgil temp 2014.04.04
 
@@ -364,7 +350,7 @@ bool VHttpProxy::determineHostAndPort(VHttpRequest& request, int defaultPort, QS
 bool VHttpProxy::flushHttpRequestHeaderAndBody(VHttpRequest& request, QByteArray& body, VNetSession* inSession, VNetClient* outClient)
 {
   // ----- by gilgil 2014.04.08 -----
-  // headerData should be changed before connecto to server
+  // Header should be changed before connecto to server
   /*
   QByteArray headerData = request.toByteArray();
   outboundDataChange.change(headerData);
@@ -418,6 +404,20 @@ bool VHttpProxy::flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteAr
   body = "";
 
   return true;
+}
+
+bool VHttpProxy::flushHttpResponseHeaderAndBody(VHttpResponse& response, VHttpBody&  body, VNetClient*  outClient, VNetSession* inSession)
+{
+  for (VHttpBody::Items::iterator it = body.items.begin(); it != body.items.end(); it++)
+  {
+    VHttpBody::Item& item = *it;
+    if (inboundDataChange.change(item.second))
+    {
+      item.first = item.second.length();
+    }
+  }
+  QString _body = body.toByteArray();
+  return (response, _body, outClient, inSession);
 }
 
 void VHttpProxy::run(VNetSession* inSession)
@@ -500,7 +500,7 @@ void VHttpProxy::run(VNetSession* inSession)
       if (request.parse(buffer, &body)) // header parsing completed
       {
         // ----- by gilgil 2014.04.08 -----
-        // headerData should be changed before connecto to server
+        // Header should be changed before connecto to server
         QByteArray headerData = request.toByteArray();
         outboundDataChange.change(headerData);
         emit onHttpRequestHeader(&request, inSession, outClient);

@@ -19,6 +19,7 @@
 #include <VTick>
 #include <VHttpRequest>
 #include <VHttpResponse>
+#include <VHttpBody>
 #include <VDataChange>
 
 // ----------------------------------------------------------------------------
@@ -170,8 +171,9 @@ public slots:
 
 protected:
   bool determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port);
-  bool flushHttpRequestHeaderAndBody (VHttpRequest&  request, QByteArray& body, VNetSession* inSession, VNetClient* outClient);
+  bool flushHttpRequestHeaderAndBody (VHttpRequest&  request,  QByteArray& body, VNetSession* inSession, VNetClient* outClient);
   bool flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteArray& body, VNetClient*  outClient, VNetSession* inSession);
+  bool flushHttpResponseHeaderAndBody(VHttpResponse& response, VHttpBody&  body, VNetClient*  outClient, VNetSession* inSession);
   void run(VNetSession* inSession);
 
 signals:
