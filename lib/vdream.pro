@@ -64,16 +64,17 @@ SOURCES += \
     ../include/net/vudpclient.cpp \
     ../include/net/vudpserver.cpp \
     ../include/net/vudpsession.cpp \
-    ../include/other/vdatachange.cpp \
-    ../include/other/vdatafind.cpp \
-    ../include/other/vint.cpp \
-    ../include/other/vlistwidget.cpp \
-    ../include/other/vmyobject.cpp \
     ../include/net/http/vhttpheader.cpp \
     ../include/net/http/vhttpproxy.cpp \
     ../include/net/http/vhttpproxywidget.cpp \
     ../include/net/http/vhttprequest.cpp \
-    ../include/net/http/vhttpresponse.cpp
+    ../include/net/http/vhttpresponse.cpp \
+    ../include/net/http/vhttpbody.cpp \	
+    ../include/other/vdatachange.cpp \
+    ../include/other/vdatafind.cpp \
+    ../include/other/vint.cpp \
+    ../include/other/vlistwidget.cpp \
+    ../include/other/vmyobject.cpp
 
 HEADERS += \
     ../include/common/vapp.h \
@@ -130,18 +131,20 @@ HEADERS += \
     ../include/net/vudpclient.h \
     ../include/net/vudpserver.h \
     ../include/net/vudpsession.h \
-    ../include/other/vdatachange.h \
-    ../include/other/vdatafind.h \
-    ../include/other/vint.h \
-    ../include/other/vlistwidget.h \
-    ../include/other/vmyobject.h \
     ../include/net/http/vhttpcommon.h \
     ../include/net/http/vhttpheader.h \
     ../include/net/http/vhttpproxy.h \
     ../include/net/http/vhttpproxywidget.h \
     ../include/net/http/vhttprequest.h \
-    ../include/net/http/vhttpresponse.h
+    ../include/net/http/vhttpresponse.h \
+    ../include/net/http/vhttpbody.h	 \
+    ../include/other/vdatachange.h \
+    ../include/other/vdatafind.h \
+    ../include/other/vint.h \
+    ../include/other/vlistwidget.h \
+    ../include/other/vmyobject.h
+
 
 FORMS += \
-    ../include/net/vhttpproxywidget.ui \
+    ../include/net/http/vhttpproxywidget.ui \
     ../include/other/vlistwidget.ui
