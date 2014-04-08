@@ -357,10 +357,15 @@ bool VHttpProxy::determineHostAndPort(VHttpRequest& request, int defaultPort, QS
 
 bool VHttpProxy::flushHttpRequestHeaderAndBody(VHttpRequest& request, QByteArray& body, VNetSession* inSession, VNetClient* outClient)
 {
+  // ----- by gilgil 2014.04.08 -----
+  // headerData should be changed before connecto to server
+  /*
   QByteArray headerData = request.toByteArray();
   outboundDataChange.change(headerData);
   emit onHttpRequestHeader(&request, inSession, outClient);
   request.parse(headerData, NULL);
+  */
+  // --------------------------------
 
   int oldBodyLen = body.length();
   outboundDataChange.change(body);
@@ -479,6 +484,14 @@ void VHttpProxy::run(VNetSession* inSession)
       QByteArray body;
       if (request.parse(buffer, &body)) // header parsing completed
       {
+        // ----- by gilgil 2014.04.08 -----
+        // headerData should be changed before connecto to server
+        QByteArray headerData = request.toByteArray();
+        outboundDataChange.change(headerData);
+        emit onHttpRequestHeader(&request, inSession, outClient);
+        request.parse(headerData, NULL);
+        // --------------------------------
+
         QString host;
         int port;
         if (!determineHostAndPort(request, defaultPort, host, port))
