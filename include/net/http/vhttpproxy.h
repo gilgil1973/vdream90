@@ -55,14 +55,15 @@ public: // for VOptionable
 };
 
 // ----------------------------------------------------------------------------
-// VHttpProxyRecvStatus
+// VHttpProxySessionStatus
 // ----------------------------------------------------------------------------
 typedef enum
 {
   HeaderCaching,
-  BodyCaching,
-  BodyStreaming
-} VHttpProxyRecvStatus;
+  ContentCaching,
+  Chunking,
+  Streaming
+} VHttpProxySessionStatus;
 
 // ----------------------------------------------------------------------------
 // VHttpProxyConnection
@@ -171,9 +172,13 @@ public slots:
 
 protected:
   bool determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port);
-  bool flushHttpRequestHeaderAndBody (VHttpRequest&  request,  QByteArray& body, VNetSession* inSession, VNetClient* outClient);
+
+  bool flushHttpRequestHeaderAndBody (VHttpRequest&  request,  QByteArray& body, VNetSession* inSession, VNetClient*  outClient);
   bool flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteArray& body, VNetClient*  outClient, VNetSession* inSession);
-  bool flushHttpResponseHeaderAndBody(VHttpResponse& response, VHttpBody&  body, VNetClient*  outClient, VNetSession* inSession);
+
+  bool flushHttpRequestBody (VHttpRequest&  request,  VHttpBody& httpBody, VNetSession* inSession, VNetClient*  outClient);
+  bool flushHttpResponseBody(VHttpResponse& response, VHttpBody& httpBody, VNetClient*  outClient, VNetSession* inSession);
+
   void run(VNetSession* inSession);
 
 signals:

@@ -126,109 +126,155 @@ void VHttpProxyOutInThread::run()
   // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
   tag = 2010; // gilgil temp 2014.04.04
 
-  QByteArray             buffer;
-  VHttpProxyRecvStatus   status = HeaderCaching;
-  VHttpResponse          response;
-  int                    contentLength   = 0;
+  QByteArray              buffer;
+  VHttpProxySessionStatus status = HeaderCaching;
+  VHttpResponse           response;
+  int                     contentLength   = 0;
 
   while (true)
   {
-   tag = 2020; // gilgil temp 2014.04.04
-   //
-   // read oneBuffer from inSession
-   //
-   QByteArray oneBuffer;
-   int readLen = outClient->read(oneBuffer);
-   tag = 2030; // gilgil temp 2014.04.04
-   if (readLen == VERR_FAIL)
-   {
-     if (buffer.length() > 0)
-     {
-       inSession->write(buffer);
-       buffer = "";
-     }
-     break;
-   }
-   connection->lastAccessTick = tick();
+    tag = 2020; // gilgil temp 2014.04.04
+    //
+    // read oneBuffer from inSession
+    //
+    QByteArray oneBuffer;
+    int readLen = outClient->read(oneBuffer);
+    tag = 2030; // gilgil temp 2014.04.04
+    if (readLen == VERR_FAIL)
+    {
+      switch (status)
+      {
+        case HeaderCaching:
+        case ContentCaching:
+          httpProxy->flushHttpResponseHeaderAndBody(response, buffer, outClient, inSession);
+          break;
+        case Chunking:
+        {
+          VHttpBody httpBody;
+          if (httpBody.parse(buffer))
+          {
+            httpProxy->flushHttpResponseBody(response, httpBody, outClient, inSession);
+          }
+          break;
+        }
+        case Streaming:
+          if (buffer != "")
+          {
+            emit httpProxy->onHttpResponseBody(&response, &buffer, outClient, inSession);
+            inSession->write(buffer);
+          }
+          break;
+        }
+        break;
+    }
+    connection->lastAccessTick = tick();
 
-   buffer += oneBuffer;
+    buffer += oneBuffer;
 
-   tag = 2040; // gilgil temp 2014.04.04
-   //
-   // HeaderCaching
-   //
-   if (status == HeaderCaching)
-   {
-     QByteArray body;
-     if (response.parse(buffer, &body)) // header parsing completed
-     {
-       buffer        = body;
-       contentLength = response.header.value("Content-Length").toInt();
-       if (contentLength > 0)
-       {
-         status = BodyCaching;
-       } else
-       {
-         QByteArray headerData = response.toByteArray();
-         httpProxy->inboundDataChange.change(headerData);
-         response.parse(headerData, NULL);
-         emit httpProxy->onHttpResponseHeader(&response, outClient, inSession);
-         if (inSession->write(response.toByteArray()) == VERR_FAIL) break;
-         status = BodyStreaming;
-       }
-     }
-   }
-   tag = 2050; // gilgil temp 2014.04.04
+    tag = 2040; // gilgil temp 2014.04.04
+    //
+    // HeaderCaching
+    //
+    if (status == HeaderCaching)
+    {
+      QByteArray body;
+      if (response.parse(buffer, &body)) // header parsing completed
+      {
+        buffer        = body;
+        contentLength = response.header.value("Content-Length").toInt();
+        if (contentLength > 0)
+        {
+          status = ContentCaching;
+        } else
+        if (response.header.value("Transfer-Encoding").toLower() == "chunked")
+        {
+          VHttpBody  httpBody;
+          QByteArray body;
+          if (httpBody.parse(buffer))
+          {
+            body = httpBody.toByteArray();
+          }
+          httpProxy->flushHttpResponseHeaderAndBody(response, body, outClient, inSession);
+          if (buffer == "\r\n") // end of chunking
+            status = HeaderCaching;
+          else
+            status = Chunking;
+        } else
+        {
+          QByteArray headerData = response.toByteArray();
+          httpProxy->inboundDataChange.change(headerData);
+          response.parse(headerData, NULL);
+          emit httpProxy->onHttpResponseHeader(&response, outClient, inSession);
+          if (inSession->write(response.toByteArray()) == VERR_FAIL) break;
+          status = Streaming;
+        }
+      }
+    }
+    tag = 2050; // gilgil temp 2014.04.04
 
-   //
-   // BodyCaching
-   //
-   if (status == BodyCaching)
-   {
-     tag = 2051; // gilgil temp 2014.04.04
-     int length = buffer.length();
-     // LOG_DEBUG("length=%d contentLength=%d", length, contentLength); // gilgil temp 2014.04.02
-     if (length != 0)
-     {
-       tag = 2052; // gilgil temp 2014.04.04
-       if (length == contentLength) // body completed
-       {
-         tag = 2053; // gilgil temp 2014.04.04
-         if (!httpProxy->flushHttpResponseHeaderAndBody(response, buffer, outClient, inSession)) break;
-         tag = 2054; // gilgil temp 2014.04.04
-         status = HeaderCaching;
-       } else
-       if (length > contentLength)
-       {
-         tag = 2055; // gilgil temp 2014.04.04
-         LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
-         status = BodyStreaming;
-       }
-       tag = 2056; // gilgil temp 2014.04.04
-     }
-   }
-   tag = 2060; // gilgil temp 2014.04.04
+    //
+    // ContentCaching
+    //
+    if (status == ContentCaching)
+    {
+      tag = 2051; // gilgil temp 2014.04.04
+      int length = buffer.length();
+      // LOG_DEBUG("length=%d contentLength=%d", length, contentLength); // gilgil temp 2014.04.02
+      if (length != 0)
+      {
+        tag = 2052; // gilgil temp 2014.04.04
+        if (length == contentLength) // body completed
+        {
+          tag = 2053; // gilgil temp 2014.04.04
+          if (!httpProxy->flushHttpResponseHeaderAndBody(response, buffer, outClient, inSession)) break;
+          tag = 2054; // gilgil temp 2014.04.04
+          status = HeaderCaching;
+        } else
+        if (length > contentLength)
+        {
+          tag = 2055; // gilgil temp 2014.04.04
+          LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
+          status = Streaming;
+        }
+        tag = 2056; // gilgil temp 2014.04.04
+      }
+    }
+    tag = 2060; // gilgil temp 2014.04.04
 
-   //
-   // BodyStreaming
-   //
-   if (status == BodyStreaming)
-   {
-     tag = 2062; // gilgil temp 2014.04.04
-     if (buffer != "")
-     {
-       tag = 2064; // gilgil temp 2014.04.04
-       httpProxy->inboundDataChange.change(buffer);
-       tag = 2066; // gilgil temp 2014.04.04
-       emit httpProxy->onHttpResponseBody(&response, &buffer, outClient, inSession);
-       tag = 2068; // gilgil temp 2014.04.04
-       if (inSession->write(buffer) == VERR_FAIL) break;
-       tag = 2070; // gilgil temp 2014.04.04
-       buffer = "";
-       tag = 2072; // gilgil temp 2014.04.04
-     }
-   }
-   tag = 2079; // gilgil temp 2014.04.04
+    //
+    // Chunking
+    //
+    if (status == Chunking)
+    {
+      VHttpBody httpBody;
+      if (httpBody.parse(buffer))
+      {
+        httpProxy->flushHttpResponseBody(response, httpBody, outClient, inSession);
+        if (buffer == "\r\n") // end of chunking
+          status = HeaderCaching;
+      }
+    }
+
+    //
+    // Streaming
+    //
+    if (status == Streaming)
+    {
+      tag = 2062; // gilgil temp 2014.04.04
+      if (buffer != "")
+      {
+        tag = 2064; // gilgil temp 2014.04.04
+        httpProxy->inboundDataChange.change(buffer);
+        tag = 2066; // gilgil temp 2014.04.04
+        emit httpProxy->onHttpResponseBody(&response, &buffer, outClient, inSession);
+        tag = 2068; // gilgil temp 2014.04.04
+        if (inSession->write(buffer) == VERR_FAIL) break;
+        tag = 2070; // gilgil temp 2014.04.04
+        buffer = "";
+        tag = 2072; // gilgil temp 2014.04.04
+      }
+    }
+    tag = 2079; // gilgil temp 2014.04.04
   }
 
   // sleep(5); // gilgil temp 2014.04.02
@@ -406,18 +452,42 @@ bool VHttpProxy::flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteAr
   return true;
 }
 
-bool VHttpProxy::flushHttpResponseHeaderAndBody(VHttpResponse& response, VHttpBody&  body, VNetClient*  outClient, VNetSession* inSession)
+bool VHttpProxy::flushHttpRequestBody(VHttpRequest& request, VHttpBody& httpBody, VNetSession* inSession, VNetClient* outClient)
 {
-  for (VHttpBody::Items::iterator it = body.items.begin(); it != body.items.end(); it++)
+  QByteArray buffer;
+  for (VHttpBody::Items::iterator it = httpBody.items.begin(); it != httpBody.items.end(); it++)
+  {
+    VHttpBody::Item& item = *it;
+    if (outboundDataChange.change(item.second))
+    {
+      item.first = item.second.length();
+    }
+    buffer += httpBody.toByteArray();
+  }
+
+  emit onHttpRequestBody(&request, &buffer, inSession, outClient);
+  if (outClient->write(buffer) == VERR_FAIL) return false;
+
+  return true;
+}
+
+bool VHttpProxy::flushHttpResponseBody(VHttpResponse& response, VHttpBody& httpBody, VNetClient*  outClient, VNetSession* inSession)
+{
+  QByteArray buffer;
+  for (VHttpBody::Items::iterator it = httpBody.items.begin(); it != httpBody.items.end(); it++)
   {
     VHttpBody::Item& item = *it;
     if (inboundDataChange.change(item.second))
     {
       item.first = item.second.length();
     }
+    buffer += httpBody.toByteArray();
   }
-  QString _body = body.toByteArray();
-  return (response, _body, outClient, inSession);
+
+  emit onHttpResponseBody(&response, &buffer, outClient, inSession);
+  if (inSession->write(buffer) == VERR_FAIL) return false;
+
+  return true;
 }
 
 void VHttpProxy::run(VNetSession* inSession)
@@ -465,11 +535,11 @@ void VHttpProxy::run(VNetSession* inSession)
   connections.push_back(&connection);
   connections.unlock();
 
-  QByteArray           buffer;
-  VHttpProxyRecvStatus status        = HeaderCaching;
-  VHttpRequest         request;
-  int                  contentLength = 0;
-  VHttpProxyOutInThread* thread      = NULL;
+  QByteArray              buffer;
+  VHttpProxySessionStatus status        = HeaderCaching;
+  VHttpRequest            request;
+  int                     contentLength = 0;
+  VHttpProxyOutInThread* thread         = NULL;
 
   while (true)
   {
@@ -544,19 +614,19 @@ void VHttpProxy::run(VNetSession* inSession)
         contentLength = request.header.value("Content-Length").toInt();
         if (contentLength > 0)
         {
-          status = BodyCaching;
+          status = ContentCaching;
         } else
         {
           outClient->write(request.toByteArray());
-          status = HeaderCaching;
+          status = Streaming;
         }
       }
     }
 
     //
-    // BodyCaching
+    // ContentCaching
     //
-    if (status == BodyCaching)
+    if (status == ContentCaching)
     {
       int length = buffer.length();
       if (length != 0)
@@ -569,15 +639,15 @@ void VHttpProxy::run(VNetSession* inSession)
         if (length > contentLength)
         {
           LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
-          status = BodyStreaming;
+          status = Streaming;
         }
       }
     }
 
     //
-    // BodyStreaming
+    // Streaming
     //
-    if (status == BodyStreaming)
+    if (status == Streaming)
     {
       if (buffer != "")
       {
