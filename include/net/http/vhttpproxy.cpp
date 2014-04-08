@@ -54,12 +54,16 @@ VHttpProxyConnection::VHttpProxyConnection(VNetSession* inSession, VNetClient* o
   this->lastAccessTick = tick();
 }
 
+// ----- gilgil temp 2014.04.08 -----
+/*
 bool VHttpProxyConnection::operator==(const VHttpProxyConnection& rhs)
 {
   if (this->inSession != rhs.inSession) return false;
   if (this->outClient != rhs.outClient) return false;
   return true;
 }
+*/
+// ----------------------------------
 
 // ----------------------------------------------------------------------------
 // VHttpProxyKeepAliveThread
@@ -88,11 +92,11 @@ void VHttpProxyKeepAliveThread::run()
     httpProxy->connections.lock();
     for (VHttpProxyConnections::iterator it = httpProxy->connections.begin(); it != httpProxy->connections.end(); it++)
     {
-      VHttpProxyConnection& connection = *it;
-      if (connection.lastAccessTick + httpProxy->keepAliveTimeout < nowTick)
+      VHttpProxyConnection* connection = *it;
+      if (connection->lastAccessTick + httpProxy->keepAliveTimeout < nowTick)
       {
-        connection.inSession->close();
-        connection.outClient->close();
+        connection->inSession->close();
+        connection->outClient->close();
       }
     }
     httpProxy->connections.unlock();
@@ -102,151 +106,153 @@ void VHttpProxyKeepAliveThread::run()
 // ----------------------------------------------------------------------------
 // VHttpProxyOutInThread
 // ----------------------------------------------------------------------------
-class VHttpProxyOutInThread : public VThread
+VHttpProxyOutInThread::VHttpProxyOutInThread(VHttpProxyConnection* connection, void* owner) : VThread(owner)
 {
-protected:
-  VHttpProxy*  httpProxy;
-  VNetClient*  outClient;
-  VNetSession* inSession;
+  this->httpProxy  = (VHttpProxy*)owner;
+  this->connection = connection;
+}
 
-public:
-  VHttpProxyOutInThread(VNetClient* outClient, VNetSession* inSession, void* owner) : VThread(owner)
+VHttpProxyOutInThread::~VHttpProxyOutInThread()
+{
+  close();
+}
+
+void VHttpProxyOutInThread::run()
+{
+  tag = 2000; // gilgil temp 2014.04.04
+  VNetClient* outClient  = connection->outClient;
+  VNetSession* inSession = connection->inSession;
+
+  VNetSession* outSession;
   {
-    this->httpProxy = (VHttpProxy*)owner;
-    this->outClient = outClient;
-    this->inSession = inSession;
+   VTcpClient* tcpClient = dynamic_cast<VTcpClient*>(outClient);
+   if (tcpClient != NULL) outSession = tcpClient->tcpSession;
+
+   VSslClient* sslClient = dynamic_cast<VSslClient*>(outClient);
+   if (sslClient != NULL) outSession = sslClient->tcpSession;
+
+   if (outSession == NULL)
+   {
+     LOG_FATAL("outSession is NULL");
+     return;
+   }
   }
-  virtual ~VHttpProxyOutInThread()
+  // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
+  tag = 2010; // gilgil temp 2014.04.04
+
+  QByteArray             buffer;
+  VHttpProxyRecvStatus   status = HeaderCaching;
+  VHttpResponse          response;
+  int                    contentLength   = 0;
+
+  while (true)
   {
-    close();
+   tag = 2020; // gilgil temp 2014.04.04
+   //
+   // read oneBuffer from inSession
+   //
+   QByteArray oneBuffer;
+   int readLen = outClient->read(oneBuffer);
+   tag = 2030; // gilgil temp 2014.04.04
+   if (readLen == VERR_FAIL)
+   {
+     if (buffer.length() > 0)
+     {
+       inSession->write(buffer);
+       buffer = "";
+     }
+     break;
+   }
+   connection->lastAccessTick = tick();
+
+   buffer += oneBuffer;
+
+   tag = 2040; // gilgil temp 2014.04.04
+   //
+   // HeaderCaching
+   //
+   if (status == HeaderCaching)
+   {
+     QByteArray body;
+     if (response.parse(buffer, &body)) // header parsing completed
+     {
+       buffer        = body;
+       contentLength = response.header.value("Content-Length").toInt();
+       if (contentLength > 0)
+       {
+         status = BodyCaching;
+       } else
+       {
+         QByteArray headerData = response.toByteArray();
+         httpProxy->inboundDataChange.change(headerData);
+         response.parse(headerData, NULL);
+         emit httpProxy->onHttpResponseHeader(&response, outClient, inSession);
+         if (inSession->write(response.toByteArray()) == VERR_FAIL) break;
+         status = BodyStreaming;
+       }
+     }
+   }
+   tag = 2050; // gilgil temp 2014.04.04
+
+   //
+   // BodyCaching
+   //
+   if (status == BodyCaching)
+   {
+     tag = 2051; // gilgil temp 2014.04.04
+     int length = buffer.length();
+     // LOG_DEBUG("length=%d contentLength=%d", length, contentLength); // gilgil temp 2014.04.02
+     if (length != 0)
+     {
+       tag = 2052; // gilgil temp 2014.04.04
+       if (length == contentLength) // body completed
+       {
+         tag = 2053; // gilgil temp 2014.04.04
+         if (!httpProxy->flushHttpResponseHeaderAndBody(response, buffer, outClient, inSession)) break;
+         tag = 2054; // gilgil temp 2014.04.04
+         status = HeaderCaching;
+       } else
+       if (length > contentLength)
+       {
+         tag = 2055; // gilgil temp 2014.04.04
+         LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
+         status = BodyStreaming;
+       }
+       tag = 2056; // gilgil temp 2014.04.04
+     }
+   }
+   tag = 2060; // gilgil temp 2014.04.04
+
+   //
+   // BodyStreaming
+   //
+   if (status == BodyStreaming)
+   {
+     tag = 2062; // gilgil temp 2014.04.04
+     if (buffer != "")
+     {
+       tag = 2064; // gilgil temp 2014.04.04
+       httpProxy->inboundDataChange.change(buffer);
+       tag = 2066; // gilgil temp 2014.04.04
+       emit httpProxy->onHttpResponseBody(&response, &buffer, outClient, inSession);
+       tag = 2068; // gilgil temp 2014.04.04
+       if (inSession->write(buffer) == VERR_FAIL) break;
+       tag = 2070; // gilgil temp 2014.04.04
+       buffer = "";
+       tag = 2072; // gilgil temp 2014.04.04
+     }
+   }
+   tag = 2079; // gilgil temp 2014.04.04
   }
 
-protected:
-  virtual void run()
-  {
-    tag = 2000; // gilgil temp 2014.04.04
-    VNetSession* outSession;
-    {
-      VTcpClient* tcpClient = dynamic_cast<VTcpClient*>(outClient);
-      if (tcpClient != NULL) outSession = tcpClient->tcpSession;
-
-      VSslClient* sslClient = dynamic_cast<VSslClient*>(outClient);
-      if (sslClient != NULL) outSession = sslClient->tcpSession;
-
-      if (outSession == NULL)
-      {
-        LOG_FATAL("outSession is NULL");
-        return;
-      }
-    }
-    // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
-    tag = 2010; // gilgil temp 2014.04.04
-
-    QByteArray             buffer;
-    VHttpProxyRecvStatus   status = HeaderCaching;
-    VHttpResponse          response;
-    int                    contentLength   = 0;
-
-    while (true)
-    {
-      tag = 2020; // gilgil temp 2014.04.04
-      //
-      // read oneBuffer from inSession
-      //
-      QByteArray oneBuffer;
-      int readLen = outClient->read(oneBuffer);
-      tag = 2030; // gilgil temp 2014.04.04
-      if (readLen == VERR_FAIL) break;
-
-      buffer += oneBuffer;
-
-      tag = 2040; // gilgil temp 2014.04.04
-      //
-      // HeaderCaching
-      //
-      if (status == HeaderCaching)
-      {
-        QByteArray body;
-        if (response.parse(buffer, &body)) // header parsing completed
-        {
-          buffer        = body;
-          contentLength = response.header.value("Content-Length").toInt();
-          if (contentLength > 0)
-          {
-            status = BodyCaching;
-          } else
-          {
-            QByteArray headerData = response.toByteArray();
-            httpProxy->inboundDataChange.change(headerData);
-            response.parse(headerData, NULL);
-            emit httpProxy->onHttpResponseHeader(&response, outClient, inSession);
-            if (inSession->write(response.toByteArray()) == VERR_FAIL) break;
-            status = BodyStreaming;
-          }
-        }
-      }
-      tag = 2050; // gilgil temp 2014.04.04
-
-      //
-      // BodyCaching
-      //
-      if (status == BodyCaching)
-      {
-        tag = 2051; // gilgil temp 2014.04.04
-        int length = buffer.length();
-        // LOG_DEBUG("length=%d contentLength=%d", length, contentLength); // gilgil temp 2014.04.02
-        if (length != 0)
-        {
-          tag = 2052; // gilgil temp 2014.04.04
-          if (length == contentLength) // body completed
-          {
-            tag = 2053; // gilgil temp 2014.04.04
-            if (!httpProxy->flushHttpResponseHeaderAndBody(response, buffer, outClient, inSession)) break;
-            tag = 2054; // gilgil temp 2014.04.04
-            status = HeaderCaching;
-          } else
-          if (length > contentLength)
-          {
-            tag = 2055; // gilgil temp 2014.04.04
-            LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
-            status = BodyStreaming;
-          }
-          tag = 2056; // gilgil temp 2014.04.04
-        }
-      }
-      tag = 2060; // gilgil temp 2014.04.04
-
-      //
-      // BodyStreaming
-      //
-      if (status == BodyStreaming)
-      {
-        tag = 2062; // gilgil temp 2014.04.04
-        if (buffer != "")
-        {
-          tag = 2064; // gilgil temp 2014.04.04
-          httpProxy->inboundDataChange.change(buffer);
-          tag = 2066; // gilgil temp 2014.04.04
-          emit httpProxy->onHttpResponseBody(&response, &buffer, outClient, inSession);
-          tag = 2068; // gilgil temp 2014.04.04
-          if (inSession->write(buffer) == VERR_FAIL) break;
-          tag = 2070; // gilgil temp 2014.04.04
-          buffer = "";
-          tag = 2072; // gilgil temp 2014.04.04
-        }
-      }
-      tag = 2079; // gilgil temp 2014.04.04
-    }
-
-    // sleep(5); // gilgil temp 2014.04.02
-    tag = 2080; // gilgil temp 2014.04.04
-    outClient->close();
-    tag = 2090; // gilgil temp 2014.04.04
-    inSession->close();
-    tag = 2010; // gilgil temp 2014.04.04
-    // LOG_DEBUG("end"); // gilgil temp 2014.03.14
-  }
-};
+  // sleep(5); // gilgil temp 2014.04.02
+  tag = 2080; // gilgil temp 2014.04.04
+  outClient->close();
+  tag = 2090; // gilgil temp 2014.04.04
+  inSession->close();
+  tag = 2010; // gilgil temp 2014.04.04
+  // LOG_DEBUG("end"); // gilgil temp 2014.03.14
+}
 
 // ----------------------------------------------------------------------------
 // VHttpProxy
@@ -307,9 +313,9 @@ bool VHttpProxy::doClose()
   connections.lock();
   for (VHttpProxyConnections::iterator it = connections.begin(); it != connections.end(); it++)
   {
-    VHttpProxyConnection& connection = *it;
-    connection.inSession->close();
-    connection.outClient->close();
+    VHttpProxyConnection* connection = *it;
+    connection->inSession->close();
+    connection->outClient->close();
   }
   connections.unlock();
 
@@ -456,7 +462,7 @@ void VHttpProxy::run(VNetSession* inSession)
   }
   connections.lock();
   VHttpProxyConnection connection(inSession, outClient);
-  connections.push_back(connection);
+  connections.push_back(&connection);
   connections.unlock();
 
   QByteArray           buffer;
@@ -472,7 +478,16 @@ void VHttpProxy::run(VNetSession* inSession)
     //
     QByteArray oneBuffer;
     int readLen = inSession->read(oneBuffer);
-    if (readLen == VERR_FAIL) break;
+    if (readLen == VERR_FAIL)
+    {
+      if (buffer.length() > 0)
+      {
+        if (outClient != NULL) outClient->write(buffer);
+        buffer = "";
+      }
+      break;
+    }
+    connection.lastAccessTick = tick();
 
     buffer += oneBuffer;
 
@@ -522,7 +537,7 @@ void VHttpProxy::run(VNetSession* inSession)
             LOG_ERROR("%s", outClient->error.msg);
             break;
           }
-          thread = new VHttpProxyOutInThread(outClient, inSession, this);
+          thread = new VHttpProxyOutInThread(&connection, this);
           thread->open();
         }
         buffer        = body;
@@ -532,10 +547,6 @@ void VHttpProxy::run(VNetSession* inSession)
           status = BodyCaching;
         } else
         {
-          QByteArray headerData = request.toByteArray();
-          outboundDataChange.change(headerData);
-          request.parse(headerData, NULL);
-          emit onHttpRequestHeader(&request, inSession, outClient);
           outClient->write(request.toByteArray());
           status = HeaderCaching;
         }
@@ -578,6 +589,7 @@ void VHttpProxy::run(VNetSession* inSession)
     }
   }
   // LOG_DEBUG("end inSession=%p", inSession); // gilgil temp 2014.03.14
+
   inSession->close();
   outClient->close();
   if (thread != NULL)
@@ -587,7 +599,14 @@ void VHttpProxy::run(VNetSession* inSession)
   }
 
   connections.lock();
-  connections.removeAt(connections.indexOf(connection));
+  int index = connections.indexOf(&connection);
+  if (index == -1)
+  {
+    LOG_FATAL("index is -1");
+  } else
+  {
+    connections.removeAt(index);
+  }
   connections.unlock();
 
   delete outClient;

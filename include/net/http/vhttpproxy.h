@@ -72,7 +72,7 @@ public:
   VHttpProxyConnection(VNetSession* inSession, VNetClient* outClient);
 
 public:
-  bool operator==(const VHttpProxyConnection& rhs);
+  // bool operator==(const VHttpProxyConnection& rhs); // gilgil temp 2014.04.08
 
 public:
   VNetSession* inSession;
@@ -83,7 +83,7 @@ public:
 // ----------------------------------------------------------------------------
 // VHttpProxyConnections
 // ----------------------------------------------------------------------------
-class VHttpProxyConnections : public QList<VHttpProxyConnection>, public VLockable
+class VHttpProxyConnections : public QList<VHttpProxyConnection*>, public VLockable
 {
 };
 
@@ -98,6 +98,24 @@ public:
 
 protected:
   VEvent event;
+
+protected:
+  virtual void run();
+};
+
+// ----------------------------------------------------------------------------
+// VHttpProxyOutInThread
+// ----------------------------------------------------------------------------
+class VHttpProxy;
+class VHttpProxyOutInThread : public VThread
+{
+protected:
+  VHttpProxy*           httpProxy;
+  VHttpProxyConnection* connection;
+
+public:
+  VHttpProxyOutInThread(VHttpProxyConnection* connection, void* owner);
+  virtual ~VHttpProxyOutInThread();
 
 protected:
   virtual void run();
