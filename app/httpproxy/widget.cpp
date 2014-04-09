@@ -77,15 +77,16 @@ bool Widget::event(QEvent* event)
   MsgEvent* msgEvent = dynamic_cast<MsgEvent*>(event);
   if (msgEvent != NULL)
   {
-    showMessage(msgEvent->msg);
+    showMessage(msgEvent->msg, msgEvent->crlf);
     return true;
   }
   return QWidget::event(event);
 }
 
-void Widget::showMessage(QString msg)
+void Widget::showMessage(QString msg, bool crlf)
 {
-  ui->pteMsg->insertPlainText(msg + "\r\n");
+  if (crlf) msg += "\r\n";
+  ui->pteMsg->insertPlainText(msg);
   ui->pteMsg->ensureCursorVisible();
 }
 
@@ -95,7 +96,7 @@ void Widget::httpRequestHeader(VHttpRequest* header, VNetSession* inSession, VNe
   Q_UNUSED(outClient)
 
   if (!showMsg) return;
-  QApplication::postEvent(this, new MsgEvent(header->toByteArray()));
+  QApplication::postEvent(this, new MsgEvent(header->toByteArray(), false));
 }
 
 void Widget::httpRequestBody(VHttpRequest* header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient)
@@ -105,7 +106,7 @@ void Widget::httpRequestBody(VHttpRequest* header, QByteArray* body, VNetSession
   Q_UNUSED(inSession)
 
   if (!showMsg) return;
-  QApplication::postEvent(this, new MsgEvent(*body));
+  QApplication::postEvent(this, new MsgEvent(*body, false));
 }
 
 void Widget::httpResponseHeader(VHttpResponse* header, VNetClient*  outClient, VNetSession* inSession)
@@ -114,7 +115,7 @@ void Widget::httpResponseHeader(VHttpResponse* header, VNetClient*  outClient, V
   Q_UNUSED(outClient)
 
   if (!showMsg) return;
-  QApplication::postEvent(this, new MsgEvent(header->toByteArray()));
+  QApplication::postEvent(this, new MsgEvent(header->toByteArray(), false));
 }
 
 void Widget::httpResponseBody(VHttpResponse* header, QByteArray* body, VNetClient* outClient, VNetSession* inSession)
@@ -124,7 +125,7 @@ void Widget::httpResponseBody(VHttpResponse* header, QByteArray* body, VNetClien
   Q_UNUSED(inSession)
 
   if (!showMsg) return;
-  QApplication::postEvent(this, new MsgEvent(*body));
+  QApplication::postEvent(this, new MsgEvent(*body, false));
 }
 
 void Widget::load(VXml xml)
@@ -169,7 +170,7 @@ void Widget::on_pbOpen_clicked()
   if (!proxy.open())
   {
     QString msg = proxy.error.msg;
-    showMessage(msg);
+    showMessage(msg, true);
   }
   setControl();
 }

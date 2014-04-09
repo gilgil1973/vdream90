@@ -11,8 +11,13 @@ class MsgEvent : public QEvent
 {
 public:
   QString msg;
+  bool    crlf;
 public:
-  MsgEvent(QString msg) : QEvent(None) { this->msg = msg; }
+  MsgEvent(QString msg, bool crlf) : QEvent(None)
+  {
+    this->msg  = msg;
+    this->crlf = crlf;
+  }
 };
 
 // ----------------------------------------------------------------------------
@@ -46,7 +51,7 @@ protected:
   virtual bool event(QEvent* event);
 
 public slots:
-  void showMessage(QString msg);
+  void showMessage(QString msg, bool crlf);
   void httpRequestHeader (VHttpRequest*  header,                   VNetSession* inSession, VNetClient*  outClient);
   void httpRequestBody   (VHttpRequest*  header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient);
   void httpResponseHeader(VHttpResponse* header,                   VNetClient*  outClient, VNetSession* inSession);
