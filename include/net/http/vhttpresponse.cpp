@@ -16,9 +16,9 @@ void VHttpStatusLine::clear()
   text    = "";
 }
 
-bool VHttpStatusLine::parse(QByteArray& data)
+bool VHttpStatusLine::parse(QByteArray& buffer)
 {
-  QList<QByteArray> bal = data.split(' ');
+  QList<QByteArray> bal = buffer.split(' ');
   if (bal.size() < 3)
   {
     LOG_ERROR("bal.size is %d", bal.size());
@@ -55,23 +55,23 @@ void VHttpResponse::clear()
   header.clear();
 }
 
-bool VHttpResponse::parse(QByteArray data, QByteArray* body)
+bool VHttpResponse::parse(QByteArray& buffer)
 {
-  if (!data.startsWith("HTTP/1")) return false;
+  if (!buffer.startsWith("HTTP/1")) return false;
 
-  int pos = data.indexOf("\r\n\r\n");
+  int pos = buffer.indexOf("\r\n\r\n");
   if (pos == -1) return false;
 
-  QByteArray baHeader = data.left(pos + 2);
-  if (body != NULL)
-    *body = data.mid(pos + 4);
+  QByteArray baHeader = buffer.left(pos + 2);
 
-  pos = baHeader.indexOf("\r\n");
-  QByteArray baStatusLine = baHeader.left(pos);
-  baHeader.remove(0, pos + 2);
+  int firstLinePos = baHeader.indexOf("\r\n");
+  QByteArray baStatusLine = baHeader.left(firstLinePos);
+  baHeader.remove(0, firstLinePos + 2);
 
   if (!statusLine.parse(baStatusLine)) return false;
   if (!header.parse(baHeader)) return false;
+
+  buffer = buffer.mid(pos + 4);
 
   return true;
 }

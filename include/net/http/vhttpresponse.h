@@ -28,7 +28,7 @@ public:
 
 public:
   void clear();
-  bool parse(QByteArray& data);
+  bool parse(QByteArray& buffer);
   QByteArray toByteArray();
 };
 
@@ -46,7 +46,7 @@ public:
 
 public:
   void clear();
-  bool parse(QByteArray data, QByteArray* body);
+  bool parse(QByteArray& buffer);
   QByteArray toByteArray();
 };
 

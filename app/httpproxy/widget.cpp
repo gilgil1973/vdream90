@@ -21,19 +21,19 @@ void Widget::initializeControl()
   showMsg = true;
   move(0, 0); resize(640, 480);
   VObject::connect(
-    &proxy, SIGNAL(onHttpRequestHeader(VHttpRequest*,VNetSession*,VNetClient*)),
-    this, SLOT(httpRequestHeader(VHttpRequest*,VNetSession*,VNetClient*)),
+    &proxy, SIGNAL(onHttpRequestHeader(VHttpRequest*,VHttpProxyConnection*)),
+    this,       SLOT(httpRequestHeader(VHttpRequest*,VHttpProxyConnection*)),
     Qt::DirectConnection);
   VObject::connect(
-    &proxy, SIGNAL(onHttpRequestBody(VHttpRequest*,QByteArray*,VNetSession*,VNetClient*)),
-    this, SLOT(httpRequestBody(VHttpRequest*,QByteArray*,VNetSession*,VNetClient*)),
+    &proxy, SIGNAL(onHttpResponseHeader(VHttpResponse*,VHttpProxyConnection*)),
+    this, SLOT(httpResponseHeader(VHttpResponse*,VHttpProxyConnection*)),
     Qt::DirectConnection);
   VObject::connect(
-    &proxy, SIGNAL(onHttpResponseHeader(VHttpResponse*,VNetClient*,VNetSession*)),
-    this, SLOT(httpResponseHeader(VHttpResponse*,VNetClient*,VNetSession*)),
+    &proxy, SIGNAL(onHttpRequestBody(QByteArray*,VHttpProxyConnection*)),
+    this, SLOT(httpRequestBody(QByteArray*,VHttpProxyConnection*)),
     Qt::DirectConnection);
-  VObject::connect(&proxy, SIGNAL(onHttpResponseBody(VHttpResponse*,QByteArray*,VNetClient*,VNetSession*)),
-    this, SLOT(httpResponseBody(VHttpResponse*,QByteArray*,VNetClient*,VNetSession*)),
+  VObject::connect(&proxy, SIGNAL(onHttpResponseBody(QByteArray*,VHttpProxyConnection*)),
+    this, SLOT(httpResponseBody(QByteArray*,VHttpProxyConnection*)),
     Qt::DirectConnection);
 }
 
@@ -90,39 +90,34 @@ void Widget::showMessage(QString msg, bool crlf)
   ui->pteMsg->ensureCursorVisible();
 }
 
-void Widget::httpRequestHeader(VHttpRequest* header, VNetSession* inSession, VNetClient*  outClient)
+void Widget::httpRequestHeader(VHttpRequest* request, VHttpProxyConnection* connection)
 {
-  Q_UNUSED(inSession)
-  Q_UNUSED(outClient)
+  Q_UNUSED(connection)
 
   if (!showMsg) return;
-  QApplication::postEvent(this, new MsgEvent(header->toByteArray(), false));
+  QApplication::postEvent(this, new MsgEvent(request->toByteArray(), false));
 }
 
-void Widget::httpRequestBody(VHttpRequest* header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient)
+
+void Widget::httpResponseHeader(VHttpResponse* response, VHttpProxyConnection* connection)
 {
-  Q_UNUSED(header)
-  Q_UNUSED(outClient)
-  Q_UNUSED(inSession)
+  Q_UNUSED(connection)
+
+  if (!showMsg) return;
+  QApplication::postEvent(this, new MsgEvent(response->toByteArray(), false));
+}
+
+void Widget::httpRequestBody(QByteArray* body, VHttpProxyConnection* connection)
+{
+  Q_UNUSED(connection)
 
   if (!showMsg) return;
   QApplication::postEvent(this, new MsgEvent(*body, false));
 }
 
-void Widget::httpResponseHeader(VHttpResponse* header, VNetClient*  outClient, VNetSession* inSession)
+void Widget::httpResponseBody(QByteArray* body, VHttpProxyConnection* connection)
 {
-  Q_UNUSED(inSession)
-  Q_UNUSED(outClient)
-
-  if (!showMsg) return;
-  QApplication::postEvent(this, new MsgEvent(header->toByteArray(), false));
-}
-
-void Widget::httpResponseBody(VHttpResponse* header, QByteArray* body, VNetClient* outClient, VNetSession* inSession)
-{
-  Q_UNUSED(header)
-  Q_UNUSED(outClient)
-  Q_UNUSED(inSession)
+  Q_UNUSED(connection)
 
   if (!showMsg) return;
   QApplication::postEvent(this, new MsgEvent(*body, false));

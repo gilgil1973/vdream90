@@ -1,77 +1,73 @@
-#include <VHttpBody>
+#include <VHttpChunkBody>
 #include <VDebugNew>
 
 // ----------------------------------------------------------------------------
-// VHttpBody
+// VHttpChunkBody
 // ----------------------------------------------------------------------------
-VHttpBody::VHttpBody()
+VHttpChunkBody::VHttpChunkBody()
 {
   clear();
 }
 
-void VHttpBody::clear()
+void VHttpChunkBody::clear()
 {
   items.clear();
 }
 
-//
-// -1    : parse fail
-// 0     : no items
-// other : items exists
-//
-int VHttpBody::parse(QByteArray& data)
+int VHttpChunkBody::parse(QByteArray& buffer)
 {
   clear();
 
-  QByteArray _data = data;
-
+  QByteArray _buffer = buffer;
   int res = 0;
+
   while (true)
   {
-    if (data = "") break;
-
-    QByteArray oneLine;
-    int pos = _data.indexOf("\r\n");
+    //
+    // chunkSize
+    //
+    int pos = _buffer.indexOf("\r\n");
     if (pos == -1)
     {
-      res = -1;
       break;
     }
 
-    oneLine = _data.left(pos);
-    _data.remove(0, pos + 2); // "\r\n"
+    QByteArray oneLine = _buffer.left(pos);
+    _buffer.remove(0, pos + 2); // "\r\n"
 
     int chunkSize = oneLine.toInt(NULL, 16);
-    if (_data.length() < chunkSize + 2) break;
+    if (chunkSize == 0 && oneLine != "0") break;
+    if (_buffer.length() < chunkSize + 2) break;
 
-    QByteArray chunkData = _data.left(chunkSize);
-    _data.remove(0, chunkSize);
-    if (_data.length() < 2 || (_data[0] != '\r' && _data[1] != '\n'))
+    //
+    // chunkData
+    //
+    QByteArray chunkData = _buffer.left(chunkSize);
+    _buffer.remove(0, chunkSize);
+    if (_buffer.length() < 2 || (_buffer[0] != '\r' || _buffer[1] != '\n'))
     {
       LOG_WARN("invalid chunk format");
       break;
     }
-    _data.remove(0, 2);
+    _buffer.remove(0, 2);
 
     items.push_back(Item(chunkSize, chunkData));
 
     LOG_DEBUG("chunkSize=%d(%x)", chunkSize, chunkSize); // gilgil temp 2014.04.09
 
-    if (chunkSize == 0)
-    {
-      res = ParseComplete;
-      break;
-    }
+    res++;
+
+    if (chunkSize == 0) break; // may be last chunk
   }
 
   if (res > 0)
   {
-    data = _data;
+    buffer = _buffer;
   }
   return res;
 }
 
-QByteArray VHttpBody::toByteArray()
+QByteArray VHttpChunkBody::toByteArray()
 {
   QByteArray res;
   for (Items::iterator it = items.begin(); it != items.end(); it++)

@@ -52,10 +52,10 @@ protected:
 
 public slots:
   void showMessage(QString msg, bool crlf);
-  void httpRequestHeader (VHttpRequest*  header,                   VNetSession* inSession, VNetClient*  outClient);
-  void httpRequestBody   (VHttpRequest*  header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient);
-  void httpResponseHeader(VHttpResponse* header,                   VNetClient*  outClient, VNetSession* inSession);
-  void httpResponseBody  (VHttpResponse* header, QByteArray* body, VNetClient*  outClient, VNetSession* inSession);
+  void httpRequestHeader (VHttpRequest*  request,  VHttpProxyConnection* connection);
+  void httpResponseHeader(VHttpResponse* response, VHttpProxyConnection* connection);
+  void httpRequestBody   (QByteArray*    body,     VHttpProxyConnection* connection);
+  void httpResponseBody  (QByteArray*    body,     VHttpProxyConnection* connection);
 
 public:
   virtual void load(VXml xml);

@@ -39,21 +39,21 @@ void VHttpHeader::clear()
   items.clear();
 }
 
-bool VHttpHeader::parse(QByteArray& data)
+bool VHttpHeader::parse(QByteArray& buffer)
 {
   clear();
   while (true)
   {
     QByteArray oneLine;
-    int pos = data.indexOf("\r\n");
+    int pos = buffer.indexOf("\r\n");
     if (pos == -1)
     {
-      oneLine = data;
-      data = "";
+      oneLine = buffer;
+      buffer = "";
     } else
     {
-      oneLine = data.left(pos);
-      data.remove(0, pos + 2);
+      oneLine = buffer.left(pos);
+      buffer.remove(0, pos + 2);
     }
 
     pos = oneLine.indexOf(':');
@@ -67,7 +67,7 @@ bool VHttpHeader::parse(QByteArray& data)
     // LOG_DEBUG("setValue(%s, %s)", key.data(), value.data()); // gilgil temp 2013.10.20
     setValue(key, value);
 
-    if (data == "") break;
+    if (buffer == "") break;
   }
   return true;
 }

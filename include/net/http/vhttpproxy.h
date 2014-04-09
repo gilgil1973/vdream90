@@ -19,7 +19,7 @@
 #include <VTick>
 #include <VHttpRequest>
 #include <VHttpResponse>
-#include <VHttpBody>
+#include <VHttpChunkBody>
 #include <VDataChange>
 
 // ----------------------------------------------------------------------------
@@ -111,6 +111,8 @@ protected:
 class VHttpProxy;
 class VHttpProxyOutInThread : public VThread
 {
+  friend class VHttpProxy;
+
 protected:
   VHttpProxy*           httpProxy;
   VHttpProxyConnection* connection;
@@ -118,6 +120,9 @@ protected:
 public:
   VHttpProxyOutInThread(VHttpProxyConnection* connection, void* owner);
   virtual ~VHttpProxyOutInThread();
+
+protected:
+  bool closeInSessionOnEnd;
 
 protected:
   virtual void run();
@@ -173,23 +178,24 @@ public slots:
 protected:
   bool determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port);
 
-  bool flushHttpRequestHeaderAndBody (VHttpRequest&  request,  QByteArray& body, VNetSession* inSession, VNetClient*  outClient);
-  bool flushHttpResponseHeaderAndBody(VHttpResponse& response, QByteArray& body, VNetClient*  outClient, VNetSession* inSession);
+  QByteArray flushRequestHeader     (VHttpRequest&   request,                    VHttpProxyConnection* connection);
+  QByteArray flushRequestHeaderBody (VHttpRequest&   request,  QByteArray& body, VHttpProxyConnection* connection);
+  QByteArray flushRequestChunkBody  (VHttpChunkBody& chunkBody,                  VHttpProxyConnection* connection);
+  QByteArray flushRequestBuffer     (QByteArray&     buffer,                     VHttpProxyConnection* connection);
 
-  bool flushHttpRequestBody (VHttpRequest&  request,  VHttpBody& httpBody, VNetSession* inSession, VNetClient*  outClient);
-  bool flushHttpResponseBody(VHttpResponse& response, VHttpBody& httpBody, VNetClient*  outClient, VNetSession* inSession);
+  QByteArray flushResponseHeader    (VHttpResponse&  response,                   VHttpProxyConnection* connection);
+  QByteArray flushResponseHeaderBody(VHttpResponse&  response, QByteArray& body, VHttpProxyConnection* connection);
+  QByteArray flushResponseChunkBody (VHttpChunkBody& chunkBody,                  VHttpProxyConnection* connection);
+  QByteArray flushResponseBuffer    (QByteArray&     buffer,                     VHttpProxyConnection* connection);
 
+protected:
   void run(VNetSession* inSession);
 
 signals:
-  // void beforeMsg(QByteArray msg, VNetSession* session); // gilgil temp 2014.04.041
-  // void beforeRequest(VHttpRequest& request, VNetSession* inSession, VNetClient* outClient); // gilgil temp 2014.04.041
-  // void beforeResponse(QByteArray& msg, VNetClient* outClient, VNetSession* inSession); // gilgil temp 2014.04.041
-
-  void onHttpRequestHeader (VHttpRequest*  header,                   VNetSession* inSession, VNetClient*  outClient);
-  void onHttpRequestBody   (VHttpRequest*  header, QByteArray* body, VNetSession* inSession, VNetClient*  outClient);
-  void onHttpResponseHeader(VHttpResponse* header,                   VNetClient*  outClient, VNetSession* inSession);
-  void onHttpResponseBody  (VHttpResponse* header, QByteArray* body, VNetClient*  outClient, VNetSession* inSession);
+  void onHttpRequestHeader (VHttpRequest*  request,  VHttpProxyConnection* connection);
+  void onHttpResponseHeader(VHttpResponse* response, VHttpProxyConnection* connection);
+  void onHttpRequestBody   (QByteArray*    body,     VHttpProxyConnection* connection);
+  void onHttpResponseBody  (QByteArray*    body,     VHttpProxyConnection* connection);
 
 public:
   virtual void load(VXml xml);

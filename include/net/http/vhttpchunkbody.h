@@ -8,18 +8,18 @@
 //
 // ----------------------------------------------------------------------------
 
-#ifndef __V_HTTP_BODY_H__
-#define __V_HTTP_BODY_H__
+#ifndef __V_HTTP_CHUNK_BODY_H__
+#define __V_HTTP_CHUNK_BODY_H__
 
 #include <VHttpCommon>
 
 // ----------------------------------------------------------------------------
-// VHttpBody
+// VHttpChunkBody
 // ----------------------------------------------------------------------------
-class VHttpBody
+class VHttpChunkBody
 {
 public:
-  VHttpBody();
+  VHttpChunkBody();
 
 public:
   typedef QPair<int /*chunkSize*/, QByteArray /*chunkData*/> Item;
@@ -28,8 +28,8 @@ public:
 
 public:
   void clear();
-  int parse(QByteArray& data);
+  int parse(QByteArray& buffer);
   QByteArray toByteArray();
 };
 
-#endif // __V_HTTP_BODY_H__
+#endif // __V_HTTP_CHUNK_BODY_H__
