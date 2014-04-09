@@ -448,12 +448,12 @@ QByteArray VHttpProxy::flushResponseHeader(VHttpResponse& response, VHttpProxyCo
 QByteArray VHttpProxy::flushResponseHeaderBody(VHttpResponse& response, QByteArray& body, VHttpProxyConnection* connection)
 {
   QByteArray headerData = response.toByteArray();
-  outboundDataChange.change(headerData);
+  inboundDataChange.change(headerData);
   emit onHttpResponseHeader(&response, connection);
   response.parse(headerData);
 
   int oldBodyLen = body.length();
-  outboundDataChange.change(body);
+  inboundDataChange.change(body);
   emit onHttpResponseBody(&body, connection);
   int newBodyLen = body.length();
 
@@ -476,7 +476,7 @@ QByteArray VHttpProxy::flushResponseChunkBody(VHttpChunkBody& chunkBody, VHttpPr
   for (VHttpChunkBody::Items::iterator it = chunkBody.items.begin(); it != chunkBody.items.end(); it++)
   {
     VHttpChunkBody::Item& item = *it;
-    if (outboundDataChange.change(item.second))
+    if (inboundDataChange.change(item.second))
     {
       item.first = item.second.length();
     }
