@@ -168,13 +168,13 @@ void VHttpProxyOutInThread::run()
         if (contentLength > 0)
         {
           status = ContentCaching;
-          LOG_DEBUG("ContentCaching");
+          // LOG_DEBUG("ContentCaching"); // gilgil temp 2014.04.10
         } else
         if (response.header.value("Transfer-Encoding").toLower() == "chunked")
         {
           sendBuffer += httpProxy->flushResponseHeader(response, connection);
           status = Chunking;
-          LOG_DEBUG("Chunking");
+          // LOG_DEBUG("Chunking"); // gilgil temp 2014.04.10
         } else
         {
           sendBuffer += httpProxy->flushResponseHeader(response, connection);
@@ -197,7 +197,7 @@ void VHttpProxyOutInThread::run()
         }
         sendBuffer += httpProxy->flushResponseHeaderBody(response, buffer, connection);
         status = HeaderCaching;
-        LOG_DEBUG("HeaderCaching");
+        // LOG_DEBUG("HeaderCaching"); // gilgil temp 2014.04.10
       }
     }
 
@@ -217,7 +217,7 @@ void VHttpProxyOutInThread::run()
           sendBuffer += buffer;
           buffer = "";
           status = HeaderCaching;
-          LOG_DEBUG("HeaderCaching");
+          // LOG_DEBUG("HeaderCaching"); // gilgil temp 2014.04.10
         }
       }
     }
