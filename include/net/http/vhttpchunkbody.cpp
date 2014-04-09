@@ -17,12 +17,11 @@ void VHttpChunkBody::clear()
 int VHttpChunkBody::parse(QByteArray& buffer)
 {
   clear();
-
-  QByteArray _buffer = buffer;
   int res = 0;
-
   while (true)
   {
+    QByteArray _buffer = buffer;
+
     //
     // chunkSize
     //
@@ -53,16 +52,9 @@ int VHttpChunkBody::parse(QByteArray& buffer)
 
     items.push_back(Item(chunkSize, chunkData));
 
-    LOG_DEBUG("chunkSize=%d(%x)", chunkSize, chunkSize); // gilgil temp 2014.04.09
-
-    res++;
-
-    if (chunkSize == 0) break; // may be last chunk
-  }
-
-  if (res > 0)
-  {
     buffer = _buffer;
+    res++;
+    if (chunkSize == 0) break; // may be last chunk
   }
   return res;
 }
@@ -72,7 +64,10 @@ QByteArray VHttpChunkBody::toByteArray()
   QByteArray res;
   for (Items::iterator it = items.begin(); it != items.end(); it++)
   {
-    res += QString::number(it->first, 16) + "\r\n" + it->second + "\r\n";
+    Item&       item      = *it;
+    int         chunkSize = item.first;
+    QByteArray& chunkData = item.second;
+    res += QByteArray::number(chunkSize, 16) + "\r\n" + chunkData + "\r\n";
   }
   return res;
 }
