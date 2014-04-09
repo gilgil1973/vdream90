@@ -69,12 +69,12 @@ SOURCES += \
     ../include/net/http/vhttpproxywidget.cpp \
     ../include/net/http/vhttprequest.cpp \
     ../include/net/http/vhttpresponse.cpp \
-    ../include/net/http/vhttpbody.cpp \	
     ../include/other/vdatachange.cpp \
     ../include/other/vdatafind.cpp \
     ../include/other/vint.cpp \
     ../include/other/vlistwidget.cpp \
-    ../include/other/vmyobject.cpp
+    ../include/other/vmyobject.cpp \
+    ../include/net/http/vhttpchunkbody.cpp
 
 HEADERS += \
     ../include/common/vapp.h \
@@ -137,12 +137,12 @@ HEADERS += \
     ../include/net/http/vhttpproxywidget.h \
     ../include/net/http/vhttprequest.h \
     ../include/net/http/vhttpresponse.h \
-    ../include/net/http/vhttpbody.h	 \
     ../include/other/vdatachange.h \
     ../include/other/vdatafind.h \
     ../include/other/vint.h \
     ../include/other/vlistwidget.h \
-    ../include/other/vmyobject.h
+    ../include/other/vmyobject.h \
+    ../include/net/http/vhttpchunkbody.h
 
 
 FORMS += \

@@ -14,16 +14,29 @@ void VHttpBody::clear()
   items.clear();
 }
 
-bool VHttpBody::parse(QByteArray& data)
+//
+// -1    : parse fail
+// 0     : no items
+// other : items exists
+//
+int VHttpBody::parse(QByteArray& data)
 {
   clear();
+
+  QByteArray _data = data;
+
+  int res = 0;
   while (true)
   {
-    QByteArray _data = data;
+    if (data = "") break;
 
     QByteArray oneLine;
     int pos = _data.indexOf("\r\n");
-    if (pos == -1) break;
+    if (pos == -1)
+    {
+      res = -1;
+      break;
+    }
 
     oneLine = _data.left(pos);
     _data.remove(0, pos + 2); // "\r\n"
@@ -44,9 +57,18 @@ bool VHttpBody::parse(QByteArray& data)
 
     LOG_DEBUG("chunkSize=%d(%x)", chunkSize, chunkSize); // gilgil temp 2014.04.09
 
+    if (chunkSize == 0)
+    {
+      res = ParseComplete;
+      break;
+    }
+  }
+
+  if (res > 0)
+  {
     data = _data;
   }
-  return items.count() > 0;
+  return res;
 }
 
 QByteArray VHttpBody::toByteArray()
