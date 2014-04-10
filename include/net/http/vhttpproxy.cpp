@@ -154,7 +154,7 @@ void VHttpProxyOutInThread::run()
       }
       break;
     }
-    LOG_DEBUG("%s", qPrintable(oneBuffer)); // gilgil temp 2014.04.10
+    // LOG_DEBUG("%s", qPrintable(oneBuffer)); // gilgil temp 2014.04.10
     connection->lastAccessTick = tick();
     buffer += oneBuffer;
 

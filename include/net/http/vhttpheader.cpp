@@ -80,7 +80,7 @@ bool VHttpHeader::parse(QByteArray& buffer)
     }
     QByteArray key   = oneLine.left(pos);
     QByteArray value = oneLine.mid(pos + 2).trimmed();
-    LOG_DEBUG("setValue(%s, %s)", key.data(), value.data()); // gilgil temp 2013.10.20
+    // LOG_DEBUG("setValue(%s, %s)", key.data(), value.data()); // gilgil temp 2013.10.20
     addValue(key, value);
 
     if (buffer == "") break;
