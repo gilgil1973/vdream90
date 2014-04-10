@@ -23,6 +23,7 @@ VEventHandler::~VEventHandler()
   sysEvent.setEvent();
   close();
 }
+
 void VEventHandler::postEvent(VCustomEvent *event)
 {
   VLock lock(cs);
