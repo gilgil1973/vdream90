@@ -44,6 +44,12 @@ void VHttpHeader::setValue(QByteArray key, QByteArray value)
   items.push_back(newItem);
 }
 
+void VHttpHeader::addValue(QByteArray key, QByteArray value)
+{
+  Item newItem(key, value);
+  items.push_back(newItem);
+}
+
 void VHttpHeader::clear()
 {
   items.clear();
@@ -74,8 +80,8 @@ bool VHttpHeader::parse(QByteArray& buffer)
     }
     QByteArray key   = oneLine.left(pos);
     QByteArray value = oneLine.mid(pos + 2).trimmed();
-    // LOG_DEBUG("setValue(%s, %s)", key.data(), value.data()); // gilgil temp 2013.10.20
-    setValue(key, value);
+    LOG_DEBUG("setValue(%s, %s)", key.data(), value.data()); // gilgil temp 2013.10.20
+    addValue(key, value);
 
     if (buffer == "") break;
   }

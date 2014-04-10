@@ -29,6 +29,7 @@ public:
 public:
   QByteArray value(QByteArray key, bool caseSensitive = true);
   void       setValue(QByteArray key, QByteArray value);
+  void       addValue(QByteArray key, QByteArray value);
 
 public:
   void clear();
