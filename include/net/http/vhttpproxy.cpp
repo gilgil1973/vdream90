@@ -154,6 +154,7 @@ void VHttpProxyOutInThread::run()
       }
       break;
     }
+    LOG_DEBUG("%s", qPrintable(oneBuffer)); // gilgil temp 2014.04.10
     connection->lastAccessTick = tick();
     buffer += oneBuffer;
 
@@ -164,7 +165,7 @@ void VHttpProxyOutInThread::run()
     {
       if (response.parse(buffer)) // header parsing completed
       {
-        contentLength = response.header.value("Content-Length").toInt();
+        contentLength = response.header.value("Content-Length", false).toInt();
         if (contentLength > 0)
         {
           status = ContentCaching;
@@ -594,7 +595,7 @@ void VHttpProxy::run(VNetSession* inSession)
         // LOG_DEBUG("host=%s port=%d", qPrintable(host), port); // gilgil temp 2014.04.02
         if (outClient->host != host || outClient->port != port)
         {
-          if (thread != NULL) thread->closeInSessionOnEnd = false;
+          // if (thread != NULL) thread->closeInSessionOnEnd = false; // gilgil temp 2014.04.10
           outClient->close();
           if (thread != NULL)
           {

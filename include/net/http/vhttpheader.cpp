@@ -9,13 +9,23 @@ VHttpHeader::VHttpHeader()
   clear();
 }
 
-QByteArray VHttpHeader::value(QByteArray key)
+QByteArray VHttpHeader::value(QByteArray key, bool caseSensitive)
 {
-  for (Items::iterator it = items.begin(); it != items.end(); it++)
+  if (caseSensitive)
   {
-    // LOG_DEBUG("it = %s, %s", it->first.data(), it->second.data()); // gilgil temp
-    if (it->first == key)
-      return it->second;
+    for (Items::iterator it = items.begin(); it != items.end(); it++)
+    {
+      if (it->first == key)
+        return it->second;
+    }
+  } else // case insensitive
+  {
+    QByteArray lowerKey = key.toLower();
+    for (Items::iterator it = items.begin(); it != items.end(); it++)
+    {
+      if (it->first.toLower() == lowerKey)
+        return it->second;
+    }
   }
   return "";
 }
