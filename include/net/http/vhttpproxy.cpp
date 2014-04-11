@@ -583,6 +583,13 @@ void VHttpProxy::run(VNetSession* inSession)
     {
       if (request.parse(buffer)) // header parsing completed
       {
+        // ----- gilgil temp 2014.04.12 -----
+        // call outboundDataChange.change before determine host and port
+        QByteArray headerData = request.toByteArray();
+        outboundDataChange.change(headerData);
+        request.parse(headerData);
+        // ----------------------------------
+
         //
         // Connect to server
         //
