@@ -66,27 +66,29 @@ void Widget::setControl(VState state)
   ui->pbOption->setEnabled(state == VState::Closed);
 }
 
+bool Widget::event(QEvent* event)
+{
+  MsgEvent* msgEvent = dynamic_cast<MsgEvent*>(event);
+  if (msgEvent != NULL)
+  {
+    showMessage(msgEvent);
+    return true;
+  }
+  return QWidget::event(event);
+}
+
 void Widget::showEvent(QShowEvent* showEvent)
 {
   loadControl();
   QWidget::showEvent(showEvent);
 }
 
-bool Widget::event(QEvent* event)
+void Widget::showMessage(MsgEvent* event)
 {
-  MsgEvent* msgEvent = dynamic_cast<MsgEvent*>(event);
-  if (msgEvent != NULL)
-  {
-    showMessage(msgEvent->msg, msgEvent->crlf);
-    return true;
-  }
-  return QWidget::event(event);
-}
-
-void Widget::showMessage(QString msg, bool crlf)
-{
-  if (crlf) msg += "\r\n";
-  ui->pteMsg->insertPlainText(msg);
+  static Qt::HANDLE lastThreadId = 0;
+  if (lastThreadId != 0 && lastThreadId != event->threadId) event->msg = QString("\r\n") + event->msg;
+  lastThreadId = event->threadId;
+  ui->pteMsg->insertPlainText(event->msg);
   ui->pteMsg->ensureCursorVisible();
 }
 
@@ -164,8 +166,8 @@ void Widget::on_pbOpen_clicked()
 {
   if (!proxy.open())
   {
-    QString msg = proxy.error.msg;
-    showMessage(msg, true);
+    MsgEvent msgEvent(proxy.error.msg, QThread::currentThreadId());
+    showMessage(&msgEvent);
   }
   setControl();
 }

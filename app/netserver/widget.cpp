@@ -39,7 +39,7 @@ void UdpServerThread::run()
     if (readLen == VERR_FAIL)
     {
       QString msg = udpSession->error.msg;
-      fireEvent(new MsgEvent(msg));
+      fireEvent(new MsgEvent(msg, QThread::currentThreadId()));
 
       if (udpSession->error.code == 10054/*WSAECONNRESET*/) // ICMP Destination Unreachable // gilgil temp 2014.04.18
       {
@@ -75,7 +75,7 @@ void UdpServerThread::run()
     if (widget->ui->chkShowHexa->checkState() == Qt::Checked)
       ba = ba.toHex();
     QString msg = ba;
-    fireEvent(new MsgEvent(msg));
+    fireEvent(new MsgEvent(msg, QThread::currentThreadId()));
 
     if (widget->ui->chkEcho->checkState() == Qt::Checked)
     {
@@ -182,7 +182,7 @@ void Widget::myRun(VNetSession* netSession)
 {
   LOG_ASSERT(netSession != NULL);
 
-  fireEvent(new MsgEvent("******** connected ********"));
+  fireEvent(new MsgEvent("******** connected ********", QThread::currentThreadId()));
 
   while (true)
   {
@@ -194,7 +194,7 @@ void Widget::myRun(VNetSession* netSession)
     if (ui->chkShowHexa->checkState() == Qt::Checked)
       ba = ba.toHex();
     QString msg = ba;
-    fireEvent(new MsgEvent(msg));
+    fireEvent(new MsgEvent(msg, QThread::currentThreadId()));
 
     if (ui->chkEcho->checkState() == Qt::Checked)
     {
@@ -209,7 +209,7 @@ void Widget::myRun(VNetSession* netSession)
     }
   }
 
-  fireEvent(new MsgEvent("******** disconnected ********")); // gilgil temp 2014.03.01
+  fireEvent(new MsgEvent("******** disconnected ********", QThread::currentThreadId())); // gilgil temp 2014.03.01
   // fireEvent(new CloseEvent); // gilgil temp 2014.03.01
 }
 
@@ -225,8 +225,7 @@ bool Widget::event(QEvent* event)
   MsgEvent* msgEvent = dynamic_cast<MsgEvent*>(event);
   if (msgEvent != NULL)
   {
-    ui->pteRecv->insertPlainText(msgEvent->msg + "\n");
-    ui->pteRecv->ensureCursorVisible();
+    showMessage(msgEvent);
     return true;
   }
 
@@ -245,6 +244,15 @@ void Widget::showEvent(QShowEvent* showEvent)
   loadControl();
   setControl();
   QWidget::showEvent(showEvent);
+}
+
+void Widget::showMessage(MsgEvent* event)
+{
+  static Qt::HANDLE lastThreadId = 0;
+  if (lastThreadId != 0 && lastThreadId != event->threadId) event->msg = QString("\r\n") + event->msg;
+  lastThreadId = event->threadId;
+  ui->pteRecv->insertPlainText(event->msg);
+  ui->pteRecv->ensureCursorVisible();
 }
 
 void Widget::load(VXml xml)

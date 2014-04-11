@@ -10,13 +10,13 @@
 class MsgEvent : public QEvent
 {
 public:
-  QString msg;
-  bool    crlf;
+  QString    msg;
+  Qt::HANDLE threadId;
 public:
-  MsgEvent(QString msg, bool crlf) : QEvent(None)
+  MsgEvent(QString msg, Qt::HANDLE threadId) : QEvent(None)
   {
-    this->msg  = msg;
-    this->crlf = crlf;
+    this->msg      = msg;
+    this->threadId = threadId;
   }
 };
 
@@ -47,11 +47,11 @@ public:
   VHttpProxy proxy;
 
 protected:
-  virtual void showEvent(QShowEvent* showEvent);
   virtual bool event(QEvent* event);
+  virtual void showEvent(QShowEvent* showEvent);
+  void         showMessage(MsgEvent* event);
 
 public slots:
-  void showMessage(QString msg, bool crlf);
   void httpRequestHeader (VHttpRequest*  request,  VHttpProxyConnection* connection);
   void httpResponseHeader(VHttpResponse* response, VHttpProxyConnection* connection);
   void httpRequestBody   (QByteArray*    body,     VHttpProxyConnection* connection);

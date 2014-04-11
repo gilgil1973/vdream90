@@ -29,14 +29,14 @@ void ClientThread::run()
   bool res = netClient->open();
   if (!res)
   {
-    fireEvent(new MsgEvent(netClient->error.msg));
+    fireEvent(new MsgEvent(netClient->error.msg, QThread::currentThreadId()));
     fireEvent(new CloseEvent);
     return;
   }
 
   if (dynamic_cast<VUdpClient*>(netClient) == NULL)
   {
-    fireEvent(new MsgEvent("******** connected ********"));
+    fireEvent(new MsgEvent("******** connected ********", QThread::currentThreadId()));
   }
   fireEvent(new StateEvent(VState::Opened));
 
@@ -50,12 +50,12 @@ void ClientThread::run()
     if (widget->ui->chkShowHexa->checkState() == Qt::Checked)
       ba = ba.toHex();
     QString msg = ba;
-    fireEvent(new MsgEvent(msg));
+    fireEvent(new MsgEvent(msg, QThread::currentThreadId()));
   }
 
   if (dynamic_cast<VUdpClient*>(netClient) == NULL)
   {
-    fireEvent(new MsgEvent("******** disconnected ********"));
+    fireEvent(new MsgEvent("******** disconnected ********", QThread::currentThreadId()));
   }
   fireEvent(new CloseEvent);
 }
@@ -159,6 +159,15 @@ void Widget::showEvent(QShowEvent* showEvent)
   loadControl();
   setControl();
   QWidget::showEvent(showEvent);
+}
+
+void Widget::showMessage(MsgEvent* event)
+{
+  static Qt::HANDLE lastThreadId = 0;
+  if (lastThreadId != 0 && lastThreadId != event->threadId) event->msg = QString("\r\n") + event->msg;
+  lastThreadId = event->threadId;
+  ui->pteRecv->insertPlainText(event->msg);
+  ui->pteRecv->ensureCursorVisible();
 }
 
 void Widget::load(VXml xml)

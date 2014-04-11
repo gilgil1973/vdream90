@@ -26,10 +26,14 @@ public:
 class MsgEvent : public QEvent
 {
 public:
-  QString msg;
-
+  QString    msg;
+  Qt::HANDLE threadId;
 public:
-  MsgEvent(QString msg) : QEvent(QEvent::None) { this->msg = msg; }
+  MsgEvent(QString msg, Qt::HANDLE threadId) : QEvent(None)
+  {
+    this->msg      = msg;
+    this->threadId = threadId;
+  }
 };
 
 // ----------------------------------------------------------------------------
@@ -104,7 +108,8 @@ protected:
 
 protected:
   virtual bool event(QEvent* event);
-  void showEvent(QShowEvent* showEvent);
+  virtual void showEvent(QShowEvent* showEvent);
+  void         showMessage(MsgEvent* event);
 
 public:
   virtual void load(VXml xml);
