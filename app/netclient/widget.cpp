@@ -36,7 +36,7 @@ void ClientThread::run()
 
   if (dynamic_cast<VUdpClient*>(netClient) == NULL)
   {
-    fireEvent(new MsgEvent("******** connected ********", QThread::currentThreadId()));
+    fireEvent(new MsgEvent("******** connected ********\r\n", QThread::currentThreadId()));
   }
   fireEvent(new StateEvent(VState::Opened));
 
@@ -55,7 +55,7 @@ void ClientThread::run()
 
   if (dynamic_cast<VUdpClient*>(netClient) == NULL)
   {
-    fireEvent(new MsgEvent("******** disconnected ********", QThread::currentThreadId()));
+    fireEvent(new MsgEvent("******** disconnected ********\r\n", QThread::currentThreadId()));
   }
   fireEvent(new CloseEvent);
 }
