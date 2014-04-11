@@ -34,8 +34,9 @@ int VHttpChunkBody::parse(QByteArray& buffer)
     QByteArray oneLine = _buffer.left(pos);
     _buffer.remove(0, pos + 2); // "\r\n"
 
-    int chunkSize = oneLine.toInt(NULL, 16);
-    if (chunkSize == 0 && oneLine != "0") break;
+    bool ok;
+    int chunkSize = oneLine.toInt(&ok, 16);
+    if (!ok) break;
     if (_buffer.length() < chunkSize + 2) break;
 
     //
@@ -48,13 +49,17 @@ int VHttpChunkBody::parse(QByteArray& buffer)
       LOG_WARN("invalid chunk format");
       break;
     }
-    _buffer.remove(0, 2);
+    _buffer.remove(0, 2); // "\r\n"
 
     items.push_back(Item(chunkSize, chunkData));
+    // LOG_DEBUG("chunkSize=%d(0x%x) %s %s", chunkSize, chunkSize, qPrintable(chunkData.left(10)), qPrintable(chunkData.right(10))); // gilgil temp 2014.04.11
 
     buffer = _buffer;
     res++;
-    if (chunkSize == 0) break; // may be last chunk
+    if (chunkSize == 0)
+    {
+      break; // may be last chunk
+    }
   }
   return res;
 }

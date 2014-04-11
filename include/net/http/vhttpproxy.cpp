@@ -601,6 +601,7 @@ void VHttpProxy::run(VNetSession* inSession)
           {
             thread->close(true, outInThreadTimeout);
             delete thread;
+            thread = NULL;
           }
           outClient->host = host;
           outClient->port = port;
@@ -710,6 +711,7 @@ void VHttpProxy::run(VNetSession* inSession)
   {
     thread->close(true, outInThreadTimeout);
     delete thread;
+    thread = NULL;
   }
 
   connections.lock();
