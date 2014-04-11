@@ -354,8 +354,8 @@ void Widget::on_pbOpen_clicked()
   if (!res)
   {
     QString msg = netServer->error.msg;
-    ui->pteRecv->insertPlainText(msg + "\n");
-    ui->pteRecv->ensureCursorVisible();
+    MsgEvent msgEvent(msg + "\r\n", QThread::currentThreadId());
+    showMessage(&msgEvent);
     return;
   }
   if (netServer == &udpServer)

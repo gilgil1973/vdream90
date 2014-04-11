@@ -139,8 +139,7 @@ bool Widget::event(QEvent* event)
   MsgEvent* msgEvent = dynamic_cast<MsgEvent*>(event);
   if (msgEvent != NULL)
   {
-    ui->pteRecv->insertPlainText(msgEvent->msg + "\n");
-    ui->pteRecv->ensureCursorVisible();
+    showMessage(msgEvent);
     return true;
   }
 

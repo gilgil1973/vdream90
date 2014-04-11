@@ -166,7 +166,8 @@ void Widget::on_pbOpen_clicked()
 {
   if (!proxy.open())
   {
-    MsgEvent msgEvent(proxy.error.msg, QThread::currentThreadId());
+    QString msg = proxy.error.msg;
+    MsgEvent msgEvent(msg + "\r\n", QThread::currentThreadId());
     showMessage(&msgEvent);
   }
   setControl();
