@@ -73,7 +73,7 @@ QString getClassName(const char* value);
 // ----------------------------------------------------------------------------
 namespace vd
 {
-  static const int      DEFAULT_BUF_SIZE          = 4096;  // bytes
+  static const int      DEFAULT_BUF_SIZE          = 65536;  // bytes
   static const VTimeout DEFAULT_TIMEOUT           = 10000; // 10 sec
   static const int      DEFAULT_PORT              = 10065;
   static const int      DEFAULT_MEDIAGATEWAY_PORT = 10066;
