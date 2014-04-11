@@ -61,7 +61,7 @@ VSslServer::VSslServer(void* owner) : VTcpServer(owner)
   VSslCommon::instance();
 
   methodType             = VSslMethodType::mtTLSv1;
-  certificatePath        = "certificate/";
+  certificatePath        = QString("certificate") + QDir::separator();
   defaultKeyCrtFileName  = "default.pem";
   processConnectMessage  = false;
   m_meth                 = NULL;
@@ -245,7 +245,7 @@ int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg)
       process.setWorkingDirectory(path);
       LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
 
-      QString command = qformat("%s_make_site.bat %s 2>&1", qPrintable(path), qPrintable(serverName));
+      QString command = qformat("\"%s_make_site.bat\" %s 2>&1", qPrintable(path), qPrintable(serverName));
       LOG_INFO("command=%s", qPrintable(command));
 
       process.start(command);
