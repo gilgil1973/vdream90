@@ -23,9 +23,9 @@
 #include <VDataChange>
 
 // ----------------------------------------------------------------------------
-// VHttpProxyOutPolicy
+// VWebProxyOutPolicy
 // ----------------------------------------------------------------------------
-class VHttpProxyOutPolicy : public VXmlable, public VOptionable
+class VWebProxyOutPolicy : public VXmlable, public VOptionable
 {
 public:
   enum Method {
@@ -35,7 +35,7 @@ public:
   };
 
 public:
-  VHttpProxyOutPolicy();
+  VWebProxyOutPolicy();
 
 public:
 
@@ -55,7 +55,7 @@ public: // for VOptionable
 };
 
 // ----------------------------------------------------------------------------
-// VHttpProxySessionStatus
+// VWebProxySessionStatus
 // ----------------------------------------------------------------------------
 typedef enum
 {
@@ -63,18 +63,18 @@ typedef enum
   ContentCaching,
   Chunking,
   Streaming
-} VHttpProxySessionStatus;
+} VWebProxySessionStatus;
 
 // ----------------------------------------------------------------------------
-// VHttpProxyConnection
+// VWebProxyConnection
 // ----------------------------------------------------------------------------
-class VHttpProxyConnection
+class VWebProxyConnection
 {
 public:
-  VHttpProxyConnection(VNetSession* inSession, VNetClient* outClient);
+  VWebProxyConnection(VNetSession* inSession, VNetClient* outClient);
 
 public:
-  // bool operator==(const VHttpProxyConnection& rhs); // gilgil temp 2014.04.08
+  // bool operator==(const VWebProxyConnection& rhs); // gilgil temp 2014.04.08
 
 public:
   VNetSession* inSession;
@@ -83,20 +83,20 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// VHttpProxyConnections
+// VWebProxyConnections
 // ----------------------------------------------------------------------------
-class VHttpProxyConnections : public QList<VHttpProxyConnection*>, public VLockable
+class VWebProxyConnections : public QList<VWebProxyConnection*>, public VLockable
 {
 };
 
 // ----------------------------------------------------------------------------
-// VHttpProxyKeepAliveThread
+// VWebProxyKeepAliveThread
 // ----------------------------------------------------------------------------
-class VHttpProxyKeepAliveThread : public VThread
+class VWebProxyKeepAliveThread : public VThread
 {
 public:
-  VHttpProxyKeepAliveThread(void* owner);
-  ~VHttpProxyKeepAliveThread();
+  VWebProxyKeepAliveThread(void* owner);
+  ~VWebProxyKeepAliveThread();
 
 protected:
   VEvent event;
@@ -106,20 +106,20 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// VHttpProxyOutInThread
+// VWebProxyOutInThread
 // ----------------------------------------------------------------------------
-class VHttpProxy;
-class VHttpProxyOutInThread : public VThread
+class VWebProxy;
+class VWebProxyOutInThread : public VThread
 {
-  friend class VHttpProxy;
+  friend class VWebProxy;
 
 protected:
-  VHttpProxy*           httpProxy;
-  VHttpProxyConnection* connection;
+  VWebProxy*           httpProxy;
+  VWebProxyConnection* connection;
 
 public:
-  VHttpProxyOutInThread(VHttpProxyConnection* connection, void* owner);
-  virtual ~VHttpProxyOutInThread();
+  VWebProxyOutInThread(VWebProxyConnection* connection, void* owner);
+  virtual ~VWebProxyOutInThread();
 
 protected:
   bool closeInSessionOnEnd;
@@ -129,18 +129,18 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// VHttpProxy
+// VWebProxy
 // ----------------------------------------------------------------------------
-class VHttpProxy : public VObject, public VOptionable
+class VWebProxy : public VObject, public VOptionable
 {
   Q_OBJECT
 
-  friend class VHttpProxyOutInThread;
-  friend class VHttpProxyKeepAliveThread;
+  friend class VWebProxyOutInThread;
+  friend class VWebProxyKeepAliveThread;
 
 public:
-  VHttpProxy(void* owner = NULL);
-  virtual ~VHttpProxy();
+  VWebProxy(void* owner = NULL);
+  virtual ~VWebProxy();
 
 protected:
   virtual bool doOpen();
@@ -159,17 +159,17 @@ public:
   bool                disableLoopbackConnection;
   VTimeout            keepAliveTimeout;
   VTimeout            outInThreadTimeout;
-  VHttpProxyOutPolicy outPolicy;
+  VWebProxyOutPolicy outPolicy;
   VTcpServer          tcpServer;
   VSslServer          sslServer;
   VDataChange         inboundDataChange;
   VDataChange         outboundDataChange;
 
 public:
-  VHttpProxyConnections connections;
+  VWebProxyConnections connections;
 
 protected:
-  VHttpProxyKeepAliveThread* keepAliveThread;
+  VWebProxyKeepAliveThread* keepAliveThread;
 
 public slots:
   void tcpRun(VTcpSession* tcpSession);
@@ -178,24 +178,24 @@ public slots:
 protected:
   bool determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port);
 
-  QByteArray flushRequestHeader     (VHttpRequest&   request,                    VHttpProxyConnection* connection);
-  QByteArray flushRequestHeaderBody (VHttpRequest&   request,  QByteArray& body, VHttpProxyConnection* connection);
-  QByteArray flushRequestChunkBody  (VHttpChunkBody& chunkBody,                  VHttpProxyConnection* connection);
-  QByteArray flushRequestBuffer     (QByteArray&     buffer,                     VHttpProxyConnection* connection);
+  QByteArray flushRequestHeader     (VHttpRequest&   request,                    VWebProxyConnection* connection);
+  QByteArray flushRequestHeaderBody (VHttpRequest&   request,  QByteArray& body, VWebProxyConnection* connection);
+  QByteArray flushRequestChunkBody  (VHttpChunkBody& chunkBody,                  VWebProxyConnection* connection);
+  QByteArray flushRequestBuffer     (QByteArray&     buffer,                     VWebProxyConnection* connection);
 
-  QByteArray flushResponseHeader    (VHttpResponse&  response,                   VHttpProxyConnection* connection);
-  QByteArray flushResponseHeaderBody(VHttpResponse&  response, QByteArray& body, VHttpProxyConnection* connection);
-  QByteArray flushResponseChunkBody (VHttpChunkBody& chunkBody,                  VHttpProxyConnection* connection);
-  QByteArray flushResponseBuffer    (QByteArray&     buffer,                     VHttpProxyConnection* connection);
+  QByteArray flushResponseHeader    (VHttpResponse&  response,                   VWebProxyConnection* connection);
+  QByteArray flushResponseHeaderBody(VHttpResponse&  response, QByteArray& body, VWebProxyConnection* connection);
+  QByteArray flushResponseChunkBody (VHttpChunkBody& chunkBody,                  VWebProxyConnection* connection);
+  QByteArray flushResponseBuffer    (QByteArray&     buffer,                     VWebProxyConnection* connection);
 
 protected:
   void run(VNetSession* inSession);
 
 signals:
-  void onHttpRequestHeader (VHttpRequest*  request,  VHttpProxyConnection* connection);
-  void onHttpResponseHeader(VHttpResponse* response, VHttpProxyConnection* connection);
-  void onHttpRequestBody   (QByteArray*    body,     VHttpProxyConnection* connection);
-  void onHttpResponseBody  (QByteArray*    body,     VHttpProxyConnection* connection);
+  void onHttpRequestHeader (VHttpRequest*  request,  VWebProxyConnection* connection);
+  void onHttpResponseHeader(VHttpResponse* response, VWebProxyConnection* connection);
+  void onHttpRequestBody   (QByteArray*    body,     VWebProxyConnection* connection);
+  void onHttpResponseBody  (QByteArray*    body,     VWebProxyConnection* connection);
 
 public:
   virtual void load(VXml xml);

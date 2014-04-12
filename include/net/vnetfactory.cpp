@@ -5,7 +5,7 @@
 #include <VUdpServer>
 #include <VSslClient>
 #include <VSslServer>
-#include <VHttpProxy>
+#include <VWebProxy>
 #include <VDebugNew>
 
 // ----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ void VNetFactory::explicitLink()
   VUdpServer udpServer;
   VSslClient sslClient;
   VSslServer sslServer;
-  VHttpProxy httpProxy;
+  VWebProxy httpProxy;
 }
 
 VNet* VNetFactory::createByClassName(const QString& className)

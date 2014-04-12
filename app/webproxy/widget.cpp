@@ -21,19 +21,19 @@ void Widget::initializeControl()
   showMsg = true;
   move(0, 0); resize(640, 480);
   VObject::connect(
-    &proxy, SIGNAL(onHttpRequestHeader(VHttpRequest*,VHttpProxyConnection*)),
-    this,       SLOT(httpRequestHeader(VHttpRequest*,VHttpProxyConnection*)),
+    &proxy, SIGNAL(onHttpRequestHeader(VHttpRequest*,VWebProxyConnection*)),
+    this,       SLOT(httpRequestHeader(VHttpRequest*,VWebProxyConnection*)),
     Qt::DirectConnection);
   VObject::connect(
-    &proxy, SIGNAL(onHttpResponseHeader(VHttpResponse*,VHttpProxyConnection*)),
-    this, SLOT(httpResponseHeader(VHttpResponse*,VHttpProxyConnection*)),
+    &proxy, SIGNAL(onHttpResponseHeader(VHttpResponse*,VWebProxyConnection*)),
+    this, SLOT(httpResponseHeader(VHttpResponse*,VWebProxyConnection*)),
     Qt::DirectConnection);
   VObject::connect(
-    &proxy, SIGNAL(onHttpRequestBody(QByteArray*,VHttpProxyConnection*)),
-    this, SLOT(httpRequestBody(QByteArray*,VHttpProxyConnection*)),
+    &proxy, SIGNAL(onHttpRequestBody(QByteArray*,VWebProxyConnection*)),
+    this, SLOT(httpRequestBody(QByteArray*,VWebProxyConnection*)),
     Qt::DirectConnection);
-  VObject::connect(&proxy, SIGNAL(onHttpResponseBody(QByteArray*,VHttpProxyConnection*)),
-    this, SLOT(httpResponseBody(QByteArray*,VHttpProxyConnection*)),
+  VObject::connect(&proxy, SIGNAL(onHttpResponseBody(QByteArray*,VWebProxyConnection*)),
+    this, SLOT(httpResponseBody(QByteArray*,VWebProxyConnection*)),
     Qt::DirectConnection);
 }
 
@@ -92,7 +92,7 @@ void Widget::showMessage(MsgEvent* event)
   ui->pteMsg->ensureCursorVisible();
 }
 
-void Widget::httpRequestHeader(VHttpRequest* request, VHttpProxyConnection* connection)
+void Widget::httpRequestHeader(VHttpRequest* request, VWebProxyConnection* connection)
 {
   Q_UNUSED(connection)
 
@@ -101,7 +101,7 @@ void Widget::httpRequestHeader(VHttpRequest* request, VHttpProxyConnection* conn
 }
 
 
-void Widget::httpResponseHeader(VHttpResponse* response, VHttpProxyConnection* connection)
+void Widget::httpResponseHeader(VHttpResponse* response, VWebProxyConnection* connection)
 {
   Q_UNUSED(connection)
 
@@ -109,7 +109,7 @@ void Widget::httpResponseHeader(VHttpResponse* response, VHttpProxyConnection* c
   QApplication::postEvent(this, new MsgEvent(response->toByteArray(), false));
 }
 
-void Widget::httpRequestBody(QByteArray* body, VHttpProxyConnection* connection)
+void Widget::httpRequestBody(QByteArray* body, VWebProxyConnection* connection)
 {
   Q_UNUSED(connection)
 
@@ -117,7 +117,7 @@ void Widget::httpRequestBody(QByteArray* body, VHttpProxyConnection* connection)
   QApplication::postEvent(this, new MsgEvent(*body, false));
 }
 
-void Widget::httpResponseBody(QByteArray* body, VHttpProxyConnection* connection)
+void Widget::httpResponseBody(QByteArray* body, VWebProxyConnection* connection)
 {
   Q_UNUSED(connection)
 

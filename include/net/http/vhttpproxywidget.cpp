@@ -3,9 +3,9 @@
 #include "vhttpproxywidget.h"
 #include "ui_vhttpproxywidget.h"
 
-VHttpProxyWidget::VHttpProxyWidget(QWidget *parent) :
+VWebProxyWidget::VWebProxyWidget(QWidget *parent) :
   QWidget(parent),
-  ui(new Ui::VHttpProxyWidget)
+  ui(new Ui::VWebProxyWidget)
 {
   ui->setupUi(this);
 
@@ -27,7 +27,7 @@ VHttpProxyWidget::VHttpProxyWidget(QWidget *parent) :
   ui->tabOther->setLayout(ui->glOther);
 }
 
-VHttpProxyWidget::~VHttpProxyWidget()
+VWebProxyWidget::~VWebProxyWidget()
 {
   delete ui;
 }

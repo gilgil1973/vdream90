@@ -1,26 +1,26 @@
-#include <VHttpProxy>
+#include <VWebProxy>
 #include <VDebugNew>
 
-REGISTER_METACLASS(VHttpProxy, VNet)
+REGISTER_METACLASS(VWebProxy, VNet)
 
 // ----------------------------------------------------------------------------
-// VHttpProxyOutPolicy
+// VWebProxyOutPolicy
 // ---------------------------------------------------------------------------
-VHttpProxyOutPolicy::VHttpProxyOutPolicy()
+VWebProxyOutPolicy::VWebProxyOutPolicy()
 {
   method = Auto;
   host   = "";
   port   = 0;
 }
 
-void VHttpProxyOutPolicy::load(VXml xml)
+void VWebProxyOutPolicy::load(VXml xml)
 {
   method = (Method)xml.getInt("method", (int)method);
   host   = xml.getStr("host", host);
   port   = xml.getInt("port", port);
 }
 
-void VHttpProxyOutPolicy::save(VXml xml)
+void VWebProxyOutPolicy::save(VXml xml)
 {
   xml.setInt("method", (int)method);
   xml.setStr("host", host);
@@ -28,7 +28,7 @@ void VHttpProxyOutPolicy::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-void VHttpProxyOutPolicy::optionAddWidget(QLayout* layout)
+void VWebProxyOutPolicy::optionAddWidget(QLayout* layout)
 {
   QStringList sl; sl << "Auto" << "TCP" << "SSL";
   VOptionable::addComboBox(layout, "cbxMethod", "Method", sl, (int)method);
@@ -36,7 +36,7 @@ void VHttpProxyOutPolicy::optionAddWidget(QLayout* layout)
   VOptionable::addLineEdit(layout, "lePort", "Port", QString::number(port));
 }
 
-void VHttpProxyOutPolicy::optionSaveDlg(QDialog* dialog)
+void VWebProxyOutPolicy::optionSaveDlg(QDialog* dialog)
 {
   method = (Method)(dialog->findChild<QComboBox*>("cbxMethod")->currentIndex());
   host   = dialog->findChild<QLineEdit*>("leHost")->text();
@@ -45,9 +45,9 @@ void VHttpProxyOutPolicy::optionSaveDlg(QDialog* dialog)
 #endif // QT_GUI_LIB
 
 // ----------------------------------------------------------------------------
-// VHttpProxyConnection
+// VWebProxyConnection
 // ----------------------------------------------------------------------------
-VHttpProxyConnection::VHttpProxyConnection(VNetSession* inSession, VNetClient* outClient)
+VWebProxyConnection::VWebProxyConnection(VNetSession* inSession, VNetClient* outClient)
 {
   this->inSession      = inSession;
   this->outClient      = outClient;
@@ -56,7 +56,7 @@ VHttpProxyConnection::VHttpProxyConnection(VNetSession* inSession, VNetClient* o
 
 // ----- gilgil temp 2014.04.08 -----
 /*
-bool VHttpProxyConnection::operator==(const VHttpProxyConnection& rhs)
+bool VWebProxyConnection::operator==(const VWebProxyConnection& rhs)
 {
   if (this->inSession != rhs.inSession) return false;
   if (this->outClient != rhs.outClient) return false;
@@ -66,22 +66,22 @@ bool VHttpProxyConnection::operator==(const VHttpProxyConnection& rhs)
 // ----------------------------------
 
 // ----------------------------------------------------------------------------
-// VHttpProxyKeepAliveThread
+// VWebProxyKeepAliveThread
 // ----------------------------------------------------------------------------
-VHttpProxyKeepAliveThread::VHttpProxyKeepAliveThread(void* owner) : VThread(owner)
+VWebProxyKeepAliveThread::VWebProxyKeepAliveThread(void* owner) : VThread(owner)
 {
   event.resetEvent();
 }
 
-VHttpProxyKeepAliveThread::~VHttpProxyKeepAliveThread()
+VWebProxyKeepAliveThread::~VWebProxyKeepAliveThread()
 {
   event.setEvent();
   close();
 }
 
-void VHttpProxyKeepAliveThread::run()
+void VWebProxyKeepAliveThread::run()
 {
-  VHttpProxy* httpProxy = (VHttpProxy*)owner;
+  VWebProxy* httpProxy = (VWebProxy*)owner;
   LOG_ASSERT(httpProxy != NULL);
 
   while (true)
@@ -90,9 +90,9 @@ void VHttpProxyKeepAliveThread::run()
     if (res) break;
     VTick nowTick = tick();
     httpProxy->connections.lock();
-    for (VHttpProxyConnections::iterator it = httpProxy->connections.begin(); it != httpProxy->connections.end(); it++)
+    for (VWebProxyConnections::iterator it = httpProxy->connections.begin(); it != httpProxy->connections.end(); it++)
     {
-      VHttpProxyConnection* connection = *it;
+      VWebProxyConnection* connection = *it;
       if (connection->lastAccessTick + httpProxy->keepAliveTimeout < nowTick)
       {
         connection->inSession->close();
@@ -104,21 +104,21 @@ void VHttpProxyKeepAliveThread::run()
 }
 
 // ----------------------------------------------------------------------------
-// VHttpProxyOutInThread
+// VWebProxyOutInThread
 // ----------------------------------------------------------------------------
-VHttpProxyOutInThread::VHttpProxyOutInThread(VHttpProxyConnection* connection, void* owner) : VThread(owner)
+VWebProxyOutInThread::VWebProxyOutInThread(VWebProxyConnection* connection, void* owner) : VThread(owner)
 {
-  this->httpProxy     = (VHttpProxy*)owner;
+  this->httpProxy     = (VWebProxy*)owner;
   this->connection    = connection;
   closeInSessionOnEnd = true;
 }
 
-VHttpProxyOutInThread::~VHttpProxyOutInThread()
+VWebProxyOutInThread::~VWebProxyOutInThread()
 {
   close();
 }
 
-void VHttpProxyOutInThread::run()
+void VWebProxyOutInThread::run()
 {
   // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
 
@@ -126,7 +126,7 @@ void VHttpProxyOutInThread::run()
   VNetSession* inSession = connection->inSession;
 
   QByteArray              buffer;
-  VHttpProxySessionStatus status = HeaderCaching;
+  VWebProxySessionStatus status = HeaderCaching;
   VHttpResponse           response;
   int                     contentLength = 0;
 
@@ -254,9 +254,9 @@ void VHttpProxyOutInThread::run()
 }
 
 // ----------------------------------------------------------------------------
-// VHttpProxy
+// VWebProxy
 // ----------------------------------------------------------------------------
-VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
+VWebProxy::VWebProxy(void* owner) : VObject(owner)
 {
   tcpEnabled                = true;
   sslEnabled                = true;
@@ -283,12 +283,12 @@ VHttpProxy::VHttpProxy(void* owner) : VObject(owner)
   VObject::connect(&sslServer, SIGNAL(runned(VSslSession*)), this, SLOT(sslRun(VSslSession*)), Qt::DirectConnection);
 }
 
-VHttpProxy::~VHttpProxy()
+VWebProxy::~VWebProxy()
 {
   close();
 }
 
-bool VHttpProxy::doOpen()
+bool VWebProxy::doOpen()
 {
   if (tcpEnabled)
   {
@@ -308,7 +308,7 @@ bool VHttpProxy::doOpen()
     }
   }
 
-  keepAliveThread = new VHttpProxyKeepAliveThread(this);
+  keepAliveThread = new VWebProxyKeepAliveThread(this);
   keepAliveThread->open();
 
   if (!inboundDataChange.prepare(error)) return false;
@@ -317,12 +317,12 @@ bool VHttpProxy::doOpen()
   return true;
 }
 
-bool VHttpProxy::doClose()
+bool VWebProxy::doClose()
 {
   connections.lock();
-  for (VHttpProxyConnections::iterator it = connections.begin(); it != connections.end(); it++)
+  for (VWebProxyConnections::iterator it = connections.begin(); it != connections.end(); it++)
   {
-    VHttpProxyConnection* connection = *it;
+    VWebProxyConnection* connection = *it;
     connection->inSession->close();
     connection->outClient->close();
   }
@@ -336,17 +336,17 @@ bool VHttpProxy::doClose()
   return true;
 }
 
-void VHttpProxy::tcpRun(VTcpSession* tcpSession)
+void VWebProxy::tcpRun(VTcpSession* tcpSession)
 {
   run(tcpSession);
 }
 
-void VHttpProxy::sslRun(VSslSession* sslSession)
+void VWebProxy::sslRun(VSslSession* sslSession)
 {
   run(sslSession);
 }
 
-bool VHttpProxy::determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port)
+bool VWebProxy::determineHostAndPort(VHttpRequest& request, int defaultPort, QString& host, int& port)
 {
   QUrl url = request.requestLine.path;
   if (!url.isRelative())
@@ -370,7 +370,7 @@ bool VHttpProxy::determineHostAndPort(VHttpRequest& request, int defaultPort, QS
   return true;
 }
 
-QByteArray VHttpProxy::flushRequestHeader(VHttpRequest& request, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushRequestHeader(VHttpRequest& request, VWebProxyConnection* connection)
 {
   QByteArray headerData = request.toByteArray();
   outboundDataChange.change(headerData);
@@ -382,7 +382,7 @@ QByteArray VHttpProxy::flushRequestHeader(VHttpRequest& request, VHttpProxyConne
   return res;
 }
 
-QByteArray VHttpProxy::flushRequestHeaderBody(VHttpRequest& request, QByteArray& body, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushRequestHeaderBody(VHttpRequest& request, QByteArray& body, VWebProxyConnection* connection)
 {
   QByteArray headerData = request.toByteArray();
   outboundDataChange.change(headerData);
@@ -408,7 +408,7 @@ QByteArray VHttpProxy::flushRequestHeaderBody(VHttpRequest& request, QByteArray&
   return res;
 }
 
-QByteArray VHttpProxy::flushRequestChunkBody(VHttpChunkBody& chunkBody, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushRequestChunkBody(VHttpChunkBody& chunkBody, VWebProxyConnection* connection)
 {
   for (VHttpChunkBody::Items::iterator it = chunkBody.items.begin(); it != chunkBody.items.end(); it++)
   {
@@ -425,7 +425,7 @@ QByteArray VHttpProxy::flushRequestChunkBody(VHttpChunkBody& chunkBody, VHttpPro
   return res;
 }
 
-QByteArray VHttpProxy::flushRequestBuffer(QByteArray& buffer, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushRequestBuffer(QByteArray& buffer, VWebProxyConnection* connection)
 {
   outboundDataChange.change(buffer);
   emit onHttpRequestBody(&buffer, connection);
@@ -434,7 +434,7 @@ QByteArray VHttpProxy::flushRequestBuffer(QByteArray& buffer, VHttpProxyConnecti
   return res;
 }
 
-QByteArray VHttpProxy::flushResponseHeader(VHttpResponse& response, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushResponseHeader(VHttpResponse& response, VWebProxyConnection* connection)
 {
   QByteArray headerData = response.toByteArray();
   inboundDataChange.change(headerData);
@@ -446,7 +446,7 @@ QByteArray VHttpProxy::flushResponseHeader(VHttpResponse& response, VHttpProxyCo
   return res;
 }
 
-QByteArray VHttpProxy::flushResponseHeaderBody(VHttpResponse& response, QByteArray& body, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushResponseHeaderBody(VHttpResponse& response, QByteArray& body, VWebProxyConnection* connection)
 {
   QByteArray headerData = response.toByteArray();
   inboundDataChange.change(headerData);
@@ -472,7 +472,7 @@ QByteArray VHttpProxy::flushResponseHeaderBody(VHttpResponse& response, QByteArr
   return res;
 }
 
-QByteArray VHttpProxy::flushResponseChunkBody(VHttpChunkBody& chunkBody, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushResponseChunkBody(VHttpChunkBody& chunkBody, VWebProxyConnection* connection)
 {
   for (VHttpChunkBody::Items::iterator it = chunkBody.items.begin(); it != chunkBody.items.end(); it++)
   {
@@ -489,7 +489,7 @@ QByteArray VHttpProxy::flushResponseChunkBody(VHttpChunkBody& chunkBody, VHttpPr
   return res;
 }
 
-QByteArray VHttpProxy::flushResponseBuffer(QByteArray& buffer, VHttpProxyConnection* connection)
+QByteArray VWebProxy::flushResponseBuffer(QByteArray& buffer, VWebProxyConnection* connection)
 {
   inboundDataChange.change(buffer);
   emit onHttpResponseBody(&buffer, connection);
@@ -498,7 +498,7 @@ QByteArray VHttpProxy::flushResponseBuffer(QByteArray& buffer, VHttpProxyConnect
   return res;
 }
 
-void VHttpProxy::run(VNetSession* inSession)
+void VWebProxy::run(VNetSession* inSession)
 {
   // LOG_DEBUG("stt inSession=%p", inSession); // gilgil temp 2014.03.14
 
@@ -510,7 +510,7 @@ void VHttpProxy::run(VNetSession* inSession)
   //
   switch (outPolicy.method)
   {
-    case VHttpProxyOutPolicy::Auto:
+    case VWebProxyOutPolicy::Auto:
       if (dynamic_cast<VTcpSession*>(inSession) != NULL)
       {
         outClient   = new VTcpClient;
@@ -526,11 +526,11 @@ void VHttpProxy::run(VNetSession* inSession)
         return;
       }
       break;
-    case VHttpProxyOutPolicy::Tcp:
+    case VWebProxyOutPolicy::Tcp:
       outClient   = new VTcpClient;
       defaultPort = DEFAULT_HTTP_PORT;
       break;
-    case VHttpProxyOutPolicy::Ssl:
+    case VWebProxyOutPolicy::Ssl:
       outClient   = new VSslClient;
       defaultPort = DEFAULT_SSL_PORT;
       break;
@@ -539,15 +539,15 @@ void VHttpProxy::run(VNetSession* inSession)
       return;
   }
   connections.lock();
-  VHttpProxyConnection connection(inSession, outClient);
+  VWebProxyConnection connection(inSession, outClient);
   connections.push_back(&connection);
   connections.unlock();
 
   QByteArray              buffer;
-  VHttpProxySessionStatus status = HeaderCaching;
+  VWebProxySessionStatus status = HeaderCaching;
   VHttpRequest            request;
   int                     contentLength = 0;
-  VHttpProxyOutInThread*  thread = NULL;
+  VWebProxyOutInThread*  thread = NULL;
 
   while (true)
   {
@@ -632,7 +632,7 @@ void VHttpProxy::run(VNetSession* inSession)
             LOG_ERROR("%s", outClient->error.msg);
             break;
           }
-          thread = new VHttpProxyOutInThread(&connection, this);
+          thread = new VWebProxyOutInThread(&connection, this);
           thread->open();
         }
 
@@ -735,7 +735,7 @@ void VHttpProxy::run(VNetSession* inSession)
   delete outClient;
 }
 
-void VHttpProxy::load(VXml xml)
+void VWebProxy::load(VXml xml)
 {
   VObject::load(xml);
 
@@ -752,7 +752,7 @@ void VHttpProxy::load(VXml xml)
   if (!(xml.findChild("outboundDataChange").isNull())) outboundDataChange.load(xml.gotoChild("outboundDataChange"));
 }
 
-void VHttpProxy::save(VXml xml)
+void VWebProxy::save(VXml xml)
 {
   VObject::save(xml);
 
@@ -772,9 +772,9 @@ void VHttpProxy::save(VXml xml)
 #ifdef QT_GUI_LIB
 #include "vhttpproxywidget.h"
 #include "ui_vhttpproxywidget.h"
-void VHttpProxy::optionAddWidget(QLayout* layout)
+void VWebProxy::optionAddWidget(QLayout* layout)
 {
-  VHttpProxyWidget* widget = new VHttpProxyWidget(layout->parentWidget());
+  VWebProxyWidget* widget = new VWebProxyWidget(layout->parentWidget());
   widget->setObjectName("httpProxyWidget");
 
   VOptionable::addCheckBox(widget->ui->glTcpServer, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
@@ -795,9 +795,9 @@ void VHttpProxy::optionAddWidget(QLayout* layout)
   layout->addWidget(widget);
 }
 
-void VHttpProxy::optionSaveDlg(QDialog* dialog)
+void VWebProxy::optionSaveDlg(QDialog* dialog)
 {
-  VHttpProxyWidget* widget = dialog->findChild<VHttpProxyWidget*>("httpProxyWidget");
+  VWebProxyWidget* widget = dialog->findChild<VWebProxyWidget*>("httpProxyWidget");
   LOG_ASSERT(widget != NULL);
 
   tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;

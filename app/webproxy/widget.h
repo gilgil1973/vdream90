@@ -2,7 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
-#include <VHttpProxy>
+#include <VWebProxy>
 
 // ----------------------------------------------------------------------------
 // MsgEvent
@@ -44,7 +44,7 @@ public:
 
 public:
   bool       showMsg;
-  VHttpProxy proxy;
+  VWebProxy proxy;
 
 protected:
   virtual bool event(QEvent* event);
@@ -52,10 +52,10 @@ protected:
   void         showMessage(MsgEvent* event);
 
 public slots:
-  void httpRequestHeader (VHttpRequest*  request,  VHttpProxyConnection* connection);
-  void httpResponseHeader(VHttpResponse* response, VHttpProxyConnection* connection);
-  void httpRequestBody   (QByteArray*    body,     VHttpProxyConnection* connection);
-  void httpResponseBody  (QByteArray*    body,     VHttpProxyConnection* connection);
+  void httpRequestHeader (VHttpRequest*  request,  VWebProxyConnection* connection);
+  void httpResponseHeader(VHttpResponse* response, VWebProxyConnection* connection);
+  void httpRequestBody   (QByteArray*    body,     VWebProxyConnection* connection);
+  void httpResponseBody  (QByteArray*    body,     VWebProxyConnection* connection);
 
 public:
   virtual void load(VXml xml);

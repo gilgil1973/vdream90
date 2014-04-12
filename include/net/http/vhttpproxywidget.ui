@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>VHttpProxyWidget</class>
- <widget class="QWidget" name="VHttpProxyWidget">
+ <class>VWebProxyWidget</class>
+ <widget class="QWidget" name="VWebProxyWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
