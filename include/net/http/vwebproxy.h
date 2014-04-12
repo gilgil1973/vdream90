@@ -147,10 +147,10 @@ protected:
   virtual bool doClose();
 
 public:
-  const static int DEFAULT_HTTP_PORT = 80;
-  const static int DEFAULT_SSL_PORT  = 443;
-  const static int HTTP_PROXY_PORT   = 8080;
-  const static int SSL_PROXY_PORT    = 4433;
+  static const int DEFAULT_HTTP_PORT = 80;
+  static const int DEFAULT_SSL_PORT  = 443;
+  static const int HTTP_PROXY_PORT   = 8080;
+  static const int SSL_PROXY_PORT    = 4433;
 
 public:
   bool                enabled;
