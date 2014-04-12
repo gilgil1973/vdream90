@@ -38,9 +38,9 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="tabTcpServer">
+          <widget class="QWidget" name="tabHttpServer">
            <attribute name="title">
-            <string>TCP Server</string>
+            <string>HTTP Server</string>
            </attribute>
            <widget class="QWidget" name="gridLayoutWidget_3">
             <property name="geometry">
@@ -51,12 +51,12 @@
               <height>80</height>
              </rect>
             </property>
-            <layout class="QGridLayout" name="glTcpServer"/>
+            <layout class="QGridLayout" name="glHttpServer"/>
            </widget>
           </widget>
-          <widget class="QWidget" name="tabSslServer">
+          <widget class="QWidget" name="tabHttpsServer">
            <attribute name="title">
-            <string>SSL Server</string>
+            <string>HTTPS Server</string>
            </attribute>
            <widget class="QWidget" name="gridLayoutWidget_4">
             <property name="geometry">
@@ -67,7 +67,7 @@
               <height>80</height>
              </rect>
             </property>
-            <layout class="QGridLayout" name="glSslServer"/>
+            <layout class="QGridLayout" name="glHttpsServer"/>
            </widget>
           </widget>
          </widget>

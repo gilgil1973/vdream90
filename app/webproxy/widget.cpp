@@ -143,7 +143,7 @@ void Widget::load(VXml xml)
   showMsg = xml.getBool("showMsg", showMsg);
   ui->chkShowMsg->setCheckState(showMsg ? Qt::Checked : Qt::Unchecked);
 
-  proxy.load(xml.gotoChild("HttpProxy"));
+  proxy.load(xml.gotoChild("webProxy"));
 }
 
 void Widget::save(VXml xml)
@@ -159,7 +159,7 @@ void Widget::save(VXml xml)
 
   xml.setBool("showMsg", showMsg);
 
-  proxy.save(xml.gotoChild("HttpProxy"));
+  proxy.save(xml.gotoChild("webProxy"));
 }
 
 void Widget::on_pbOpen_clicked()

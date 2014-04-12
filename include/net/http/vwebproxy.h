@@ -30,8 +30,8 @@ class VWebProxyOutPolicy : public VXmlable, public VOptionable
 public:
   enum Method {
     Auto,
-    Tcp,
-    Ssl,
+    Http,
+    Https,
   };
 
 public:
@@ -114,7 +114,7 @@ class VWebProxyOutInThread : public VThread
   friend class VWebProxy;
 
 protected:
-  VWebProxy*           httpProxy;
+  VWebProxy*           webProxy;
   VWebProxyConnection* connection;
 
 public:
@@ -153,8 +153,8 @@ public:
   const static int SSL_PROXY_PORT    = 4433;
 
 public:
-  bool                tcpEnabled;
-  bool                sslEnabled;
+  bool                httpEnabled;
+  bool                httpsEnabled;
   int                 maxContentCacheSize;
   bool                disableLoopbackConnection;
   VTimeout            keepAliveTimeout;

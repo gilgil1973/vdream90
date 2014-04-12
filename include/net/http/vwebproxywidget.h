@@ -1,5 +1,5 @@
-#ifndef VHTTPPROXYWIDGET_H
-#define VHTTPPROXYWIDGET_H
+#ifndef VWEBPROXYWIDGET_H
+#define VWEBPROXYWIDGET_H
 
 #ifdef QT_GUI_LIB
 
@@ -23,4 +23,4 @@ public:
 
 #endif // QT_GUI_LIB
 
-#endif // VHTTPPROXYWIDGET_H
+#endif // VWEBPROXYWIDGET_H

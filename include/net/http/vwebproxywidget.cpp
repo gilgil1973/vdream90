@@ -1,7 +1,7 @@
 #ifdef QT_GUI_LIB
 
-#include "vhttpproxywidget.h"
-#include "ui_vhttpproxywidget.h"
+#include "vwebproxywidget.h"
+#include "ui_vwebproxywidget.h"
 
 VWebProxyWidget::VWebProxyWidget(QWidget *parent) :
   QWidget(parent),
@@ -11,16 +11,16 @@ VWebProxyWidget::VWebProxyWidget(QWidget *parent) :
 
   ui->glInternal->setMargin(8);
   ui->glExternal->setMargin(8);
-  ui->glTcpServer->setMargin(8);
-  ui->glSslServer->setMargin(8);
+  ui->glHttpServer->setMargin(8);
+  ui->glHttpsServer->setMargin(8);
   ui->glInbound->setMargin(8);
   ui->glOutbound->setMargin(8);
   ui->glOther->setMargin(8);
 
   ui->tabInternal->setLayout(ui->glInternal);
   ui->tabExternal->setLayout(ui->glExternal);
-  ui->tabTcpServer->setLayout(ui->glTcpServer);
-  ui->tabSslServer->setLayout(ui->glSslServer);
+  ui->tabHttpServer->setLayout(ui->glHttpServer);
+  ui->tabHttpsServer->setLayout(ui->glHttpsServer);
   ui->tabDataChange->setLayout(ui->glDataChange);
   ui->tabInbound->setLayout(ui->glInbound);
   ui->tabOutbound->setLayout(ui->glOutbound);

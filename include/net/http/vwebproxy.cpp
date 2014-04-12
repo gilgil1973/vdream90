@@ -30,7 +30,7 @@ void VWebProxyOutPolicy::save(VXml xml)
 #ifdef QT_GUI_LIB
 void VWebProxyOutPolicy::optionAddWidget(QLayout* layout)
 {
-  QStringList sl; sl << "Auto" << "TCP" << "SSL";
+  QStringList sl; sl << "Auto" << "HTTP" << "HTTPS";
   VOptionable::addComboBox(layout, "cbxMethod", "Method", sl, (int)method);
   VOptionable::addLineEdit(layout, "leHost", "Host", host);
   VOptionable::addLineEdit(layout, "lePort", "Port", QString::number(port));
@@ -81,25 +81,25 @@ VWebProxyKeepAliveThread::~VWebProxyKeepAliveThread()
 
 void VWebProxyKeepAliveThread::run()
 {
-  VWebProxy* httpProxy = (VWebProxy*)owner;
-  LOG_ASSERT(httpProxy != NULL);
+  VWebProxy* webProxy = (VWebProxy*)owner;
+  LOG_ASSERT(webProxy != NULL);
 
   while (true)
   {
     bool res = event.wait(10000); // 10 sec
     if (res) break;
     VTick nowTick = tick();
-    httpProxy->connections.lock();
-    for (VWebProxyConnections::iterator it = httpProxy->connections.begin(); it != httpProxy->connections.end(); it++)
+    webProxy->connections.lock();
+    for (VWebProxyConnections::iterator it = webProxy->connections.begin(); it != webProxy->connections.end(); it++)
     {
       VWebProxyConnection* connection = *it;
-      if (connection->lastAccessTick + httpProxy->keepAliveTimeout < nowTick)
+      if (connection->lastAccessTick + webProxy->keepAliveTimeout < nowTick)
       {
         connection->inSession->close();
         connection->outClient->close();
       }
     }
-    httpProxy->connections.unlock();
+    webProxy->connections.unlock();
   }
 }
 
@@ -108,7 +108,7 @@ void VWebProxyKeepAliveThread::run()
 // ----------------------------------------------------------------------------
 VWebProxyOutInThread::VWebProxyOutInThread(VWebProxyConnection* connection, void* owner) : VThread(owner)
 {
-  this->httpProxy     = (VWebProxy*)owner;
+  this->webProxy      = (VWebProxy*)owner;
   this->connection    = connection;
   closeInSessionOnEnd = true;
 }
@@ -143,10 +143,10 @@ void VWebProxyOutInThread::run()
     {
       if (status == ContentCaching)
       {
-        sendBuffer = httpProxy->flushResponseHeaderBody(response, buffer, connection);
+        sendBuffer = webProxy->flushResponseHeaderBody(response, buffer, connection);
       } else
       {
-        sendBuffer = httpProxy->flushResponseBuffer(buffer, connection);
+        sendBuffer = webProxy->flushResponseBuffer(buffer, connection);
       }
       if (sendBuffer != "")
       {
@@ -173,12 +173,12 @@ void VWebProxyOutInThread::run()
         } else
         if (response.header.value("Transfer-Encoding").toLower() == "chunked")
         {
-          sendBuffer += httpProxy->flushResponseHeader(response, connection);
+          sendBuffer += webProxy->flushResponseHeader(response, connection);
           status = Chunking;
           // LOG_DEBUG("Chunking"); // gilgil temp 2014.04.10
         } else
         {
-          sendBuffer += httpProxy->flushResponseHeader(response, connection);
+          sendBuffer += webProxy->flushResponseHeader(response, connection);
         }
       }
     }
@@ -196,7 +196,7 @@ void VWebProxyOutInThread::run()
         {
           LOG_WARN("length(%d) is bigger than contentLength(%d)", length, contentLength);
         }
-        sendBuffer += httpProxy->flushResponseHeaderBody(response, buffer, connection);
+        sendBuffer += webProxy->flushResponseHeaderBody(response, buffer, connection);
         status = HeaderCaching;
         // LOG_DEBUG("HeaderCaching"); // gilgil temp 2014.04.10
       }
@@ -212,7 +212,7 @@ void VWebProxyOutInThread::run()
       if (count > 0)
       {
         bool lastChunk = chunkBody.items.at(count - 1).first == 0; // may be end of chunking
-        sendBuffer += httpProxy->flushResponseChunkBody(chunkBody, connection);
+        sendBuffer += webProxy->flushResponseChunkBody(chunkBody, connection);
         if (lastChunk)
         {
           sendBuffer += buffer;
@@ -230,7 +230,7 @@ void VWebProxyOutInThread::run()
     {
       if (buffer != "")
       {
-        sendBuffer += httpProxy->flushResponseBuffer(buffer, connection);
+        sendBuffer += webProxy->flushResponseBuffer(buffer, connection);
       }
     }
 
@@ -258,8 +258,8 @@ void VWebProxyOutInThread::run()
 // ----------------------------------------------------------------------------
 VWebProxy::VWebProxy(void* owner) : VObject(owner)
 {
-  tcpEnabled                = true;
-  sslEnabled                = true;
+  httpEnabled               = true;
+  httpsEnabled              = true;
   maxContentCacheSize       = 10485756; // 1MByte
   disableLoopbackConnection = true;
   keepAliveTimeout          = 60000; // 60 sec
@@ -290,7 +290,7 @@ VWebProxy::~VWebProxy()
 
 bool VWebProxy::doOpen()
 {
-  if (tcpEnabled)
+  if (httpEnabled)
   {
     if (!tcpServer.open())
     {
@@ -299,7 +299,7 @@ bool VWebProxy::doOpen()
     }
   }
 
-  if (sslEnabled)
+  if (httpsEnabled)
   {
     if (!sslServer.open())
     {
@@ -526,11 +526,11 @@ void VWebProxy::run(VNetSession* inSession)
         return;
       }
       break;
-    case VWebProxyOutPolicy::Tcp:
+    case VWebProxyOutPolicy::Http:
       outClient   = new VTcpClient;
       defaultPort = DEFAULT_HTTP_PORT;
       break;
-    case VWebProxyOutPolicy::Ssl:
+    case VWebProxyOutPolicy::Https:
       outClient   = new VSslClient;
       defaultPort = DEFAULT_SSL_PORT;
       break;
@@ -739,8 +739,8 @@ void VWebProxy::load(VXml xml)
 {
   VObject::load(xml);
 
-  tcpEnabled                = xml.getBool("tcpEnabled",                tcpEnabled);
-  sslEnabled                = xml.getBool("sslEnabled",                sslEnabled);
+  httpEnabled               = xml.getBool("httpEnabled",               httpEnabled);
+  httpsEnabled              = xml.getBool("httpsEnabled",              httpsEnabled);
   maxContentCacheSize       = xml.getInt("maxContentCacheSize",        maxContentCacheSize);
   disableLoopbackConnection = xml.getBool("disableLoopbackConnection", disableLoopbackConnection);
   keepAliveTimeout          = xml.getULong("keepAliveTimeout",         keepAliveTimeout);
@@ -756,8 +756,8 @@ void VWebProxy::save(VXml xml)
 {
   VObject::save(xml);
 
-  xml.setBool("tcpEnabled",                tcpEnabled);
-  xml.setBool("sslEnabled",                sslEnabled);
+  xml.setBool("httpEnabled",               httpEnabled);
+  xml.setBool("httpsEnabled",              httpsEnabled);
   xml.setInt("maxContentCacheSize",        maxContentCacheSize);
   xml.setBool("disableLoopbackConnection", disableLoopbackConnection);
   xml.setULong("keepAliveTimeout",         keepAliveTimeout);
@@ -770,19 +770,19 @@ void VWebProxy::save(VXml xml)
 }
 
 #ifdef QT_GUI_LIB
-#include "vhttpproxywidget.h"
-#include "ui_vhttpproxywidget.h"
+#include "vwebproxywidget.h"
+#include "ui_vwebproxywidget.h"
 void VWebProxy::optionAddWidget(QLayout* layout)
 {
   VWebProxyWidget* widget = new VWebProxyWidget(layout->parentWidget());
-  widget->setObjectName("httpProxyWidget");
+  widget->setObjectName("webProxyWidget");
 
-  VOptionable::addCheckBox(widget->ui->glTcpServer, "chkTcpEnabled", "TCP Enabled", tcpEnabled);
-  VOptionable::addCheckBox(widget->ui->glSslServer, "chkSslEnabled", "SSL Enabled", sslEnabled);
+  VOptionable::addCheckBox(widget->ui->glHttpServer,  "chkHttpEnabled",  "HTTP Enabled",  httpEnabled);
+  VOptionable::addCheckBox(widget->ui->glHttpsServer, "chkHttpsEnabled", "HTTPS Enabled", httpsEnabled);
 
   outPolicy.optionAddWidget(widget->ui->glExternal);
-  tcpServer.optionAddWidget(widget->ui->glTcpServer);
-  sslServer.optionAddWidget(widget->ui->glSslServer);
+  tcpServer.optionAddWidget(widget->ui->glHttpServer);
+  sslServer.optionAddWidget(widget->ui->glHttpsServer);
 
   VOptionable::addLineEdit(widget->ui->glOther,     "leMaxContentCacheSize",        "Max Content Cache Size",      QString::number(maxContentCacheSize));
   VOptionable::addCheckBox(widget->ui->glOther,     "chkDisableLoopbackConnection", "Disable Loopback Connection", disableLoopbackConnection);
@@ -797,16 +797,15 @@ void VWebProxy::optionAddWidget(QLayout* layout)
 
 void VWebProxy::optionSaveDlg(QDialog* dialog)
 {
-  VWebProxyWidget* widget = dialog->findChild<VWebProxyWidget*>("httpProxyWidget");
+  VWebProxyWidget* widget = dialog->findChild<VWebProxyWidget*>("webProxyWidget");
   LOG_ASSERT(widget != NULL);
 
-  tcpEnabled = widget->findChild<QCheckBox*>("chkTcpEnabled")->checkState() == Qt::Checked;
-  sslEnabled = widget->findChild<QCheckBox*>("chkSslEnabled")->checkState() == Qt::Checked;
-
+  httpEnabled  = widget->findChild<QCheckBox*>("chkHttpEnabled")->checkState() == Qt::Checked;
+  httpsEnabled = widget->findChild<QCheckBox*>("chkHttpsEnabled")->checkState() == Qt::Checked;
 
   outPolicy.optionSaveDlg((QDialog*)widget->ui->tabExternal);
-  tcpServer.optionSaveDlg((QDialog*)widget->ui->tabTcpServer);
-  sslServer.optionSaveDlg((QDialog*)widget->ui->tabSslServer);
+  tcpServer.optionSaveDlg((QDialog*)widget->ui->tabHttpServer);
+  sslServer.optionSaveDlg((QDialog*)widget->ui->tabHttpsServer);
 
   maxContentCacheSize       = widget->findChild<QLineEdit*>("leMaxContentCacheSize")->text().toInt();
   disableLoopbackConnection = widget->findChild<QCheckBox*>("chkDisableLoopbackConnection")->checkState() == Qt::Checked;

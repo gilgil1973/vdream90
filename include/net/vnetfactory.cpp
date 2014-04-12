@@ -19,7 +19,7 @@ void VNetFactory::explicitLink()
   VUdpServer udpServer;
   VSslClient sslClient;
   VSslServer sslServer;
-  VWebProxy httpProxy;
+  VWebProxy  webProxy;
 }
 
 VNet* VNetFactory::createByClassName(const QString& className)
