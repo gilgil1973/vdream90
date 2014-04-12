@@ -153,6 +153,7 @@ public:
   const static int SSL_PROXY_PORT    = 4433;
 
 public:
+  bool                enabled;
   bool                httpEnabled;
   bool                httpsEnabled;
   int                 maxContentCacheSize;

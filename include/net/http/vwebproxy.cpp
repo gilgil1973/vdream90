@@ -258,6 +258,7 @@ void VWebProxyOutInThread::run()
 // ----------------------------------------------------------------------------
 VWebProxy::VWebProxy(void* owner) : VObject(owner)
 {
+  enabled                   = true;
   httpEnabled               = true;
   httpsEnabled              = true;
   maxContentCacheSize       = 10485756; // 1MByte
@@ -290,6 +291,12 @@ VWebProxy::~VWebProxy()
 
 bool VWebProxy::doOpen()
 {
+  if (!enabled)
+  {
+    LOG_DEBUG("enabled is false");
+    return true;
+  }
+
   if (httpEnabled)
   {
     if (!tcpServer.open())
@@ -319,6 +326,12 @@ bool VWebProxy::doOpen()
 
 bool VWebProxy::doClose()
 {
+  if (!enabled)
+  {
+    LOG_DEBUG("enabled is false");
+    return true;
+  }
+
   connections.lock();
   for (VWebProxyConnections::iterator it = connections.begin(); it != connections.end(); it++)
   {
@@ -739,6 +752,7 @@ void VWebProxy::load(VXml xml)
 {
   VObject::load(xml);
 
+  enabled                   = xml.getBool("enabled",                   enabled);
   httpEnabled               = xml.getBool("httpEnabled",               httpEnabled);
   httpsEnabled              = xml.getBool("httpsEnabled",              httpsEnabled);
   maxContentCacheSize       = xml.getInt("maxContentCacheSize",        maxContentCacheSize);
@@ -756,6 +770,7 @@ void VWebProxy::save(VXml xml)
 {
   VObject::save(xml);
 
+  xml.setBool("enabled",                   enabled);
   xml.setBool("httpEnabled",               httpEnabled);
   xml.setBool("httpsEnabled",              httpsEnabled);
   xml.setInt("maxContentCacheSize",        maxContentCacheSize);
@@ -784,6 +799,7 @@ void VWebProxy::optionAddWidget(QLayout* layout)
   tcpServer.optionAddWidget(widget->ui->glHttpServer);
   sslServer.optionAddWidget(widget->ui->glHttpsServer);
 
+  VOptionable::addCheckBox(widget->ui->glOther,     "chkEnabled",                   "Enabled",                     enabled);
   VOptionable::addLineEdit(widget->ui->glOther,     "leMaxContentCacheSize",        "Max Content Cache Size",      QString::number(maxContentCacheSize));
   VOptionable::addCheckBox(widget->ui->glOther,     "chkDisableLoopbackConnection", "Disable Loopback Connection", disableLoopbackConnection);
   VOptionable::addLineEdit(widget->ui->glOther,     "leKeepAliveTimeout",           "KeepAlive Timeout",           QString::number(keepAliveTimeout));
@@ -807,6 +823,7 @@ void VWebProxy::optionSaveDlg(QDialog* dialog)
   tcpServer.optionSaveDlg((QDialog*)widget->ui->tabHttpServer);
   sslServer.optionSaveDlg((QDialog*)widget->ui->tabHttpsServer);
 
+  enabled                   = widget->findChild<QCheckBox*>("chkEnabled")->isChecked();
   maxContentCacheSize       = widget->findChild<QLineEdit*>("leMaxContentCacheSize")->text().toInt();
   disableLoopbackConnection = widget->findChild<QCheckBox*>("chkDisableLoopbackConnection")->checkState() == Qt::Checked;
   keepAliveTimeout          = widget->findChild<QLineEdit*>("leKeepAliveTimeout")->text().toInt();
