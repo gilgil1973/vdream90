@@ -28,7 +28,7 @@ int VDataChangeItem::change(QByteArray& ba, int offset)
     LOG_INFO("changed \"%s\" > \"%s\"", qPrintable(found), qPrintable(replace));
   }
 
-  return index;
+  return index + replace.length();
 }
 
 void VDataChangeItem::load(VXml xml)

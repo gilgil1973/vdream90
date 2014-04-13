@@ -117,13 +117,13 @@ int VDataFindItem::find(QByteArray& ba, int offset)
   int index = rx.indexIn(text, offset);
   if (index == -1) return -1;
 
+  QString found = rx.cap(0);
   if (log)
   {
-    QString found = rx.cap(0);
     LOG_INFO("found     \"%s\"", qPrintable(found));
   }
 
-  return index;
+  return index + found.length();
 }
 
 void VDataFindItem::load(VXml xml)
@@ -210,7 +210,6 @@ bool VDataFind::find(QByteArray& ba)
       offset = item.find(ba, offset);
       if (offset == -1) break;
       res = true;
-      offset++;
     }
   }
   return res;
