@@ -1,5 +1,7 @@
 #include <VMemoryLeak>
 
+void vdebugnew_foo() {}
+
 #ifdef _DEBUG
 
 #include <malloc.h>
