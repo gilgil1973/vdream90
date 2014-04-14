@@ -51,7 +51,15 @@ void VHttpRequest::clear()
 
 bool VHttpRequest::parse(QByteArray& buffer)
 {
-  if (!buffer.startsWith("GET ") && !buffer.startsWith("POST ")) return false;
+  if (
+    !buffer.startsWith("GET ") &&
+    !buffer.startsWith("POST ") &&
+    !buffer.startsWith("HEAD ") &&
+    !buffer.startsWith("PUT ") &&
+    !buffer.startsWith("DELETE ") &&
+    !buffer.startsWith("OPTIONS ") &&
+    !buffer.startsWith("CONNECT "))
+    return false;
 
   int pos = buffer.indexOf("\r\n\r\n");
   if (pos == -1) return false;

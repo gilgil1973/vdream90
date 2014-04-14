@@ -120,7 +120,8 @@ VWebProxyOutInThread::~VWebProxyOutInThread()
 
 void VWebProxyOutInThread::run()
 {
-  // LOG_DEBUG("stt"); // gilgil temp 2014.03.14
+  static int outInCount = 0; // gilgil temp 2014.04.15
+  LOG_DEBUG("stt %d", ++outInCount); // gilgil temp 2014.03.14
 
   VNetClient* outClient  = connection->outClient;
   VNetSession* inSession = connection->inSession;
@@ -250,7 +251,8 @@ void VWebProxyOutInThread::run()
   tag = 2090; // gilgil temp 2014.04.04
   if (closeInSessionOnEnd) inSession->close();
   tag = 2010; // gilgil temp 2014.04.04
-  // LOG_DEBUG("end"); // gilgil temp 2014.03.14
+
+  LOG_DEBUG("end %d", --outInCount); // gilgil temp 2014.03.14
 }
 
 // ----------------------------------------------------------------------------
@@ -588,6 +590,12 @@ void VWebProxy::run(VNetSession* inSession)
     }
     connection.lastAccessTick = tick();
     buffer += oneBuffer;
+    // ----- gilgil temp 2014.04.15 -----
+    if (buffer.startsWith(("HEAD")))
+    {
+      LOG_DEBUG("%s", qPrintable(buffer));
+    }
+    // ----------------------------------
 
     //
     // HeaderCaching
