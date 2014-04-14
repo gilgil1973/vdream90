@@ -120,8 +120,7 @@ VWebProxyOutInThread::~VWebProxyOutInThread()
 
 void VWebProxyOutInThread::run()
 {
-  static int outInCount = 0; // gilgil temp 2014.04.15
-  LOG_DEBUG("stt %d", ++outInCount); // gilgil temp 2014.03.14
+  LOG_DEBUG("stt"); // gilgil temp 2014.03.14
 
   VNetClient* outClient  = connection->outClient;
   VNetSession* inSession = connection->inSession;
@@ -245,14 +244,10 @@ void VWebProxyOutInThread::run()
     }
   }
 
-  // sleep(5); // gilgil temp 2014.04.02
-  tag = 2080; // gilgil temp 2014.04.04
   outClient->close();
-  tag = 2090; // gilgil temp 2014.04.04
   if (closeInSessionOnEnd) inSession->close();
-  tag = 2010; // gilgil temp 2014.04.04
 
-  LOG_DEBUG("end %d", --outInCount); // gilgil temp 2014.03.14
+  // LOG_DEBUG("end %d"); // gilgil temp 2014.03.14
 }
 
 // ----------------------------------------------------------------------------
