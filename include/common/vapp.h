@@ -39,7 +39,12 @@ public:
   static bool    setCurrentPath(QString path);
 
 public:
+#ifdef QT_GUI_LIB
   static void initialize(bool path = true, bool xml = true, QString uri = "udp;file://log/");
+#else // QT_GUI_LIB
+  static void initialize(bool path = true, bool xml = true, QString uri = "stdout;udp;file://log/");
+#endif // QT_GUI_LIB
+
   static void finalize(bool xml = true);
 
 public:
