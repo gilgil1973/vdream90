@@ -8,7 +8,7 @@ QT       += core gui widgets
 
 include(../../lib/vdream.pri)
 
-TARGET   = webpproxy
+TARGET   = webproxy
 TEMPLATE = app
 DESTDIR  = ../../bin
 
