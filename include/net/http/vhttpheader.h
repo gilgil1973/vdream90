@@ -27,7 +27,7 @@ public:
   Items items;
 
 public:
-  QByteArray value(QByteArray key, bool caseSensitive = true);
+  QByteArray value(QByteArray key);
   void       setValue(QByteArray key, QByteArray value);
   void       addValue(QByteArray key, QByteArray value);
 

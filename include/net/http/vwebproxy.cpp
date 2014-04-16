@@ -165,13 +165,13 @@ void VWebProxyOutInThread::run()
     {
       if (response.parse(buffer)) // header parsing completed
       {
-        contentLength = response.header.value("Content-Length", false).toInt();
+        contentLength = response.header.value("Content-Length").toInt();
         if (contentLength > 0)
         {
           status = ContentCaching;
           // LOG_DEBUG("ContentCaching"); // gilgil temp 2014.04.10
         } else
-        if (response.header.value("Transfer-Encoding", false).toLower() == "chunked")
+        if (response.header.value("Transfer-Encoding").toLower() == "chunked")
         {
           sendBuffer += webProxy->flushResponseHeader(response, connection);
           status = Chunking;
@@ -653,12 +653,12 @@ void VWebProxy::run(VNetSession* inSession)
           thread->open();
         }
 
-        contentLength = request.header.value("Content-Length", false).toInt();
+        contentLength = request.header.value("Content-Length").toInt();
         if (contentLength > 0)
         {
           status = ContentCaching;
         } else
-        if (request.header.value("Transfer-Encoding", false).toLower() == "chunked")
+        if (request.header.value("Transfer-Encoding").toLower() == "chunked")
         {
           sendBuffer += flushRequestHeader(request, &connection);
           status = Chunking;
