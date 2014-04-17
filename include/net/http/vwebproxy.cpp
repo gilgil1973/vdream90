@@ -274,7 +274,7 @@ VWebProxy::VWebProxy(void* owner) : VObject(owner)
   changeItem.syntax  = QRegExp::FixedString;
   changeItem.cs      = Qt::CaseSensitive;
   changeItem.enabled = true;
-  changeItem.log     = false;
+  changeItem.log     = true;
   changeItem.replace = "\r\nAccept-Encoding-SS: ";
   outboundDataChange.push_back(changeItem);
 
@@ -284,7 +284,7 @@ VWebProxy::VWebProxy(void* owner) : VObject(owner)
   changeItem.pattern = "\r\nIf-Modified-Since:[^\r\n]*";
   changeItem.syntax  = QRegExp::RegExp;
   changeItem.cs      = Qt::CaseSensitive;
-  changeItem.enabled = false;
+  changeItem.enabled = true;
   changeItem.log     = true;
   changeItem.replace = "\r\nIf-Modified-Since-SS: ";
   outboundDataChange.push_back(changeItem);
@@ -295,7 +295,7 @@ VWebProxy::VWebProxy(void* owner) : VObject(owner)
   changeItem.pattern = "\r\nIf-None-Match:[^\r\n]*";
   changeItem.syntax  = QRegExp::RegExp;
   changeItem.cs      = Qt::CaseSensitive;
-  changeItem.enabled = false;
+  changeItem.enabled = true;
   changeItem.log     = true;
   changeItem.replace = "\r\nIf-None-Match-SS: ";
   outboundDataChange.push_back(changeItem);
