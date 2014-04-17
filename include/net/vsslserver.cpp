@@ -60,7 +60,7 @@ VSslServer::VSslServer(void* owner) : VTcpServer(owner)
 {
   VSslCommon::instance();
 
-  methodType             = VSslMethodType::mtTLSv1;
+  methodType             = VSslMethodType::mtSSLv23;
   certificatePath        = QString("certificate") + QDir::separator();
   defaultKeyCrtFileName  = "default.pem";
   processConnectMessage  = false;

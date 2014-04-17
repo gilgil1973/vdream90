@@ -12,7 +12,7 @@ VSslClient::VSslClient(void* owner) : VTcpClient(owner)
 
   sslSession = new VSslSession(this);
   sslSession->tcpSession = tcpSession;
-  methodType = VSslMethodType::mtTLSv1;
+  methodType = VSslMethodType::mtSSLv23;
   m_meth     = NULL;
   m_ctx      = NULL;
 }
