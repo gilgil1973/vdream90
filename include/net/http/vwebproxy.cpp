@@ -267,13 +267,37 @@ VWebProxy::VWebProxy(void* owner) : VObject(owner)
   sslServer.port            = SSL_PROXY_PORT;
 
   VDataChangeItem changeItem;
-  changeItem.pattern = "Accept-Encoding: gzip,";
+  //
+  // Accept-Encoding
+  //
+  changeItem.pattern = "\r\nAccept-Encoding: ";
   changeItem.syntax  = QRegExp::FixedString;
   changeItem.cs      = Qt::CaseSensitive;
-  changeItem.minimal = false;
   changeItem.enabled = true;
   changeItem.log     = false;
-  changeItem.replace = "Accept-Encoding:      ";
+  changeItem.replace = "\r\nAccept-Encoding-SS: ";
+  outboundDataChange.push_back(changeItem);
+
+  //
+  // If-Modified-Since
+  //
+  changeItem.pattern = "\r\nIf-Modified-Since:[^\r\n]*";
+  changeItem.syntax  = QRegExp::RegExp;
+  changeItem.cs      = Qt::CaseSensitive;
+  changeItem.enabled = false;
+  changeItem.log     = true;
+  changeItem.replace = "\r\nIf-Modified-Since-SS: ";
+  outboundDataChange.push_back(changeItem);
+
+  //
+  // If-None-Match
+  //
+  changeItem.pattern = "\r\nIf-None-Match:[^\r\n]*";
+  changeItem.syntax  = QRegExp::RegExp;
+  changeItem.cs      = Qt::CaseSensitive;
+  changeItem.enabled = false;
+  changeItem.log     = true;
+  changeItem.replace = "\r\nIf-None-Match-SS: ";
   outboundDataChange.push_back(changeItem);
 
   keepAliveThread     = NULL;
