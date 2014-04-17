@@ -71,6 +71,7 @@ bool VSslClient::doOpen()
     doClose();
     return false;
   }
+  SSL_set_tlsext_host_name(sslSession->con, qPrintable(host));
   SSL_set_connect_state(sslSession->con);
   int res = SSL_connect(sslSession->con);
   if (res <= 0)
