@@ -179,7 +179,7 @@ void VWebProxyOutInThread::run()
         } else
         {
           sendBuffer += webProxy->flushResponseHeaderBody(response, buffer, connection);
-          status = Streaming;
+          // status = Streaming; // by gilgil 2014.04.17
         }
       }
     }
@@ -474,7 +474,7 @@ QByteArray VWebProxy::flushResponseHeaderBody(VHttpResponse& response, QByteArra
   {
     contentLength += newBodyLen - oldBodyLen;
     response.header.setValue("Content-Length", QByteArray::number(contentLength));
-    LOG_DEBUG("content length change from %d > %d", oldBodyLen, newBodyLen);
+    LOG_DEBUG("content length change from %d > %d (%d)", oldBodyLen, newBodyLen, newBodyLen - oldBodyLen);
   }
 
   QByteArray res = response.toByteArray() + body;
@@ -665,7 +665,7 @@ void VWebProxy::run(VNetSession* inSession)
         } else
         {
           sendBuffer += flushRequestHeaderBody(request, buffer, &connection);
-          status = Streaming;
+          // status = Streaming; // by gilgil 2014.04.17
         }
       }
     }
