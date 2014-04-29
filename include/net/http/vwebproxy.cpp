@@ -643,7 +643,7 @@ void VWebProxy::run(VNetSession* inSession)
         // LOG_DEBUG("host=%s port=%d", qPrintable(host), port); // gilgil temp 2014.04.02
         if (outClient->host != host || outClient->port != port)
         {
-          // if (thread != NULL) thread->closeInSessionOnEnd = false; // gilgil temp 2014.04.10
+          if (thread != NULL) thread->closeInSessionOnEnd = false;
           outClient->close();
           if (thread != NULL)
           {
