@@ -139,10 +139,10 @@ bool VXmlDoc::saveToFile(QString fileName)
 
 QString VXmlDoc::defaultFileName()
 {
-  QString fileName         = VApp::filePath();
+  QString fileName         = VApp::fileName();
   QString path             = QFileInfo(fileName).path();
   QString completeBaseName = QFileInfo(fileName).completeBaseName();
-  QString res              = path + "/" + completeBaseName + ".xml";
+  QString res              = path + QDir::separator() + completeBaseName + ".xml";
   return res;
 }
 

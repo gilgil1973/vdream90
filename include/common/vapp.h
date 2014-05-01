@@ -34,7 +34,8 @@ public:
   char** argv()                               { return m_argv;                }
 
 public:
-  static QString filePath();
+  static QString fileName();
+  static QString _filePath();
   static QString currentPath();
   static bool    setCurrentPath(QString path);
 

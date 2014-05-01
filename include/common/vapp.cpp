@@ -19,7 +19,7 @@ VApp::~VApp()
 #include <winsock2.h>
 #include <windows.h>
 
-QString VApp::filePath()
+QString VApp::fileName()
 {
   char buf[vd::DEFAULT_BUF_SIZE];
   DWORD res = GetModuleFileNameA(NULL, buf, vd::DEFAULT_BUF_SIZE);
@@ -37,7 +37,7 @@ QString VApp::filePath()
 #define min(A,B) (A)>(B)?(A):(B)
 #endif // min
 
-QString VApp::filePath()
+QString VApp::fileName()
 {
   static QString fileName;
   if (fileName == "")
@@ -54,6 +54,13 @@ QString VApp::filePath()
   return fileName;
 }
 #endif // linux
+
+QString VApp::_filePath()
+{
+  QString res = QFileInfo(VApp::fileName()).path();
+  if (!res.endsWith('/') && !res.endsWith('\\')) res += QDir::separator();
+  return res;
+}
 
 QString VApp::currentPath()
 {
@@ -75,7 +82,7 @@ void VApp::initialize(bool path, bool xml, QString uri)
   //---------------------------------------------------------------------------
   if (path)
   {
-    VApp::setCurrentPath(QFileInfo(VApp::filePath()).path());
+    VApp::setCurrentPath(VApp::_filePath());
   }
 
   //---------------------------------------------------------------------------
