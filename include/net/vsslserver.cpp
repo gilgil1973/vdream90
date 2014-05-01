@@ -110,9 +110,14 @@ bool VSslServer::doOpen()
 
   if (defaultKeyCrtFileName != "")
   {
-    QString fileName = defaultKeyCrtFileName;
+    QString fileName = certificatePath;
     QFileInfo fi(fileName);
-    if (!fi.isAbsolute()) fileName = certificatePath + fileName;
+    if (!fi.isAbsolute()) fileName = VApp::_filePath() + fileName;
+    if (!fileName.endsWith('/') && !fileName.endsWith('\\'))
+    {
+      fileName += QDir::separator();
+    }
+    fileName += defaultKeyCrtFileName;
     if (!setup(fileName)) return false;
   }
 
@@ -225,9 +230,16 @@ int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg)
   // *debug = 500; // gilgil temp 2014.03.14
   // LOG_DEBUG("server=%p session=%p", server, session); // gilgil temp 2014.03.14
 
-  QString fileName = server->certificatePath + serverName + ".pem";
-  // *debug = 4000; // gilgil temp 2014.03.14
+  QString path = server->certificatePath;
+  QFileInfo fi(path);
+  if (!fi.isAbsolute())
+  {
+    path = VApp::_filePath() + path;
+  }
+  if (!path.endsWith('/') && !path.endsWith('\\')) path += QDir::separator();
 
+  QString fileName = path + serverName + ".pem";
+  // *debug = 4000; // gilgil temp 2014.03.14
   {
     VLock lock(server->certificateCs); // protect file create critical section
     // *debug = 5000; // gilgil temp 2014.03.14
@@ -235,13 +247,6 @@ int VSslServer::ssl_servername_cb(SSL *con, int *ad, void *arg)
     {
       QProcess process;
 
-      QString path = server->certificatePath;
-      // LOG_DEBUG("path=%s", qPrintable(path)); // gilgil temp 2014.03.14
-      QFileInfo fi(path);
-      if (!fi.isAbsolute())
-      {
-        path = VApp::currentPath() + path;
-      }
       process.setWorkingDirectory(path);
       LOG_DEBUG("working directory=%s", qPrintable(process.workingDirectory())); // gilgil temp 2014.03.01
 

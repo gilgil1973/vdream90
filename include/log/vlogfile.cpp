@@ -95,8 +95,8 @@ void VLogFile::setFolder(QString folder)
 {
   if (folder != "")
   {
-    QDir dir(folder);
-    if (!dir.isAbsolute())
+    QFileInfo fi(folder);
+    if (!fi.isAbsolute())
     {
       folder = VApp::_filePath() + folder;
     }
