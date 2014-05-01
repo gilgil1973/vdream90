@@ -1,6 +1,7 @@
 #include <VLogFile>
 #include <VFile>
 #include <QUrl>
+#include <VApp>
 #include <VDebugNew>
 
 // ----------------------------------------------------------------------------
@@ -94,6 +95,11 @@ void VLogFile::setFolder(QString folder)
 {
   if (folder != "")
   {
+    QDir dir(folder);
+    if (!dir.isAbsolute())
+    {
+      folder = QFileInfo(VApp::filePath()).path() + QDir::separator() + folder;
+    }
     VFile::createFolder(folder);
     if (folder.right(1) != QDir::separator())
       folder += QDir::separator();
