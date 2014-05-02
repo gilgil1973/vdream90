@@ -265,7 +265,7 @@ VWebProxy::VWebProxy(void* owner) : VObject(owner)
   enabled                   = true;
   httpEnabled               = true;
   httpsEnabled              = true;
-  maxContentCacheSize       = 65536; // 64KByte
+  maxContentCacheSize       = 1048576; // 1MByte
   disableLoopbackConnection = true;
   keepAliveTimeout          = 60000; // 60 sec
   outInThreadTimeout        = 30000; // 30 sec
