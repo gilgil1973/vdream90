@@ -272,40 +272,6 @@ VWebProxy::VWebProxy(void* owner) : VObject(owner)
   tcpServer.port            = HTTP_PROXY_PORT;
   sslServer.port            = SSL_PROXY_PORT;
 
-  VDataChangeItem changeItem;
-  //
-  // Accept-Encoding
-  //
-  changeItem.pattern = "\r\nAccept-Encoding: ";
-  changeItem.syntax  = QRegExp::FixedString;
-  changeItem.cs      = Qt::CaseSensitive;
-  changeItem.enabled = true;
-  changeItem.log     = false;
-  changeItem.replace = "\r\nAccept-Encoding-SS: ";
-  outboundDataChange.push_back(changeItem);
-
-  //
-  // If-Modified-Since
-  //
-  changeItem.pattern = "\r\nIf-Modified-Since:[^\r\n]*";
-  changeItem.syntax  = QRegExp::RegExp;
-  changeItem.cs      = Qt::CaseSensitive;
-  changeItem.enabled = true;
-  changeItem.log     = false;
-  changeItem.replace = "\r\nIf-Modified-Since-SS: ";
-  outboundDataChange.push_back(changeItem);
-
-  //
-  // If-None-Match
-  //
-  changeItem.pattern = "\r\nIf-None-Match:[^\r\n]*";
-  changeItem.syntax  = QRegExp::RegExp;
-  changeItem.cs      = Qt::CaseSensitive;
-  changeItem.enabled = true;
-  changeItem.log     = false;
-  changeItem.replace = "\r\nIf-None-Match-SS: ";
-  outboundDataChange.push_back(changeItem);
-
   keepAliveThread     = NULL;
 
   VObject::connect(&tcpServer, SIGNAL(runned(VTcpSession*)), this, SLOT(tcpRun(VTcpSession*)), Qt::DirectConnection);
@@ -415,8 +381,8 @@ QByteArray VWebProxy::flushRequestHeader(VHttpRequest& request, VWebProxyConnect
 {
   QByteArray headerData = request.toByteArray();
   outboundDataChange.change(headerData);
-  emit onHttpRequestHeader(&request, connection);
   request.parse(headerData);
+  emit onHttpRequestHeader(&request, connection);
 
   QByteArray res = request.toByteArray();
   request.clear();
@@ -427,8 +393,8 @@ QByteArray VWebProxy::flushRequestHeaderBody(VHttpRequest& request, QByteArray& 
 {
   QByteArray headerData = request.toByteArray();
   outboundDataChange.change(headerData);
-  emit onHttpRequestHeader(&request, connection);
   request.parse(headerData);
+  emit onHttpRequestHeader(&request, connection);
 
   int oldBodyLen = body.length();
   outboundDataChange.change(body);
@@ -479,8 +445,8 @@ QByteArray VWebProxy::flushResponseHeader(VHttpResponse& response, VWebProxyConn
 {
   QByteArray headerData = response.toByteArray();
   inboundDataChange.change(headerData);
-  emit onHttpResponseHeader(&response, connection);
   response.parse(headerData);
+  emit onHttpResponseHeader(&response, connection);
 
   QByteArray res = response.toByteArray();
   response.clear();
@@ -491,8 +457,8 @@ QByteArray VWebProxy::flushResponseHeaderBody(VHttpResponse& response, QByteArra
 {
   QByteArray headerData = response.toByteArray();
   inboundDataChange.change(headerData);
-  emit onHttpResponseHeader(&response, connection);
   response.parse(headerData);
+  emit onHttpResponseHeader(&response, connection);
 
   int oldBodyLen = body.length();
   inboundDataChange.change(body);
