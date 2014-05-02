@@ -201,6 +201,12 @@ void VWebProxyOutInThread::run()
         status = HeaderCaching;
         // LOG_DEBUG("HeaderCaching"); // gilgil temp 2014.04.10
       }
+      if (length > webProxy->maxContentCacheSize)
+      {
+        LOG_DEBUG("length(%d) is bigger than maxContentCacheSize(%d)", length, webProxy->maxContentCacheSize);
+        sendBuffer += webProxy->flushResponseHeaderBody(response, buffer, connection);
+        status = Streaming;
+      }
     }
 
     //
@@ -259,7 +265,7 @@ VWebProxy::VWebProxy(void* owner) : VObject(owner)
   enabled                   = true;
   httpEnabled               = true;
   httpsEnabled              = true;
-  maxContentCacheSize       = 10485756; // 1MByte
+  maxContentCacheSize       = 65536; // 64KByte
   disableLoopbackConnection = true;
   keepAliveTimeout          = 60000; // 60 sec
   outInThreadTimeout        = 30000; // 30 sec
@@ -709,6 +715,12 @@ void VWebProxy::run(VNetSession* inSession)
         }
         sendBuffer += flushRequestHeaderBody(request, buffer, &connection);
         status = HeaderCaching;
+      }
+      if (length > maxContentCacheSize)
+      {
+        LOG_DEBUG("length(%d) is bigger than maxContentCacheSize(%d)", length, maxContentCacheSize);
+        sendBuffer += flushRequestHeaderBody(request, buffer, &connection);
+        status = Streaming;
       }
     }
 
