@@ -94,7 +94,7 @@ bool VHttpRequest::findHost(QString& host, int& port)
     port = -1;
   } else
   {
-    host = hostValue.left(pos + 1);
+    host = hostValue.left(pos);
     port = hostValue.right(hostValue.length() - pos - 1).toInt();
   }
   return true;
